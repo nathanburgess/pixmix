@@ -51,8 +51,8 @@ let translate (globals, functions) =
       let name = fdecl.A.fname
       and formal_types =
 	Array.of_list (List.map (fun (t,_) -> ltype_of_typ t) fdecl.A.formals)
-      in let ftype = L.function_type (ltype_of_typ fdecl.A.typ) formal_types in
-      StringMap.add name (L.define_function name ftype the_module, fdecl) m in
+      in (* let ftype = L.function_type (ltype_of_typ fdecl.A.typ) formal_types in *)
+      StringMap.add name (L.define_function name (*ftype*) the_module, fdecl) m in
     List.fold_left function_decl StringMap.empty functions in
   
   (* Fill in the body of the given function *)
@@ -122,8 +122,8 @@ let translate (globals, functions) =
       | A.Call (f, act) ->
          let (fdef, fdecl) = StringMap.find f function_decls in
 	 let actuals = List.rev (List.map (expr builder) (List.rev act)) in
-	 let result = (match fdecl.A.typ with A.Void -> ""
-                                            | _ -> f ^ "_result") in
+	 let result = (*(match fdecl.A.typ with A.Void -> ""
+                                            | _ -> f ^ "_result")*) "fun_result" in
          L.build_call fdef (Array.of_list actuals) result builder
     in
 
