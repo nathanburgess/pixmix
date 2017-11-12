@@ -33,10 +33,12 @@ rule token = parse
     | "int"                 { INT }
     | "bool"                { BOOL }
     | "void"                { VOID }
+    | "string"              { STRING }
     | "true"                { TRUE }
     | "false"               { FALSE }
     | ['0'-'9']+ as lxm     { LITERAL(int_of_string lxm) }
     | ['a'-'z' 'A'-'Z']['a'-'z' 'A'-'Z' '0'-'9' '_']* as lxm { ID(lxm) }
+    | '"'((['a'-'z' 'A'-'Z' '0'-'9' '_']*) as s)'"' { STRLIT(s) }
     | eof                   { EOF }
     | _ as char             { raise (Failure("illegal character " ^ Char.escaped char)) }
 and comment = parse
