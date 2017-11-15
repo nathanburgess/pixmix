@@ -5,8 +5,11 @@
 rule token = parse
       [' ' '\t' '\r' '\n']  { token lexbuf }    (* Whitespace *)
     | "/*"                  { comment lexbuf }  (* Comments *)
+    | '.'                   { DOT }
     | '('                   { LPAREN }
     | ')'                   { RPAREN }
+    | '['                   { LBRACKET }
+    | ']'                   { RBRACKET }
     | '{'                   { LBRACE }
     | '}'                   { RBRACE }
     | ';'                   { SEMI }

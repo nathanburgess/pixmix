@@ -1,9 +1,9 @@
 (* Abstract Syntax Tree and functions for printing it *)
 
 type op = Add | Sub | Mult | Div | Mod | Equal | Neq | Less | Leq | Greater | Geq | And | Or 
-    | BwAnd | BwOr | BwDis | BwLeft | BwLeftAss | BwRight | BwRightAss
+    | BitAnd | BitOr | BitXor | BitLeft | BitLeftAssn | BitRight | BitRightAssn
 
-type uop = Neg | Not | Incr | Decr | BwNeg
+type uop = Neg | Not | Incr | Decr | BitNeg
 
 type typ = Int | Bool | Void | String | Float | Char | Object | Array | Image | Pixel | Color
 
@@ -15,6 +15,9 @@ type expr =
     | StringLit of string
     | Id of string
     | Binop of expr * op * expr
+    | Arrop of string * expr
+    | ObjLit of string * string
+    | ObjCall of string * string * expr list
     | Unop of uop * expr
     | Assign of string * expr
     | Call of string * expr list
@@ -39,7 +42,6 @@ type func_decl = {
 type program = bind list * func_decl list
 
 (* Pretty-printing functions *)
-
 let string_of_op = function
       Add -> "+"
     | Sub -> "-"
@@ -53,20 +55,20 @@ let string_of_op = function
     | Geq -> ">="
     | And -> "&&"
     | Or -> "||"
-    | BwAnd -> "&"
-    | BwOr -> "|"
-    | BwDis -> "^"
-    | BwLeft -> "<<"
-    | BwLeftAss -> "<<="
-    | BwRight -> ">>"
-    | BwRightAss -> ">>="
+    | BitAnd -> "&"
+    | BitOr -> "|"
+    | BitXor -> "^"
+    | BitLeft -> "<<"
+    | BitLeftAssn -> "<<="
+    | BitRight -> ">>"
+    | BitRightAssn -> ">>="
 
 let string_of_uop = function
       Neg -> "-"
     | Not -> "!"
     | Incr -> "++"
     | Decr -> "--"
-    | BwNeg -> "~"
+    | BitNeg -> "~"
 
 let rec string_of_expr = function
       Literal(l) -> string_of_int l
