@@ -9,7 +9,7 @@ module StringMap = Map.Make(String)
 
    Check each global variable, then check each function *)
 
-let check (globals, functions) =
+let check (globals, objects, functions) =
 
     (* Raise an exception if the given list has a duplicate *)
     let report_duplicate exceptf list =
@@ -73,7 +73,7 @@ let check (globals, functions) =
     in
 
     let function_decls = List.fold_left (fun m fd -> StringMap.add fd.fname fd m)
-            built_in_decls functions
+        built_in_decls functions
     in
 
     let function_decl s = try StringMap.find s function_decls

@@ -5,15 +5,16 @@ type op = Add | Sub | Mult | Div | Mod | Equal | Neq | Less | Leq | Greater | Ge
 
 type uop = Neg | Not | Incr | Decr | BitNeg
 
-type typ = Int | Bool | Void | String | Float | Char | Object | Array | Image | Pixel | Color
+type typ = Num | Int | Bool | Void | String | Char | Object | Array | Image | Pixel | Color
 
 type bind = typ * string
 
 type expr =
-      Literal of int
+      Literal of int (* Change this to Number *)
     | BoolLit of bool
     | StringLit of string
     | Id of string
+    | Object of string
     | Binop of expr * op * expr
     | Arrop of string * expr
     | ObjLit of string * string
@@ -39,7 +40,13 @@ type func_decl = {
     body : stmt list;
 }
 
-type program = bind list * func_decl list
+type objexpr  = {
+    oname : string;
+    locals : bind list;
+    methods : func_decl list;
+}
+
+type program = bind list * objexpr list * func_decl list
 
 (* Pretty-printing functions *)
 let string_of_op = function
@@ -99,11 +106,11 @@ let rec string_of_stmt = function
 
 let string_of_typ = function
       Int -> "Int"
-    | Bool -> "Bool"
-    | Void -> "Void"
+    | Num -> "num"
+    | Bool -> "bool"
+    | Void -> "void"
     | String -> "String"
-    | Float -> "Float"
-    | Char -> "Char"
+    | Char -> "char"
     | Object -> "Object"
     | Array -> "Array"
     | Image -> "Image"
@@ -120,6 +127,13 @@ let string_of_fdecl fdecl =
     String.concat "" (List.map string_of_stmt fdecl.body) ^
     "}\n"
 
-let string_of_program (vars, funcs) =
+let string_of_odecl odecl =
+    "Object " ^ odecl.oname ^ " " ^ "{" ^
+    String.concat "" (List.map string_of_vdecl odecl.locals) ^
+    String.concat "" (List.map string_of_fdecl odecl.methods) ^
+    "}\n"
+
+let string_of_program (vars, objs, funcs) =
     String.concat "" (List.map string_of_vdecl vars) ^ "\n" ^
+    String.concat "" (List.map string_of_odecl objs) ^ "\n" ^
     String.concat "\n" (List.map string_of_fdecl funcs)

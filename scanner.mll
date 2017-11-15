@@ -3,8 +3,9 @@
 { open Parser }
 
 rule token = parse
-      [' ' '\t' '\r' '\n']  { token lexbuf }    (* Whitespace *)
-    | "/*"                  { comment lexbuf }  (* Comments *)
+      [' ' '\t' '\r' '\n']  { token lexbuf }      (* Whitespace *)
+    | "#:"                  { mlcomment lexbuf }  (* Comments *)
+    | "#"                   { comment lexbuf }    (* Comments *)
     | '.'                   { DOT }
     | '('                   { LPAREN }
     | ')'                   { RPAREN }
@@ -44,6 +45,9 @@ rule token = parse
     | '"'((_*) as s)'"' { STRLIT(s) }
     | eof                   { EOF }
     | _ as char             { raise (Failure("illegal character " ^ Char.escaped char)) }
+and mlcomment = parse
+      ":#" { token lexbuf }
+    | _    { mlcomment lexbuf }
 and comment = parse
-        "*/" { token lexbuf }
+      ['\n' '\r'] { token lexbuf }
     | _    { comment lexbuf }

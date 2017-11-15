@@ -108,8 +108,9 @@ let translate (globals, functions) =
                  | A.Not     -> L.build_not) e' "tmp" builder
             | A.Assign (s, e) -> let e' = expr builder e in
                 ignore (L.build_store e' (lookup s) builder); e'
-            | A.Call ("print", [e]) | A.Call ("printb", [e]) ->
-                L.build_call printf_func [| str_format_str ; (expr builder e) |]
+            | A.Call ("print", [e]) 
+            | A.Call ("printb", [e]) ->
+                L.build_call printf_func [| int_format_str ; (expr builder e) |]
                     "printf" builder
             | A.Call (f, act) ->
                 let (fdef, fdecl) = StringMap.find f function_decls in

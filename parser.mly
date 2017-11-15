@@ -9,7 +9,7 @@
 %token EQ NEQ LT LEQ GT GEQ TRUE FALSE AND OR
 %token RETURN IF ELSE FOR WHILE INT BOOL VOID
 %token STRING CHAR FLOAT IMAGE COLOR PIXEL OBJECT ARRAY
-%token LBRACKET RBRACKET
+%token LBRACKET RBRACKET DOT
 %token <int> LITERAL
 %token <string> STRLIT
 %token <string> ID
@@ -102,6 +102,8 @@ expr:
     | ID               { Id($1) }
 
     | ID LBRACKET expr RBRACKET { Arrop($1, $3) }
+    | ID DOT ID        { ObjLit($1, $3) }
+    | ID DOT ID LPAREN actuals_opt RPAREN { ObjCall($1, $3, $5) }    
 
     | expr PLUS   expr { Binop($1, Add,   $3) }
     | expr MINUS  expr { Binop($1, Sub,   $3) }
