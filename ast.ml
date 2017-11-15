@@ -1,10 +1,11 @@
 (* Abstract Syntax Tree and functions for printing it *)
 
-type op = Add | Sub | Mult | Div | Equal | Neq | Less | Leq | Greater | Geq | And | Or
+type op = Add | Sub | Mult | Div | Mod | Equal | Neq | Less | Leq | Greater | Geq | And | Or 
+    | BwAnd | BwOr | BwDis | BwLeft | BwLeftAss | BwRight | BwRightAss
 
-type uop = Neg | Not
+type uop = Neg | Not | Incr | Decr | BwNeg
 
-type typ = Int | Bool | Void | String
+type typ = Int | Bool | Void | String | Float | Char | Object | Array | Image | Pixel | Color
 
 type bind = typ * string
 
@@ -52,10 +53,18 @@ let string_of_op = function
     | Geq -> ">="
     | And -> "&&"
     | Or -> "||"
+    | BwAnd -> "&"
+    | BwOr -> "|"
+    | BwDis -> "^"
+    | BwLeft -> "<<"
+    | BwRight -> ">>"
 
 let string_of_uop = function
       Neg -> "-"
     | Not -> "!"
+    | Incr -> "++"
+    | Decr -> "--"
+    | BwNeg -> "~"
 
 let rec string_of_expr = function
       Literal(l) -> string_of_int l
@@ -85,10 +94,17 @@ let rec string_of_stmt = function
     | While(e, s) -> "while (" ^ string_of_expr e ^ ") " ^ string_of_stmt s
 
 let string_of_typ = function
-      Int -> "int"
-    | Bool -> "bool"
-    | Void -> "void"
-    | String -> "string"
+      Int -> "Int"
+    | Bool -> "Bool"
+    | Void -> "Void"
+    | String -> "String"
+    | Float -> "Float"
+    | Char -> "Char"
+    | Object -> "Object"
+    | Array -> "Array"
+    | Image -> "Image"
+    | Pixel -> "Pixel"
+    | Color -> "Color"
 
 let string_of_vdecl (t, id) = string_of_typ t ^ " " ^ id ^ ";\n"
 
