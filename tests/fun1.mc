@@ -7,6 +7,6 @@ int main()
 {
   string a;
   a = "hi";
-  print( add(17, 25) );
+  print( a );
   return 0;
 }
