@@ -8,7 +8,7 @@
 %token PLUS MINUS TIMES DIVIDE ASSIGN NOT
 %token EQ NEQ LT LEQ GT GEQ TRUE FALSE AND OR
 %token RETURN IF ELSE FOR WHILE INT BOOL VOID
-%token STRING
+%token STRING CHAR FLOAT IMAGE COLOR PIXEL OBJECT ARRAY
 %token <int> LITERAL
 %token <string> STRLIT
 %token <string> ID
@@ -59,6 +59,13 @@ typ:
     | BOOL    { Bool }
     | VOID    { Void }
     | STRING  { String }
+    | FLOAT   { Float }
+    | CHAR    { Char }
+    | OBJECT  { Object }
+    | ARRAY   { Array }
+    | IMAGE   { Image }
+    | PIXEL   { Pixel }
+    | COLOR   { Color }
 
 vdecl_list:
       /* nothing */    { [] }

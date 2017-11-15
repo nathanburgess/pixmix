@@ -57,7 +57,9 @@ let string_of_op = function
     | BwOr -> "|"
     | BwDis -> "^"
     | BwLeft -> "<<"
+    | BwLeftAss -> "<<="
     | BwRight -> ">>"
+    | BwRightAss -> ">>="
 
 let string_of_uop = function
       Neg -> "-"
