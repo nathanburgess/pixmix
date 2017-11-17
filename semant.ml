@@ -9,7 +9,7 @@ module StringMap = Map.Make(String)
 
    Check each global variable, then check each function *)
 
-let check (globals, objects, functions) =
+let check globals =
 
     (* Raise an exception if the given list has a duplicate *)
     let report_duplicate exceptf list =
@@ -34,17 +34,17 @@ let check (globals, objects, functions) =
 
     (**** Checking Global Variables ****)
 
-    List.iter (check_not_void (fun n -> "illegal void global " ^ n)) globals;
+    List.iter (check_not_void (fun n -> "illegal void global " ^ n)) globals.Vars;
 
-    report_duplicate (fun n -> "duplicate global " ^ n) (List.map snd globals);
+    report_duplicate (fun n -> "duplicate global " ^ n) (List.map snd globals.Vars);
 
     (**** Checking Functions ****)
 
-    if List.mem "print" (List.map (fun fd -> fd.fname) functions)
+    if List.mem "print" (List.map (fun fd -> fd.fname) globals.Functions)
     then raise (Failure ("function print may not be defined")) else ();
 
     report_duplicate (fun n -> "duplicate function " ^ n)
-        (List.map (fun fd -> fd.fname) functions);
+        (List.map (fun fd -> fd.fname) globals.Functions);
 
     (* Function declaration for a named function *)
     let built_in_decls =  

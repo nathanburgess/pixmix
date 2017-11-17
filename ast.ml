@@ -10,72 +10,78 @@ type typ = Num | Int | Bool | Void | String | Char | Object | Array | Image | Pi
 type bind = typ * string
 
 type expr =
-      Literal of int (* Change this to Number *)
-    | BoolLit of bool
-    | StringLit of string
-    | Id of string
-    | Object of string
-    | Binop of expr * op * expr
-    | Arrop of string * expr
-    | ObjLit of string * string
-    | ObjCall of string * string * expr list
-    | Unop of uop * expr
-    | Assign of string * expr
-    | Call of string * expr list
+      Literal       of int (* Change this to Number *)
+    | BoolLit       of bool
+    | StringLit     of string
+    | Id            of string
+    | Object        of string
+    | Binop         of expr * op * expr
+    | Arrop         of string * expr
+    | ObjLit        of string * string
+    | ObjCall       of string * string * expr list
+    | Unop          of uop * expr
+    | Assign        of string * expr
+    | Call          of string * expr list
     | Noexpr
 
 type stmt =
-      Block of stmt list
-    | Expr of expr
-    | Return of expr
-    | If of expr * stmt * stmt
-    | For of expr * expr * expr * stmt
-    | While of expr * stmt
+      Block         of stmt list
+    | Expr          of expr
+    | Return        of expr
+    | If            of expr * stmt * stmt
+    | For           of expr * expr * expr * stmt
+    | While         of expr * stmt
 
 type func_decl = {
-    typ : typ;
-    fname : string;
-    formals : bind list;
-    locals : bind list;
-    body : stmt list;
+    typ             : typ;
+    fname           : string;
+    formals         : bind list;
+    locals          : bind list;
+    body            : stmt list;
 }
 
 type objexpr  = {
-    oname : string;
-    locals : bind list;
-    methods : func_decl list;
+    oname           : string;
+    locals          : bind list;
+    methods         : func_decl list;
 }
 
-type program = bind list * objexpr list * func_decl list
+type global = 
+      Vars          of bind list
+    | Objects       of objexpr list
+    | Statements    of stmt list
+    | Functions     of func_decl list
+
+type program = global list
 
 (* Pretty-printing functions *)
 let string_of_op = function
-      Add -> "+"
-    | Sub -> "-"
-    | Mult -> "*"
-    | Div -> "/"
-    | Equal -> "=="
-    | Neq -> "!="
-    | Less -> "<"
-    | Leq -> "<="
-    | Greater -> ">"
-    | Geq -> ">="
-    | And -> "&&"
-    | Or -> "||"
-    | BitAnd -> "&"
-    | BitOr -> "|"
-    | BitXor -> "^"
-    | BitLeft -> "<<"
-    | BitLeftAssn -> "<<="
-    | BitRight -> ">>"
-    | BitRightAssn -> ">>="
+      Add           -> "+"
+    | Sub           -> "-"
+    | Mult          -> "*"
+    | Div           -> "/"
+    | Equal         -> "=="
+    | Neq           -> "!="
+    | Less          -> "<"
+    | Leq           -> "<="
+    | Greater       -> ">"
+    | Geq           -> ">="
+    | And           -> "&&"
+    | Or            -> "||"
+    | BitAnd        -> "&"
+    | BitOr         -> "|"
+    | BitXor        -> "^"
+    | BitLeft       -> "<<"
+    | BitLeftAssn   -> "<<="
+    | BitRight      -> ">>"
+    | BitRightAssn  -> ">>="
 
 let string_of_uop = function
-      Neg -> "-"
-    | Not -> "!"
-    | Incr -> "++"
-    | Decr -> "--"
-    | BitNeg -> "~"
+      Neg           -> "-"
+    | Not           -> "!"
+    | Incr          -> "++"
+    | Decr          -> "--"
+    | BitNeg        -> "~"
 
 let rec string_of_expr = function
       Literal(l) -> string_of_int l
@@ -128,7 +134,7 @@ let string_of_fdecl fdecl =
     "}\n"
 
 let string_of_odecl odecl =
-    "Object " ^ odecl.oname ^ " " ^ "{" ^
+    "Object " ^ odecl.oname ^ " {" ^
     String.concat "" (List.map string_of_vdecl odecl.locals) ^
     String.concat "" (List.map string_of_fdecl odecl.methods) ^
     "}\n"
