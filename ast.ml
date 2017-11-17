@@ -46,12 +46,14 @@ type objexpr  = {
     omethods        : func_decl list;
 }
 
-type program = {
-    variables     : bind list;
-    objects       : objexpr list;
-    statements    : stmt list;
-    functions     : func_decl list;
-}   
+type globals = {
+    variables       : bind list;
+    objects         : objexpr list;
+    statements      : stmt list;
+    functions       : func_decl list;
+}
+
+type program = Program of globals
 
 (* Pretty-printing functions *)
 let string_of_op = function
@@ -138,8 +140,11 @@ let string_of_odecl odecl =
     String.concat "" (List.map string_of_fdecl odecl.omethods) ^
     "}\n"
 
-let string_of_program (globals) =
+let string_of_globals globals =
     String.concat "" (List.map string_of_vdecl globals.variables) ^ "\n" ^
     String.concat "" (List.map string_of_odecl globals.objects) ^ "\n" ^
     (* String.concat "" (List.map string_of_sdecl globals.statements) ^ "\n" ^ *)
     String.concat "\n" (List.map string_of_fdecl globals.functions)
+
+let string_of_program program = match program with
+    Program globals -> string_of_globals globals

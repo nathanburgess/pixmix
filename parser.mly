@@ -31,12 +31,15 @@
 
 %%
 
+
 program:
-    decls EOF { $1 }
+    decls EOF { Program($1) }
 
 decls:
-      /* nothing */ { [], [], [], [] }
-    | decls vdecl { ($2 :: fst $1), snd $1 }
+      /* nothing */ { { variables = []; objects = []; statements = []; functions = []; } }
+    | decls vdecl { {
+        variables = ($2 :: fst $1.variables), snd $1.variables;
+        objects = $1.objects; statements = $1.statements; functions = $1.functions } }
     | decls odecl { fst $1, ($2 :: snd $1) }
     | decls stmt { fst $1, ($2 :: snd $1) }
     | decls fdecl { fst $1, ($2 :: snd $1) }
