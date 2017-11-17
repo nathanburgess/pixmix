@@ -42,17 +42,16 @@ type func_decl = {
 
 type objexpr  = {
     oname           : string;
-    locals          : bind list;
-    methods         : func_decl list;
+    olocals         : bind list;
+    omethods        : func_decl list;
 }
 
-type global = 
-      Vars          of bind list
-    | Objects       of objexpr list
-    | Statements    of stmt list
-    | Functions     of func_decl list
-
-type program = global list
+type program = {
+    variables     : bind list;
+    objects       : objexpr list;
+    statements    : stmt list;
+    functions     : func_decl list;
+}   
 
 (* Pretty-printing functions *)
 let string_of_op = function
@@ -135,11 +134,12 @@ let string_of_fdecl fdecl =
 
 let string_of_odecl odecl =
     "Object " ^ odecl.oname ^ " {" ^
-    String.concat "" (List.map string_of_vdecl odecl.locals) ^
-    String.concat "" (List.map string_of_fdecl odecl.methods) ^
+    String.concat "" (List.map string_of_vdecl odecl.olocals) ^
+    String.concat "" (List.map string_of_fdecl odecl.omethods) ^
     "}\n"
 
-let string_of_program (vars, objs, funcs) =
-    String.concat "" (List.map string_of_vdecl vars) ^ "\n" ^
-    String.concat "" (List.map string_of_odecl objs) ^ "\n" ^
-    String.concat "\n" (List.map string_of_fdecl funcs)
+let string_of_program (globals) =
+    String.concat "" (List.map string_of_vdecl globals.variables) ^ "\n" ^
+    String.concat "" (List.map string_of_odecl globals.objects) ^ "\n" ^
+    (* String.concat "" (List.map string_of_sdecl globals.statements) ^ "\n" ^ *)
+    String.concat "\n" (List.map string_of_fdecl globals.functions)

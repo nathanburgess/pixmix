@@ -34,17 +34,17 @@ let check globals =
 
     (**** Checking Global Variables ****)
 
-    List.iter (check_not_void (fun n -> "illegal void global " ^ n)) globals.Vars;
+    List.iter (check_not_void (fun n -> "illegal void global " ^ n)) globals.variables;
 
-    report_duplicate (fun n -> "duplicate global " ^ n) (List.map snd globals.Vars);
+    report_duplicate (fun n -> "duplicate global " ^ n) (List.map snd globals.variables);
 
     (**** Checking Functions ****)
 
-    if List.mem "print" (List.map (fun fd -> fd.fname) globals.Functions)
+    if List.mem "print" (List.map (fun fd -> fd.fname) globals.functions)
     then raise (Failure ("function print may not be defined")) else ();
 
     report_duplicate (fun n -> "duplicate function " ^ n)
-        (List.map (fun fd -> fd.fname) globals.Functions);
+        (List.map (fun fd -> fd.fname) globals.functions);
 
     (* Function declaration for a named function *)
     let built_in_decls =  
@@ -73,16 +73,14 @@ let check globals =
     in
 
     let function_decls = List.fold_left (fun m fd -> StringMap.add fd.fname fd m)
-        built_in_decls functions
+        built_in_decls globals.functions
     in
 
     let function_decl s = try StringMap.find s function_decls
         with Not_found -> raise (Failure ("unrecognized function " ^ s))
     in
 
-    let _ = function_decl "main" in (* Ensure "main" is defined *)
-
-    let check_function func =
+    let _ = check_function func =
 
         List.iter (check_not_void (fun n -> "illegal void formal " ^ n ^
                                             " in " ^ func.fname)) func.formals;
@@ -98,7 +96,7 @@ let check globals =
 
         (* Type of each variable (global, formal, or local *)
         let symbols = List.fold_left (fun m (t, n) -> StringMap.add n t m)
-                StringMap.empty (globals @ func.formals @ func.locals )
+                StringMap.empty (globals.variables @ func.formals @ func.locals )
         in
 
         let type_of_identifier s =
@@ -174,4 +172,4 @@ let check globals =
         stmt (Block func.body)
 
     in
-    List.iter check_function functions
+    List.iter check_function globals.functions

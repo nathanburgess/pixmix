@@ -35,9 +35,17 @@ program:
     decls EOF { $1 }
 
 decls:
-      /* nothing */ { [], [] }
+      /* nothing */ { [], [], [], [] }
     | decls vdecl { ($2 :: fst $1), snd $1 }
+    | decls odecl { fst $1, ($2 :: snd $1) }
+    | decls stmt { fst $1, ($2 :: snd $1) }
     | decls fdecl { fst $1, ($2 :: snd $1) }
+
+odecl:
+    OBJECT ID LBRACE vdecl_list stmt_list RBRACE
+    { { oname = $2;
+        olocals = List.rev $4;
+        omethods = List.rev $5 }}
 
 fdecl:
     typ ID LPAREN formals_opt RPAREN LBRACE vdecl_list stmt_list RBRACE
