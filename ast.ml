@@ -8,9 +8,9 @@ type uop = Neg | Not | Incr | Decr | BitNeg
 (* Make sure Array of typ does not allow for array of array of array *)
 (* Cange name from typ to something less weird *)
 (* Object can only be of typ if we add class to typ so need to change this later *)
-type typ = Num | Bool | Void | String | Char | Object | Array of typ | Image | Pixel | Color
+type varType = Num | Bool | Void | String | Char | Object | Array of varType | Image | Pixel | Color
 
-type bind = typ * string
+type bind = varType * string
 
 type expr =
       Literal       of float
@@ -18,7 +18,7 @@ type expr =
     | StringLit     of string
     | Id            of string
     | Binop         of expr * op * expr
-    | ArrayCreate   of typ * expr list
+    | ArrayCreate   of varType * expr list
     | Arrop         of string * expr
     | ObjLit        of string * string
     | ObjCall       of string * string * expr list
@@ -36,25 +36,25 @@ type stmt =
     | For           of expr * expr * expr * stmt
     | While         of expr * stmt
 
-type func_decl = {
-    typ             : typ;
-    fname           : string;
-    formals         : bind list;
-    locals          : bind list;
+type funDecl = {
+    returnType      : varType;
+    fnName         : string;
+    parameters      : bind list;
+    fnLocals       : bind list;
     body            : stmt list;
 }
 
-type obj_decl  = {
-    oname           : string;
-    olocals         : bind list;
-    omethods        : func_decl list;
+type objDecl  = {
+    objName         : string;
+    objLocals       : bind list;
+    methods         : funDecl list;
 }
 
 type program = {
     variables       : bind list;
-    objects         : obj_decl list;
+    objects         : objDecl list;
     statements      : stmt list;
-    functions       : func_decl list;
+    functions       : funDecl list;
 }
 
 (* Pretty-printing functions *)
@@ -87,16 +87,17 @@ let string_of_uop = function
     | Decr          -> "--"
     | BitNeg        -> "~"
 
-let rec string_of_typ = function
-      Num -> "num"
-    | Bool -> "bool"
-    | Void -> "void"
-    | String -> "String"
-    | Char -> "char"
-    | Array(t) -> string_of_typ t ^ "[]"
-    | Image -> "Image"
-    | Pixel -> "Pixel"
-    | Color -> "Color"
+let rec string_of_type = function
+      Num           -> "num"
+    | Bool          -> "bool"
+    | Void          -> "void"
+    | String        -> "String"
+    | Char          -> "char"
+    | Object        -> "Object"
+    | Array(t)      -> string_of_type t ^ "[]"
+    | Image         -> "Image"
+    | Pixel         -> "Pixel"
+    | Color         -> "Color"
 
 (* The carrot "^" concatenates strings! *)
 let rec string_of_expr = function
@@ -107,10 +108,10 @@ let rec string_of_expr = function
     | Id(s) -> s
     | Binop(e1, o, e2) ->
         string_of_expr e1 ^ " " ^ string_of_op o ^ " " ^ string_of_expr e2
-    | ArrayCreate(typ, expressions) -> 
+    | ArrayCreate(varType, expressions) -> 
         let rec string_list expressions = match expressions with
             [] -> ""
-            | [head] -> "[" ^ (string_of_typ typ) ^ ", " ^
+            | [head] -> "[" ^ (string_of_type varType) ^ ", " ^
             (string_of_expr head) ^ "]"
             | head :: tail -> "[" ^ (string_list tail) ^ ", " ^ (string_of_expr head) ^ "]"
                 in
@@ -139,20 +140,20 @@ let rec string_of_stmt = function
         string_of_expr e3  ^ ") " ^ string_of_stmt s
     | While(e, s) -> "while (" ^ string_of_expr e ^ ") " ^ string_of_stmt s
 
-let string_of_vdecl (t, id) = string_of_typ t ^ " " ^ id ^ ";\n"
+let string_of_vdecl (t, id) = string_of_type t ^ " " ^ id ^ ";\n"
 
 let string_of_fdecl fdecl =
-    string_of_typ fdecl.typ ^ " " ^
-    fdecl.fname ^ "(" ^ String.concat ", " (List.map snd fdecl.formals) ^
+    string_of_type fdecl.returnType ^ " " ^
+    fdecl.fnName ^ "(" ^ String.concat ", " (List.map snd fdecl.parameters) ^
     ")\n{\n" ^
-    String.concat "" (List.map string_of_vdecl fdecl.locals) ^
+    String.concat "" (List.map string_of_vdecl fdecl.fnLocals) ^
     String.concat "" (List.map string_of_stmt fdecl.body) ^
     "}\n"
 
 let string_of_odecl odecl =
-    "Object " ^ odecl.oname ^ " {" ^
-    String.concat "" (List.map string_of_vdecl odecl.olocals) ^
-    String.concat "" (List.map string_of_fdecl odecl.omethods) ^
+    "Object " ^ odecl.objName ^ " {" ^
+    String.concat "" (List.map string_of_vdecl odecl.objLocals) ^
+    String.concat "" (List.map string_of_fdecl odecl.methods) ^
     "}\n"
 
 let string_of_program globals =

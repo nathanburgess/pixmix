@@ -47,9 +47,9 @@ vdecl_list:
 
 odecl:
     OBJECT ID LBRACE vdecl_list stmt_list RBRACE
-    { { oname    = $2;
-        olocals  = List.rev $4;
-        omethods = List.rev $5 }}
+    { { objName     = $2;
+        objLocals   = List.rev $4;
+        methods     = List.rev $5 }}
 
 sdecl:
       expr SEMI                 { Expr $1 }
@@ -71,11 +71,11 @@ stmt_list:
 
 fdecl:
     typ ID LPAREN formals_opt RPAREN LBRACE vdecl_list stmt_list RBRACE
-    { { typ     = $1;
-        fname   = $2;
-        formals = $4;
-        locals  = List.rev $7;
-        body    = List.rev $8 } }
+    { { returnType  = $1;
+        fnName      = $2;
+        parameters  = $4;
+        fnLocals    = List.rev $7;
+        body        = List.rev $8 } }
 
 formals_opt:
       /* nothing */             { [] }
