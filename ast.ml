@@ -20,7 +20,7 @@ type expr =
     | Binop         of expr * op * expr
     | ArrayCreate   of typ * expr list
     | Arrop         of string * expr
-    | ObjAccess     of string * string
+    | ObjLit        of string * string
     | ObjCall       of string * string * expr list
     | Unop          of uop * expr
     | Assign        of string * expr
@@ -87,7 +87,7 @@ let string_of_uop = function
     | Decr          -> "--"
     | BitNeg        -> "~"
 
-let string_of_typ = function
+let rec string_of_typ = function
       Int -> "Int"
     | Num -> "num"
     | Bool -> "bool"
@@ -106,7 +106,6 @@ let rec string_of_expr = function
     | BoolLit(false) -> "false"
     | StringLit(s) -> s
     | Id(s) -> s
-    | Object(s) -> s
     | Binop(e1, o, e2) ->
         string_of_expr e1 ^ " " ^ string_of_op o ^ " " ^ string_of_expr e2
     | ArrayCreate(typ, expressions) -> 
@@ -121,7 +120,7 @@ let rec string_of_expr = function
         s ^ "[" ^ string_of_expr e ^ "]"
     | ObjLit(s1, s2) -> s1 ^ "." ^ s2 
     | ObjCall(s1, s2, e) ->
-        s1 ^ "." ^ s2 ^ "(" ^ String.concat ", " (List.map string_of_expr el) ^ ")"
+        s1 ^ "." ^ s2 ^ "(" ^ String.concat ", " (List.map string_of_expr e) ^ ")"
     | Unop(o, e) -> string_of_uop o ^ string_of_expr e
     | Assign(v, e) -> v ^ " = " ^ string_of_expr e
     | Call(f, el) ->
