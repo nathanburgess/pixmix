@@ -32,60 +32,63 @@ program:
         
 decls:      
       /* nothing */             { { variables = []; objects = []; statements = []; functions = []; } }
-    | decls vdecl               { { $1 with variables = $2::$1.variables } }
-    | decls odecl               { { $1 with objects = $2::$1.objects } }
-    | decls sdecl               { { $1 with statements = $2::$1.statements } }
-    | decls fdecl               { { $1 with functions = $2::$1.functions } }
+    | decls varDecl             { { $1 with variables   = $2::$1.variables  } }
+    | decls objDecl             { { $1 with objects     = $2::$1.objects    } }
+    | decls stmtDecl            { { $1 with statements  = $2::$1.statements } }
+    | decls fnDecl              { { $1 with functions   = $2::$1.functions  } }
 
-vdecl:
-      typ ID SEMI               { ($1, $2) }
-    /* | type ASSIGN expr SEMI { ()}  -- to assign at instantiation */
+varDecl:
+      varType ID SEMI           { ($1, $2) }
+    /* @TODO - Get assignments on instantiation working
+    | varType ID ASSIGN expr SEMI  { DeclAssign($1, $2, $4) } */
 
-vdecl_list:
+varDeclList:
       /* nothing */             { [] }
-    | vdecl_list vdecl          { $2 :: $1 }
+    | varDeclList varDecl       { $2 :: $1 }
 
-odecl:
-    OBJECT ID LBRACE vdecl_list stmt_list RBRACE
+objDecl:
+    OBJECT ID LBRACE varDeclList statementsList RBRACE
     { { objName     = $2;
         objLocals   = List.rev $4;
         methods     = List.rev $5 }}
 
-sdecl:
+stmtDecl:
       expr SEMI                 { Expr $1 }
     | RETURN SEMI               { Return Noexpr }
     | RETURN expr SEMI          { Return $2 }
-    | LBRACE stmt_list RBRACE   { Block(List.rev $2) }
-    | IF LPAREN expr RPAREN sdecl %prec NOELSE 
+    | LBRACE statementsList RBRACE   
+        { Block(List.rev $2) }
+    | IF LPAREN expr RPAREN stmtDecl %prec NOELSE 
         { If($3, $5, Block([])) }
-    | IF LPAREN expr RPAREN sdecl ELSE sdecl    
+    | IF LPAREN expr RPAREN stmtDecl ELSE stmtDecl    
         { If($3, $5, $7) }
-    | FOR LPAREN expr_opt SEMI expr SEMI expr_opt RPAREN sdecl
+    | FOR LPAREN optionalExpr SEMI expr SEMI optionalExpr RPAREN stmtDecl
         { For($3, $5, $7, $9) }
-    | WHILE LPAREN expr RPAREN sdecl 
+    | WHILE LPAREN expr RPAREN stmtDecl 
         { While($3, $5) }
 
-stmt_list:
+statementsList:
       /* nothing */             { [] }
-    | stmt_list sdecl            { $2 :: $1 }
+    | statementsList stmtDecl   { $2 :: $1 }
 
-fdecl:
-    typ ID LPAREN formals_opt RPAREN LBRACE vdecl_list stmt_list RBRACE
+fnDecl:
+    varType ID LPAREN optionalParameters RPAREN LBRACE varDeclList statementsList RBRACE
     { { returnType  = $1;
         fnName      = $2;
         parameters  = $4;
         fnLocals    = List.rev $7;
         body        = List.rev $8 } }
 
-formals_opt:
+optionalParameters:
       /* nothing */             { [] }
-    | formal_list               { List.rev $1 }
+    | parametersList            { List.rev $1 }
 
-formal_list:
-      typ ID                    { [($1,$2)] }
-    | formal_list COMMA typ ID  { ($3,$4) :: $1 }
+parametersList:
+      varType ID                { [($1,$2)] }
+    | parametersList COMMA varType ID  
+        { ($3,$4) :: $1 }
 
-typ:
+varType:
       NUM                       { Num }
     | BOOL                      { Bool }
     | VOID                      { Void }
@@ -98,7 +101,7 @@ typ:
     | PIXEL                     { Pixel }
     | COLOR                     { Color }
 
-expr_opt:
+optionalExpr:
       /* nothing */             { Noexpr }
     | expr                      { $1 }
 
@@ -111,7 +114,7 @@ expr:
 
     | ID LBRACKET expr RBRACKET { Arrop($1, $3) }
     | ID DOT ID                 { ObjLit($1, $3) }
-    | ID DOT ID LPAREN actuals_opt RPAREN 
+    | ID DOT ID LPAREN optionalActuals RPAREN 
         { ObjCall($1, $3, $5) }    
 
     | expr PLUS   expr          { Binop($1, Add,   $3) }
@@ -129,14 +132,14 @@ expr:
     | MINUS expr %prec NEG      { Unop(Neg, $2) }
     | NOT expr                  { Unop(Not, $2) }
     | ID ASSIGN expr            { Assign($1, $3) }
-    | ID LPAREN actuals_opt RPAREN 
+    | ID LPAREN optionalActuals RPAREN 
         { Call($1, $3) }
     | LPAREN expr RPAREN        { $2 }
 
-actuals_opt:
+optionalActuals:
       /* nothing */             { [] }
-    | actuals_list              { List.rev $1 }
+    | actualsList               { List.rev $1 }
 
-actuals_list:
-     expr                       { [$1] }
-    | actuals_list COMMA expr   { $3 :: $1 }
+actualsList:
+      expr                      { [$1] }
+    | actualsList COMMA expr    { $3 :: $1 }

@@ -23,6 +23,7 @@ type expr =
     | ObjLit        of string * string
     | ObjCall       of string * string * expr list
     | Unop          of uop * expr
+    | DeclAssign    of varType * string * expr
     | Assign        of string * expr
     | Call          of string * expr list
     | Noexpr
@@ -38,9 +39,9 @@ type stmt =
 
 type funDecl = {
     returnType      : varType;
-    fnName         : string;
+    fnName          : string;
     parameters      : bind list;
-    fnLocals       : bind list;
+    fnLocals        : bind list;
     body            : stmt list;
 }
 
