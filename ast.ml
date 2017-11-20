@@ -17,11 +17,10 @@ type expr =
     | BoolLit       of bool
     | StringLit     of string
     | Id            of string
-    | Object        of string
     | Binop         of expr * op * expr
     | ArrayCreate   of typ * expr list
     | Arrop         of string * expr
-    | ObjLit        of string * string
+    | ObjAccess     of string * string
     | ObjCall       of string * string * expr list
     | Unop          of uop * expr
     | Assign        of string * expr
@@ -97,7 +96,6 @@ let string_of_typ = function
     | Void -> "void"
     | String -> "String"
     | Char -> "char"
-    | Object -> string 
     | Array(t) -> string_of_typ t ^ "[]"
     | Image -> "Image"
     | Pixel -> "Pixel"
