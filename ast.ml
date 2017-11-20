@@ -8,12 +8,12 @@ type uop = Neg | Not | Incr | Decr | BitNeg
 (* Make sure Array of typ does not allow for array of array of array *)
 (* Cange name from typ to something less weird *)
 (* Object can only be of typ if we add class to typ so need to change this later *)
-type typ = Num | Int | Bool | Void | String | Char | Object | Array of typ | Image | Pixel | Color
+type typ = Num | Bool | Void | String | Char | Object | Array of typ | Image | Pixel | Color
 
 type bind = typ * string
 
 type expr =
-      Literal       of int (* Change this to Number *)
+      Literal       of float
     | BoolLit       of bool
     | StringLit     of string
     | Id            of string
@@ -88,8 +88,7 @@ let string_of_uop = function
     | BitNeg        -> "~"
 
 let rec string_of_typ = function
-      Int -> "Int"
-    | Num -> "num"
+      Num -> "num"
     | Bool -> "bool"
     | Void -> "void"
     | String -> "String"
@@ -101,7 +100,7 @@ let rec string_of_typ = function
 
 (* The carrot "^" concatenates strings! *)
 let rec string_of_expr = function
-      Literal(l) -> string_of_int l
+      Literal(l) -> string_of_float l
     | BoolLit(true) -> "true"
     | BoolLit(false) -> "false"
     | StringLit(s) -> s

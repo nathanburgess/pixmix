@@ -3,10 +3,10 @@
 %token SEMI LPAREN RPAREN LBRACE RBRACE COMMA
 %token PLUS MINUS TIMES DIVIDE ASSIGN NOT
 %token EQ NEQ LT LEQ GT GEQ TRUE FALSE AND OR
-%token RETURN IF ELSE FOR WHILE INT BOOL VOID
+%token RETURN IF ELSE FOR WHILE NUM BOOL VOID
 %token STRING CHAR FLOAT IMAGE COLOR PIXEL OBJECT ARRAY
 %token LBRACKET RBRACKET DOT
-%token <int> LITERAL
+%token <float> LITERAL
 %token <string> STRLIT
 %token <string> ID
 %token EOF
@@ -86,7 +86,7 @@ formal_list:
     | formal_list COMMA typ ID  { ($3,$4) :: $1 }
 
 typ:
-      INT                       { Int }
+      NUM                       { Num }
     | BOOL                      { Bool }
     | VOID                      { Void }
     | STRING                    { String }
