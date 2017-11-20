@@ -7,6 +7,7 @@ type uop = Neg | Not | Incr | Decr | BitNeg
 
 (* Make sure Array of typ does not allow for array of array of array *)
 (* Cange name from typ to something less weird *)
+(* Object can only be of typ if we add class to typ so need to change this later *)
 type typ = Num | Int | Bool | Void | String | Char | Object | Array of typ | Image | Pixel | Color
 
 type bind = typ * string
@@ -96,7 +97,7 @@ let string_of_typ = function
     | Void -> "void"
     | String -> "String"
     | Char -> "char"
-    | Object(id) -> id
+    | Object -> string 
     | Array(t) -> string_of_typ t ^ "[]"
     | Image -> "Image"
     | Pixel -> "Pixel"
