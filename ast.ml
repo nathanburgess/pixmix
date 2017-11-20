@@ -5,7 +5,10 @@ type op = Add | Sub | Mult | Div | Mod | Equal | Neq | Less | Leq | Greater | Ge
 
 type uop = Neg | Not | Incr | Decr | BitNeg
 
-type typ = Num | Int | Bool | Void | String | Char | Object | Array | Image | Pixel | Color
+(* Make sure Array of typ does not allow for array of array of array *)
+(* Cange name from typ to something less weird *)
+(* Object can only be of typ if we add class to typ so need to change this later *)
+type typ = Num | Int | Bool | Void | String | Char | Object | Array of typ | Image | Pixel | Color
 
 type bind = typ * string
 
@@ -14,16 +17,17 @@ type expr =
     | BoolLit       of bool
     | StringLit     of string
     | Id            of string
-    | Object        of string
     | Binop         of expr * op * expr
+    | ArrayCreate   of typ * expr list
     | Arrop         of string * expr
-    | ObjLit        of string * string
+    | ObjAccess     of string * string
     | ObjCall       of string * string * expr list
     | Unop          of uop * expr
     | Assign        of string * expr
     | Call          of string * expr list
     | Noexpr
 
+(* stmt most likely ready *)
 type stmt =
       Block         of stmt list
     | Expr          of expr
@@ -74,6 +78,7 @@ let string_of_op = function
     | BitLeftAssn   -> "<<="
     | BitRight      -> ">>"
     | BitRightAssn  -> ">>="
+    | Mod           -> "%" (* make sure this pattern matching is exhaustive *)
 
 let string_of_uop = function
       Neg           -> "-"
@@ -82,14 +87,41 @@ let string_of_uop = function
     | Decr          -> "--"
     | BitNeg        -> "~"
 
+let string_of_typ = function
+      Int -> "Int"
+    | Num -> "num"
+    | Bool -> "bool"
+    | Void -> "void"
+    | String -> "String"
+    | Char -> "char"
+    | Array(t) -> string_of_typ t ^ "[]"
+    | Image -> "Image"
+    | Pixel -> "Pixel"
+    | Color -> "Color"
+
+(* The carrot "^" concatenates strings! *)
 let rec string_of_expr = function
       Literal(l) -> string_of_int l
     | BoolLit(true) -> "true"
     | BoolLit(false) -> "false"
     | StringLit(s) -> s
     | Id(s) -> s
+    | Object(s) -> s
     | Binop(e1, o, e2) ->
         string_of_expr e1 ^ " " ^ string_of_op o ^ " " ^ string_of_expr e2
+    | ArrayCreate(typ, expressions) -> 
+        let rec string_list expressions = match expressions with
+            [] -> ""
+            | [head] -> "[" ^ (string_of_typ typ) ^ ", " ^
+            (string_of_expr head) ^ "]"
+            | head :: tail -> "[" ^ (string_list tail) ^ ", " ^ (string_of_expr head) ^ "]"
+                in
+                string_list expressions
+    | Arrop(s, e) ->
+        s ^ "[" ^ string_of_expr e ^ "]"
+    | ObjLit(s1, s2) -> s1 ^ "." ^ s2 
+    | ObjCall(s1, s2, e) ->
+        s1 ^ "." ^ s2 ^ "(" ^ String.concat ", " (List.map string_of_expr el) ^ ")"
     | Unop(o, e) -> string_of_uop o ^ string_of_expr e
     | Assign(v, e) -> v ^ " = " ^ string_of_expr e
     | Call(f, el) ->
@@ -108,19 +140,6 @@ let rec string_of_stmt = function
         "for (" ^ string_of_expr e1  ^ " ; " ^ string_of_expr e2 ^ " ; " ^
         string_of_expr e3  ^ ") " ^ string_of_stmt s
     | While(e, s) -> "while (" ^ string_of_expr e ^ ") " ^ string_of_stmt s
-
-let string_of_typ = function
-      Int -> "Int"
-    | Num -> "num"
-    | Bool -> "bool"
-    | Void -> "void"
-    | String -> "String"
-    | Char -> "char"
-    | Object -> "Object"
-    | Array -> "Array"
-    | Image -> "Image"
-    | Pixel -> "Pixel"
-    | Color -> "Color"
 
 let string_of_vdecl (t, id) = string_of_typ t ^ " " ^ id ^ ";\n"
 
