@@ -5,7 +5,8 @@ type op = Add | Sub | Mult | Div | Mod | Equal | Neq | Less | Leq | Greater | Ge
 
 type uop = Neg | Not | Incr | Decr | BitNeg
 
-type typ = Num | Int | Bool | Void | String | Char | Object | Array | Image | Pixel | Color
+(* Make sure Array of typ does not allow for array of array of array *)
+type typ = Num | Int | Bool | Void | String | Char | Object | Array of typ | Image | Pixel | Color
 
 type bind = typ * string
 
@@ -16,6 +17,7 @@ type expr =
     | Id            of string
     | Object        of string
     | Binop         of expr * op * expr
+    | ArrayCreate   of typ * expr list
     | Arrop         of string * expr
     | ObjLit        of string * string
     | ObjCall       of string * string * expr list
@@ -24,6 +26,7 @@ type expr =
     | Call          of string * expr list
     | Noexpr
 
+(* stmt most likely ready *)
 type stmt =
       Block         of stmt list
     | Expr          of expr
