@@ -40,7 +40,7 @@ type func_decl = {
     body            : stmt list;
 }
 
-type objexpr  = {
+type obj_decl  = {
     oname           : string;
     olocals         : bind list;
     omethods        : func_decl list;
@@ -48,7 +48,7 @@ type objexpr  = {
 
 type program = {
     variables       : bind list;
-    objects         : objexpr list;
+    objects         : obj_decl list;
     statements      : stmt list;
     functions       : func_decl list;
 }
