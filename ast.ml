@@ -6,6 +6,7 @@ type op = Add | Sub | Mult | Div | Mod | Equal | Neq | Less | Leq | Greater | Ge
 type uop = Neg | Not | Incr | Decr | BitNeg
 
 (* Make sure Array of typ does not allow for array of array of array *)
+(* Cange name from typ to something less weird *)
 type typ = Num | Int | Bool | Void | String | Char | Object | Array of typ | Image | Pixel | Color
 
 type bind = typ * string
@@ -79,6 +80,7 @@ let string_of_op = function
     | BitLeftAssn   -> "<<="
     | BitRight      -> ">>"
     | BitRightAssn  -> ">>="
+    | Mod           -> "%" (* make sure this pattern matching is exhaustive *)
 
 let string_of_uop = function
       Neg           -> "-"
@@ -87,14 +89,28 @@ let string_of_uop = function
     | Decr          -> "--"
     | BitNeg        -> "~"
 
+(* The carrot "^" concatenates strings! *)
 let rec string_of_expr = function
       Literal(l) -> string_of_int l
     | BoolLit(true) -> "true"
     | BoolLit(false) -> "false"
     | StringLit(s) -> s
     | Id(s) -> s
+    | Object(s) -> s
     | Binop(e1, o, e2) ->
         string_of_expr e1 ^ " " ^ string_of_op o ^ " " ^ string_of_expr e2
+    | ArrayCreate(typ, expressions) -> 
+        let rec string_list exprs = match expressions with
+            [] -> ""
+            | [head] -> "[" ^ (string_of_typ typ) ^ ", " ^
+            (string_of_expr head) ^ "]"
+            | head :: tail -> "[" ^ (string_list tail) ^ ", " ^ (string_of_expr head) ^ "]"
+                in
+                string_list expressions
+    | Arrop(s, e) ->
+        s ^ "[" ^ string_of_expr e ^ "]"
+    | ObjLit
+    | ObjCall
     | Unop(o, e) -> string_of_uop o ^ string_of_expr e
     | Assign(v, e) -> v ^ " = " ^ string_of_expr e
     | Call(f, el) ->
