@@ -5,8 +5,8 @@ int add(int x, int y)
 
 int main()
 {
-  string a;
-  a = "hi";
-  print( a );
+  int a;
+  a = 5;
+  print(add(a, 3));
   return 0;
 }

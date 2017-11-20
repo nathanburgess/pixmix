@@ -11,7 +11,7 @@ module A = Ast
 
 module StringMap = Map.Make(String)
 
-let translate (globals, functions) =
+let translate globals =
     let context = L.global_context () in
     let the_module = L.create_module context "PixMix"
     and i32_t  = L.i32_type     context
@@ -31,7 +31,7 @@ let translate (globals, functions) =
         let global_var m (t, n) =
             let init = L.const_int (ltype_of_typ t) 0
             in StringMap.add n (L.define_global n init the_module) m in
-        List.fold_left global_var StringMap.empty globals in
+        List.fold_left global_var StringMap.empty globals.variables in
 
     (* Declare printf(), which the print built-in function will call *)
     let printf_t = L.var_arg_function_type i32_t [| L.pointer_type i8_t |] in
@@ -108,8 +108,9 @@ let translate (globals, functions) =
                  | A.Not     -> L.build_not) e' "tmp" builder
             | A.Assign (s, e) -> let e' = expr builder e in
                 ignore (L.build_store e' (lookup s) builder); e'
-            | A.Call ("print", [e]) | A.Call ("printb", [e]) ->
-                L.build_call printf_func [| str_format_str ; (expr builder e) |]
+            | A.Call ("print", [e]) 
+            | A.Call ("printb", [e]) ->
+                L.build_call printf_func [| int_format_str ; (expr builder e) |]
                     "printf" builder
             | A.Call (f, act) ->
                 let (fdef, fdecl) = StringMap.find f function_decls in

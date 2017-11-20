@@ -3,10 +3,14 @@
 { open Parser }
 
 rule token = parse
-      [' ' '\t' '\r' '\n']  { token lexbuf }    (* Whitespace *)
-    | "/*"                  { comment lexbuf }  (* Comments *)
+      [' ' '\t' '\r' '\n']  { token lexbuf }      (* Whitespace *)
+    | "#:"                  { mlcomment lexbuf }  (* Comments *)
+    | "#"                   { comment lexbuf }    (* Comments *)
+    | '.'                   { DOT }
     | '('                   { LPAREN }
     | ')'                   { RPAREN }
+    | '['                   { LBRACKET }
+    | ']'                   { RBRACKET }
     | '{'                   { LBRACE }
     | '}'                   { RBRACE }
     | ';'                   { SEMI }
@@ -38,9 +42,12 @@ rule token = parse
     | "false"               { FALSE }
     | ['0'-'9']+ as lxm     { LITERAL(int_of_string lxm) }
     | ['a'-'z' 'A'-'Z']['a'-'z' 'A'-'Z' '0'-'9' '_']* as lxm { ID(lxm) }
-    | '"'((['a'-'z' 'A'-'Z' '0'-'9' '_']*) as s)'"' { STRLIT(s) }
+    | '"'((_*) as s)'"' { STRLIT(s) }
     | eof                   { EOF }
     | _ as char             { raise (Failure("illegal character " ^ Char.escaped char)) }
+and mlcomment = parse
+      ":#" { token lexbuf }
+    | _    { mlcomment lexbuf }
 and comment = parse
-        "*/" { token lexbuf }
+      ['\n' '\r'] { token lexbuf }
     | _    { comment lexbuf }

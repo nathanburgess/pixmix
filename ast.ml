@@ -1,70 +1,88 @@
 (* Abstract Syntax Tree and functions for printing it *)
 
 type op = Add | Sub | Mult | Div | Mod | Equal | Neq | Less | Leq | Greater | Geq | And | Or 
-    | BwAnd | BwOr | BwDis | BwLeft | BwLeftAss | BwRight | BwRightAss
+    | BitAnd | BitOr | BitXor | BitLeft | BitLeftAssn | BitRight | BitRightAssn
 
-type uop = Neg | Not | Incr | Decr | BwNeg
+type uop = Neg | Not | Incr | Decr | BitNeg
 
-type typ = Int | Bool | Void | String | Float | Char | Object | Array | Image | Pixel | Color
+type typ = Num | Int | Bool | Void | String | Char | Object | Array | Image | Pixel | Color
 
 type bind = typ * string
 
 type expr =
-      Literal of int
-    | BoolLit of bool
-    | StringLit of string
-    | Id of string
-    | Binop of expr * op * expr
-    | Unop of uop * expr
-    | Assign of string * expr
-    | Call of string * expr list
+      Literal       of int (* Change this to Number *)
+    | BoolLit       of bool
+    | StringLit     of string
+    | Id            of string
+    | Object        of string
+    | Binop         of expr * op * expr
+    | Arrop         of string * expr
+    | ObjLit        of string * string
+    | ObjCall       of string * string * expr list
+    | Unop          of uop * expr
+    | Assign        of string * expr
+    | Call          of string * expr list
     | Noexpr
 
 type stmt =
-      Block of stmt list
-    | Expr of expr
-    | Return of expr
-    | If of expr * stmt * stmt
-    | For of expr * expr * expr * stmt
-    | While of expr * stmt
+      Block         of stmt list
+    | Expr          of expr
+    | Return        of expr
+    | If            of expr * stmt * stmt
+    | For           of expr * expr * expr * stmt
+    | While         of expr * stmt
 
 type func_decl = {
-    typ : typ;
-    fname : string;
-    formals : bind list;
-    locals : bind list;
-    body : stmt list;
+    typ             : typ;
+    fname           : string;
+    formals         : bind list;
+    locals          : bind list;
+    body            : stmt list;
 }
 
-type program = bind list * func_decl list
+type objexpr  = {
+    oname           : string;
+    olocals         : bind list;
+    omethods        : func_decl list;
+}
+
+type globals = {
+    variables       : bind list;
+    objects         : objexpr list;
+    statements      : stmt list;
+    functions       : func_decl list;
+}
+
+type program = Program of globals
 
 (* Pretty-printing functions *)
-
 let string_of_op = function
-      Add -> "+"
-    | Sub -> "-"
-    | Mult -> "*"
-    | Div -> "/"
-    | Equal -> "=="
-    | Neq -> "!="
-    | Less -> "<"
-    | Leq -> "<="
-    | Greater -> ">"
-    | Geq -> ">="
-    | And -> "&&"
-    | Or -> "||"
-    | BwAnd -> "&"
-    | BwOr -> "|"
-    | BwDis -> "^"
-    | BwLeft -> "<<"
-    | BwRight -> ">>"
+      Add           -> "+"
+    | Sub           -> "-"
+    | Mult          -> "*"
+    | Div           -> "/"
+    | Equal         -> "=="
+    | Neq           -> "!="
+    | Less          -> "<"
+    | Leq           -> "<="
+    | Greater       -> ">"
+    | Geq           -> ">="
+    | And           -> "&&"
+    | Or            -> "||"
+    | BitAnd        -> "&"
+    | BitOr         -> "|"
+    | BitXor        -> "^"
+    | BitLeft       -> "<<"
+    | BitLeftAssn   -> "<<="
+    | BitRight      -> ">>"
+    | BitRightAssn  -> ">>="
 
 let string_of_uop = function
-      Neg -> "-"
-    | Not -> "!"
-    | Incr -> "++"
-    | Decr -> "--"
-    | BwNeg -> "~"
+      Neg           -> "-"
+    | Not           -> "!"
+    | Incr          -> "++"
+    | Decr          -> "--"
+    | BitNeg        -> "~"
 
 let rec string_of_expr = function
       Literal(l) -> string_of_int l
@@ -95,11 +113,11 @@ let rec string_of_stmt = function
 
 let string_of_typ = function
       Int -> "Int"
-    | Bool -> "Bool"
-    | Void -> "Void"
+    | Num -> "num"
+    | Bool -> "bool"
+    | Void -> "void"
     | String -> "String"
-    | Float -> "Float"
-    | Char -> "Char"
+    | Char -> "char"
     | Object -> "Object"
     | Array -> "Array"
     | Image -> "Image"
@@ -116,6 +134,17 @@ let string_of_fdecl fdecl =
     String.concat "" (List.map string_of_stmt fdecl.body) ^
     "}\n"
 
-let string_of_program (vars, funcs) =
-    String.concat "" (List.map string_of_vdecl vars) ^ "\n" ^
-    String.concat "\n" (List.map string_of_fdecl funcs)
+let string_of_odecl odecl =
+    "Object " ^ odecl.oname ^ " {" ^
+    String.concat "" (List.map string_of_vdecl odecl.olocals) ^
+    String.concat "" (List.map string_of_fdecl odecl.omethods) ^
+    "}\n"
+
+let string_of_globals globals =
+    String.concat "" (List.map string_of_vdecl globals.variables) ^ "\n" ^
+    String.concat "" (List.map string_of_odecl globals.objects) ^ "\n" ^
+    (* String.concat "" (List.map string_of_sdecl globals.statements) ^ "\n" ^ *)
+    String.concat "\n" (List.map string_of_fdecl globals.functions)
+
+let string_of_program program = match program with
+    Program globals -> string_of_globals globals
