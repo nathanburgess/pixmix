@@ -89,6 +89,19 @@ let string_of_uop = function
     | Decr          -> "--"
     | BitNeg        -> "~"
 
+let string_of_typ = function
+      Int -> "Int"
+    | Num -> "num"
+    | Bool -> "bool"
+    | Void -> "void"
+    | String -> "String"
+    | Char -> "char"
+    | Object(id) -> id
+    | Array(t) -> string_of_typ t ^ "[]"
+    | Image -> "Image"
+    | Pixel -> "Pixel"
+    | Color -> "Color"
+
 (* The carrot "^" concatenates strings! *)
 let rec string_of_expr = function
       Literal(l) -> string_of_int l
@@ -100,7 +113,7 @@ let rec string_of_expr = function
     | Binop(e1, o, e2) ->
         string_of_expr e1 ^ " " ^ string_of_op o ^ " " ^ string_of_expr e2
     | ArrayCreate(typ, expressions) -> 
-        let rec string_list exprs = match expressions with
+        let rec string_list expressions = match expressions with
             [] -> ""
             | [head] -> "[" ^ (string_of_typ typ) ^ ", " ^
             (string_of_expr head) ^ "]"
@@ -109,8 +122,9 @@ let rec string_of_expr = function
                 string_list expressions
     | Arrop(s, e) ->
         s ^ "[" ^ string_of_expr e ^ "]"
-    | ObjLit
-    | ObjCall
+    | ObjLit(s1, s2) -> s1 ^ "." ^ s2 
+    | ObjCall(s1, s2, e) ->
+        s1 ^ "." ^ s2 ^ "(" ^ String.concat ", " (List.map string_of_expr el) ^ ")"
     | Unop(o, e) -> string_of_uop o ^ string_of_expr e
     | Assign(v, e) -> v ^ " = " ^ string_of_expr e
     | Call(f, el) ->
@@ -129,19 +143,6 @@ let rec string_of_stmt = function
         "for (" ^ string_of_expr e1  ^ " ; " ^ string_of_expr e2 ^ " ; " ^
         string_of_expr e3  ^ ") " ^ string_of_stmt s
     | While(e, s) -> "while (" ^ string_of_expr e ^ ") " ^ string_of_stmt s
-
-let string_of_typ = function
-      Int -> "Int"
-    | Num -> "num"
-    | Bool -> "bool"
-    | Void -> "void"
-    | String -> "String"
-    | Char -> "char"
-    | Object -> "Object"
-    | Array -> "Array"
-    | Image -> "Image"
-    | Pixel -> "Pixel"
-    | Color -> "Color"
 
 let string_of_vdecl (t, id) = string_of_typ t ^ " " ^ id ^ ";\n"
 
