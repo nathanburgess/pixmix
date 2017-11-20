@@ -11,7 +11,7 @@ module A = Ast
 
 module StringMap = Map.Make(String)
 
-let translate globals =
+let translate program =
     let context = L.global_context () in
     let the_module = L.create_module context "PixMix"
     and i32_t  = L.i32_type     context
@@ -31,7 +31,7 @@ let translate globals =
         let global_var m (t, n) =
             let init = L.const_int (ltype_of_typ t) 0
             in StringMap.add n (L.define_global n init the_module) m in
-        List.fold_left global_var StringMap.empty globals.variables in
+        List.fold_left global_var StringMap.empty program.variables in
 
     (* Declare printf(), which the print built-in function will call *)
     let printf_t = L.var_arg_function_type i32_t [| L.pointer_type i8_t |] in

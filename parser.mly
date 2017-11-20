@@ -1,8 +1,4 @@
-/* Ocamlyacc parser for PixMix */
-
-%{
-    open Ast
-%}
+%{ open Ast %}
 
 %token SEMI LPAREN RPAREN LBRACE RBRACE COMMA
 %token PLUS MINUS TIMES DIVIDE ASSIGN NOT
@@ -31,18 +27,31 @@
 
 %%
 
-
 program:
-    decls EOF { Program($1) }
+    decls EOF { $1 }
 
 decls:
       /* nothing */ { { variables = []; objects = []; statements = []; functions = []; } }
     | decls vdecl { {
-        variables = ($2 :: fst $1.variables), snd $1.variables;
-        objects = $1.objects; statements = $1.statements; functions = $1.functions } }
-    | decls odecl { fst $1, ($2 :: snd $1) }
-    | decls stmt { fst $1, ($2 :: snd $1) }
-    | decls fdecl { fst $1, ($2 :: snd $1) }
+        variables = ($2 :: $1.variables);
+        objects = $1.objects; 
+        statements = $1.statements; 
+        functions = $1.functions } }
+    | decls odecl { {
+        variables = $1.variables;
+        objects = ($2 :: $1.objects);
+        statements = $1.statements;
+        functions = $1.functions } }
+    | decls stmt { {
+        variables = $1.variables;
+        objects = $1.objects;
+        statements = ($2 :: $1.statements);
+        functions = $1.functions } }
+    | decls fdecl { {
+        variables = $1.variables;
+        objects = $1.objects;
+        statements = $1.statements;
+        functions = ($2 :: $1.functions) } }
 
 odecl:
     OBJECT ID LBRACE vdecl_list stmt_list RBRACE
