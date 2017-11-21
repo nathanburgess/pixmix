@@ -160,5 +160,5 @@ let string_of_odecl odecl =
 let string_of_program globals =
     String.concat "" (List.map string_of_vdecl globals.variables) ^ "\n" ^
     String.concat "" (List.map string_of_odecl globals.objects) ^ "\n" ^
-    (* String.concat "" (List.map string_of_sdecl globals.statements) ^ "\n" ^ *)
+    String.concat "" (List.map string_of_stmt globals.statements) ^ "\n" ^
     String.concat "\n" (List.map string_of_fdecl globals.functions)

@@ -64,7 +64,7 @@ stmtDecl:
         { If($3, $5, $7) }
     | FOR LPAREN optionalExpr SEMI expr SEMI optionalExpr RPAREN stmtDecl
         { For($3, $5, $7, $9) }
-    | WHILE LPAREN expr RPAREN stmtDecl 
+    | WHILE LPAREN expr RPAREN stmtDecl
         { While($3, $5) }
 
 statementsList:
