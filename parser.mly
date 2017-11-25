@@ -11,8 +11,8 @@
 %token STRING CHAR FLOAT IMAGE COLOR PIXEL OBJECT ARRAY
 %token LBRACKET RBRACKET DOT
 %token <int> LITERAL
-%token <string> STRLIT
 %token <string> ID
+%token <string> STRLIT
 %token EOF
 
 %nonassoc NOELSE
