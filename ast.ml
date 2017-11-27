@@ -45,7 +45,7 @@ type funDecl = {
     body            : stmt list;
 }
 
-type stmnts = {
+type stmts = {
     statements : stmt list;
 }
 
@@ -63,7 +63,6 @@ type program = {
 }
 
 
-(*
 (* Pretty-printing functions *)
 let string_of_op = function
       Add           -> "+"
@@ -106,7 +105,6 @@ let rec string_of_type = function
     | Pixel         -> "Pixel"
     | Color         -> "Color"
 
-(* The carrot "^" concatenates strings! *)
 let rec string_of_expr = function
       Literal(l) -> string_of_float l
     | BoolLit(true) -> "true"
@@ -168,4 +166,3 @@ let string_of_program globals =
     String.concat "" (List.map string_of_odecl globals.objects) ^ "\n" ^
     (*String.concat "" (List.map string_of_stmt globals.statements) ^ "\n" ^*)
     String.concat "\n" (List.map string_of_fdecl globals.functions)
-*)
