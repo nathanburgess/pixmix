@@ -45,6 +45,7 @@ type funDecl = {
     body            : stmt list;
 }
 
+<<<<<<< HEAD
 type objDecl  = {
     objName         : string;
     objLocals       : bind list;
@@ -58,6 +59,27 @@ type program = {
     functions       : funDecl list;
 }
 
+=======
+type stmnts = {
+    statements : stmt list;
+}
+
+type objDecl  = {
+    objName         : string;
+    objLocals       : bind list;
+    methods         : funDecl list;
+}
+
+type program = {
+    variables       : bind list;
+    objects         : objDecl list;
+    statements      : stmnts list;
+    functions       : funDecl list;
+}
+
+
+(*
+>>>>>>> c0fed97e34c376c4d8d244c6b167da1cc5c5d000
 (* Pretty-printing functions *)
 let string_of_op = function
       Add           -> "+"
@@ -160,5 +182,9 @@ let string_of_odecl odecl =
 let string_of_program globals =
     String.concat "" (List.map string_of_vdecl globals.variables) ^ "\n" ^
     String.concat "" (List.map string_of_odecl globals.objects) ^ "\n" ^
-    (* String.concat "" (List.map string_of_sdecl globals.statements) ^ "\n" ^ *)
+    (*String.concat "" (List.map string_of_stmt globals.statements) ^ "\n" ^*)
     String.concat "\n" (List.map string_of_fdecl globals.functions)
+<<<<<<< HEAD
+=======
+*)
+>>>>>>> c0fed97e34c376c4d8d244c6b167da1cc5c5d000

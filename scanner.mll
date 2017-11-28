@@ -34,13 +34,13 @@ rule token = parse
     | "for"                 { FOR }
     | "while"               { WHILE }
     | "return"              { RETURN }
-    | "int"                 { INT }
+    | "num"                 { NUM }
     | "bool"                { BOOL }
     | "void"                { VOID }
     | "string"              { STRING }
     | "true"                { TRUE }
     | "false"               { FALSE }
-    | ['0'-'9']+ as lxm     { LITERAL(int_of_string lxm) }
+    | ['0'-'9']+ as lxm     { LITERAL(float_of_string lxm) }
     | ['a'-'z' 'A'-'Z']['a'-'z' 'A'-'Z' '0'-'9' '_']* as lxm { ID(lxm) }
     | '"'((_*) as s)'"' { STRLIT(s) }
     | eof                   { EOF }

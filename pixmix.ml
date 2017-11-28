@@ -14,7 +14,7 @@ let _ =
         ("-c", Arg.Unit (set_action Compile),
          "Check and print the generated LLVM IR (default)");
     ] in  
-    let usage_msg = "usage: ./pixmix.native [-a|-l|-c] [file.mc]" in
+    let usage_msg = "usage: ./pixmix.native [-a|-l|-c] [file.pm]" in
     let channel = ref stdin in
     Arg.parse speclist (fun filename -> channel := open_in filename) usage_msg;
     let lexbuf = Lexing.from_channel !channel in
@@ -22,7 +22,7 @@ let _ =
     Semant.check ast;
     match !action with
       Ast -> print_string (Ast.string_of_program ast)
-    | LLVM_IR -> print_string (Llvm.string_of_llmodule (Codegen.translate ast))
-    (* | Compile -> let m = Codegen.translate ast in
+    (*| LLVM_IR -> print_string (Llvm.string_of_llmodule (Codegen.translate ast))
+    | Compile -> let m = Codegen.translate ast in
         Llvm_analysis.assert_valid_module m;
-        print_string (Llvm.string_of_llmodule m) *)
+        print_string (Llvm.string_of_llmodule m)*)

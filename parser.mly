@@ -7,8 +7,11 @@
 %token STRING CHAR FLOAT IMAGE COLOR PIXEL OBJECT ARRAY
 %token LBRACKET RBRACKET DOT
 <<<<<<< HEAD
+<<<<<<< HEAD
 %token <int> LITERAL
 =======
+=======
+>>>>>>> c0fed97e34c376c4d8d244c6b167da1cc5c5d000
 %token <float> LITERAL
 %token <string> STRLIT
 >>>>>>> fc75dadf11640f601a554a9d7f09835fd42a7964
@@ -52,7 +55,11 @@ varDeclList:
     | varDeclList varDecl       { $2 :: $1 }
 
 objDecl:
+<<<<<<< HEAD
     OBJECT ID LBRACE varDeclList statementsList RBRACE
+=======
+    OBJECT ID LBRACE varDeclList fnDeclList RBRACE
+>>>>>>> c0fed97e34c376c4d8d244c6b167da1cc5c5d000
     { { objName     = $2;
         objLocals   = List.rev $4;
         methods     = List.rev $5 }}
@@ -69,7 +76,11 @@ stmtDecl:
         { If($3, $5, $7) }
     | FOR LPAREN optionalExpr SEMI expr SEMI optionalExpr RPAREN stmtDecl
         { For($3, $5, $7, $9) }
+<<<<<<< HEAD
     | WHILE LPAREN expr RPAREN stmtDecl 
+=======
+    | WHILE LPAREN expr RPAREN stmtDecl
+>>>>>>> c0fed97e34c376c4d8d244c6b167da1cc5c5d000
         { While($3, $5) }
 
 statementsList:
@@ -84,6 +95,13 @@ fnDecl:
         fnLocals    = List.rev $7;
         body        = List.rev $8 } }
 
+<<<<<<< HEAD
+=======
+fnDeclList:
+    /* nothing */               { [] }
+    | fnDeclList fnDecl         { $2 :: $1}
+
+>>>>>>> c0fed97e34c376c4d8d244c6b167da1cc5c5d000
 optionalParameters:
       /* nothing */             { [] }
     | parametersList            { List.rev $1 }
@@ -119,6 +137,7 @@ expr:
 
     | ID LBRACKET expr RBRACKET { Arrop($1, $3) }
 <<<<<<< HEAD
+<<<<<<< HEAD
     | ID DOT ID        { ObjLit($1, $3) }
     | ID DOT ID LPAREN actuals_opt RPAREN { ObjCall($1, $3, $5) }    
 
@@ -148,6 +167,8 @@ actuals_list:
      expr                    { [$1] }
     | actuals_list COMMA expr { $3 :: $1 }
 =======
+=======
+>>>>>>> c0fed97e34c376c4d8d244c6b167da1cc5c5d000
     | ID DOT ID                 { ObjLit($1, $3) }
     | ID DOT ID LPAREN optionalActuals RPAREN 
         { ObjCall($1, $3, $5) }    
@@ -177,5 +198,9 @@ optionalActuals:
 
 actualsList:
       expr                      { [$1] }
+<<<<<<< HEAD
     | actualsList COMMA expr    { $3 :: $1 }
 >>>>>>> fc75dadf11640f601a554a9d7f09835fd42a7964
+=======
+    | actualsList COMMA expr    { $3 :: $1 }
+>>>>>>> c0fed97e34c376c4d8d244c6b167da1cc5c5d000
