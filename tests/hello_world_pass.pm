@@ -1,6 +1,6 @@
 int main() {
     string hw;
     hw = "Hello World!";
-    print(hw);
+    Console.log(hw);
     return 0;
 }

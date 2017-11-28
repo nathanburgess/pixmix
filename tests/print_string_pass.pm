@@ -2,6 +2,6 @@ int main()
 {
   string a;
   a = "hi";
-  print( a );
+  Console.log( a );
   return 0;
 }
