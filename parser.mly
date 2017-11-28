@@ -47,7 +47,7 @@ varDeclList:
     | varDeclList varDecl       { $2 :: $1 }
 
 objDecl:
-    OBJECT ID LBRACE varDeclList statementsList RBRACE
+    OBJECT ID LBRACE varDeclList fnDeclList RBRACE
     { { objName     = $2;
         objLocals   = List.rev $4;
         methods     = List.rev $5 }}
@@ -78,6 +78,10 @@ fnDecl:
         parameters  = $4;
         fnLocals    = List.rev $7;
         body        = List.rev $8 } }
+
+fnDeclList:
+    /* nothing */               { [] }
+    | fnDeclList fnDecl         { $2 :: $1}
 
 optionalParameters:
       /* nothing */             { [] }
