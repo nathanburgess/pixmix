@@ -5,8 +5,8 @@ fun add(int x, int y)
 
 int main()
 {
-  int a;
-  a = 5;
+  string a;
+  a = "hello";
   Console.log(add(a, 3));
   return 0;
 }

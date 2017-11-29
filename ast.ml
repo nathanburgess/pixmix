@@ -45,7 +45,6 @@ type funDecl = {
     body            : stmt list;
 }
 
-
 type objDecl  = {
     objName         : string;
     objLocals       : bind list;
@@ -59,6 +58,22 @@ type program = {
     functions       : funDecl list;
 }
 
+type stmts = {
+    statements : stmt list;
+}
+
+type objDecl  = {
+    objName         : string;
+    objLocals       : bind list;
+    methods         : funDecl list;
+}
+
+type program = {
+    variables       : bind list;
+    objects         : objDecl list;
+    statements      : stmt list;
+    functions       : funDecl list;
+}
 
 (* Pretty-printing functions *)
 let string_of_op = function
