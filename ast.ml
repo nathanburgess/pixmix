@@ -45,9 +45,6 @@ type funDecl = {
     body            : stmt list;
 }
 
-type stmts = {
-    statements : stmt list;
-}
 
 type objDecl  = {
     objName         : string;
@@ -58,7 +55,7 @@ type objDecl  = {
 type program = {
     variables       : bind list;
     objects         : objDecl list;
-    statements      : stmnts list;
+    statements      : stmt list;
     functions       : funDecl list;
 }
 
@@ -84,7 +81,7 @@ let string_of_op = function
     | BitLeftAssn   -> "<<="
     | BitRight      -> ">>"
     | BitRightAssn  -> ">>="
-    | Mod           -> "%" (* make sure this pattern matching is exhaustive *)
+    | Mod           -> "%" 
 
 let string_of_uop = function
       Neg           -> "-"
