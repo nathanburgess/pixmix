@@ -149,7 +149,7 @@ actuals_list:
      expr                       { [$1] }
     | actuals_list COMMA expr   { $3 :: $1 }
     | ID DOT ID                 { ObjLit($1, $3) }
-    | ID DOT ID LPAREN optionalActuals RPAREN 
+    | ID DOT ID LPAREN actuals_opt RPAREN 
         { ObjCall($1, $3, $5) }    
     | expr PLUS   expr          { Binop($1, Add,   $3) }
     | expr MINUS  expr          { Binop($1, Sub,   $3) }
@@ -166,7 +166,7 @@ actuals_list:
     | MINUS expr %prec NEG      { Unop(Neg, $2) }
     | NOT expr                  { Unop(Not, $2) }
     | ID ASSIGN expr            { Assign($1, $3) }
-    | ID LPAREN optionalActuals RPAREN 
+    | ID LPAREN actuals_opt RPAREN 
         { Call($1, $3) }
     | LPAREN expr RPAREN        { $2 }
 
