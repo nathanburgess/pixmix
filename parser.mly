@@ -97,13 +97,16 @@ varType:
     | BOOL                      { Bool }
     | VOID                      { Void }
     | STRING                    { String }
-    | FLOAT                     { Float }
     | CHAR                      { Char }
     | OBJECT                    { Object }
-    | ARRAY                     { Array }
+    | arrayType                 { $1 }
     | IMAGE                     { Image }
     | PIXEL                     { Pixel }
     | COLOR                     { Color }
+
+arrayType:
+    varType LBRACKET RBRACKET { Array($1) }
+    
 
 optionalExpr:
       /* nothing */             { Noexpr }

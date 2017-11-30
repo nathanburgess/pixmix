@@ -117,20 +117,20 @@ let check program =
                  | Less | Leq | Greater | Geq when t1 = Num && t2 = Num -> Bool
                  | And | Or when t1 = Bool && t2 = Bool -> Bool
                  | _ -> raise (Failure ("illegal binary operator " ^
-                                        string_of_type t1 ^ " " ^ string_of_op op ^ " " ^
-                                        string_of_type t2 ^ " in " ^ string_of_expr e))
+                                        string_of_varType t1 ^ " " ^ string_of_op op ^ " " ^
+                                        string_of_varType t2 ^ " in " ^ string_of_expr e))
                 )
             | Unop(op, e) as ex -> let t = expr e in
                 (match op with
                    Neg when t = Num -> Num
                  | Not when t = Bool -> Bool
                  | _ -> raise (Failure ("illegal unary operator " ^ string_of_uop op ^
-                                        string_of_type t ^ " in " ^ string_of_expr ex)))
+                                        string_of_varType t ^ " in " ^ string_of_expr ex)))
             | Noexpr -> Void
             | Assign(var, e) as ex -> let lt = type_of_identifier var
                 and rt = expr e in
-                check_assign lt rt (Failure ("illegal assignment " ^ string_of_type lt ^
-                                             " = " ^ string_of_type rt ^ " in " ^ 
+                check_assign lt rt (Failure ("illegal assignment " ^ string_of_varType lt ^
+                                             " = " ^ string_of_varType rt ^ " in " ^ 
                                              string_of_expr ex))
             | Call(fname, actuals) as call -> let fd = function_decl fname in
                 if List.length actuals != List.length fd.parameters then
@@ -139,8 +139,8 @@ let check program =
                 else
                     List.iter2 (fun (ft, _) e -> let et = expr e in
                                    ignore (check_assign ft et
-                                               (Failure ("illegal actual argument found " ^ string_of_type et ^
-                                                         " expected " ^ string_of_type ft ^ " in " ^ string_of_expr e))))
+                                               (Failure ("illegal actual argument found " ^ string_of_varType et ^
+                                                         " expected " ^ string_of_varType ft ^ " in " ^ string_of_expr e))))
                         fd.parameters actuals;
                 fd.returnType
         in
@@ -160,8 +160,8 @@ let check program =
                 in check_block sl
             | Expr e -> ignore (expr e)
             | Return e -> let t = expr e in if t = func.returnType then () else
-                    raise (Failure ("return gives " ^ string_of_type t ^ " expected " ^
-                                    string_of_type func.returnType ^ " in " ^ string_of_expr e))
+                    raise (Failure ("return gives " ^ string_of_varType t ^ " expected " ^
+                                    string_of_varType func.returnType ^ " in " ^ string_of_expr e))
 
             | If(p, b1, b2) -> check_bool_expr p; stmt b1; stmt b2
             | For(e1, e2, e3, st) -> ignore (expr e1); check_bool_expr e2;
