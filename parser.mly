@@ -146,8 +146,8 @@ actuals_opt:
     | actuals_list  { List.rev $1 }
 
 actuals_list:
-     expr                    { [$1] }
-    | actuals_list COMMA expr { $3 :: $1 }
+     expr                       { [$1] }
+    | actuals_list COMMA expr   { $3 :: $1 }
     | ID DOT ID                 { ObjLit($1, $3) }
     | ID DOT ID LPAREN optionalActuals RPAREN 
         { ObjCall($1, $3, $5) }    
@@ -170,10 +170,3 @@ actuals_list:
         { Call($1, $3) }
     | LPAREN expr RPAREN        { $2 }
 
-optionalActuals:
-      /* nothing */             { [] }
-    | actualsList               { List.rev $1 }
-
-actualsList:
-      expr                      { [$1] }
-    | actualsList COMMA expr    { $3 :: $1 }
