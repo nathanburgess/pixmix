@@ -9,10 +9,10 @@ rule token = parse
     | '.'                   { DOT }
     | '('                   { LPAREN }
     | ')'                   { RPAREN }
-    | '['                   { LBRACKET }
-    | ']'                   { RBRACKET }
-    | '{'                   { LCURLY }
-    | '}'                   { RCURLY }
+    | '['                   { LSQ_BRACE }
+    | ']'                   { RSQ_BRACE }
+    | '{'                   { LC_BRACE }
+    | '}'                   { RC_BRACE }
     | ';'                   { SEMI }
     | ','                   { COMMA }
     | '+'                   { PLUS }

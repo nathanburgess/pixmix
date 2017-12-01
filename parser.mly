@@ -1,11 +1,11 @@
 %{ open Ast %}
 
-%token SEMI LPAREN RPAREN LCURLY RCURLY COMMA
+%token SEMI LPAREN RPAREN LC_BRACE RC_BRACE COMMA
 %token PLUS MINUS TIMES DIVIDE ASSIGN NOT
 %token EQ NEQ LT LEQ GT GEQ TRUE FALSE AND OR
 %token RETURN IF ELSE FOR WHILE NUM BOOL VOID
 %token STRING CHAR FLOAT IMAGE COLOR PIXEL OBJECT ARRAY
-%token LBRACKET RBRACKET DOT
+%token LSQ_BRACE RSQ_BRACE DOT
 %token <float> LITERAL
 %token <string> STRLIT
 %token <string> ID
@@ -50,7 +50,7 @@ varDeclList:
     | varDeclList varDecl       { $2 :: $1 }
 
 objDecl:
-    OBJECT ID LCURLY ASSIGN varDeclList fnDeclList RCURLY
+    OBJECT ID ASSIGN LC_BRACE varDeclList fnDeclList RC_BRACE
     { { objName     = $2;
         objLocals   = List.rev $5;
         methods     = List.rev $6 }}
@@ -59,7 +59,7 @@ stmtDecl:
       expr SEMI                 { Expr $1 }
     | RETURN SEMI               { Return Noexpr }
     | RETURN expr SEMI          { Return $2 }
-    | LCURLY statementsList RCURLY   
+    | LC_BRACE statementsList RC_BRACE   
         { Block(List.rev $2) }
     | IF LPAREN expr RPAREN stmtDecl %prec NOELSE 
         { If($3, $5, Block([])) }
@@ -71,7 +71,7 @@ stmtDecl:
         { While($3, $5) }
 
 fnDecl:
-    varType ID LPAREN optionalParameters RPAREN LCURLY varDeclList statementsList RCURLY
+    varType ID LPAREN optionalParameters RPAREN LC_BRACE varDeclList statementsList RC_BRACE
     { { returnType  = $1;
         fnName      = $2;
         parameters  = $4;
@@ -98,10 +98,10 @@ parametersList:
 varType:
       NUM                       { Num }
     | BOOL                      { Bool }
+    | CHAR                      { Char }
     | STRING                    { String }
     | VOID                      { Void }
     | COLOR                     { Color }
-    | CHAR                      { Char }
     | IMAGE                     { Image }
     | OBJECT                    { Object }
     | PIXEL                     { Pixel }
@@ -117,7 +117,7 @@ expr:
     | TRUE             { BoolLit(true) }
     | FALSE            { BoolLit(false) }
     | ID               { Id($1) }
-    | ID LBRACKET expr RBRACKET 
+    | ID LSQ_BRACE expr RSQ_BRACE 
                        { Arrop($1, $3) }
     | ID DOT ID        { ObjLit($1, $3) }
     | ID DOT ID LPAREN actuals_opt RPAREN 
