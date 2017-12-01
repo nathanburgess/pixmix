@@ -143,6 +143,10 @@ let check program =
                                                          " expected " ^ string_of_varType ft ^ " in " ^ string_of_expr e))))
                         fd.parameters actuals;
                 fd.returnType
+            (* | ArrayCreate(t, e) -> 
+            | ArrOp(t, e) -> 
+            | ObjLit(oid, var) -> 
+            | ObjCall(oid, var, e) -> *)
         in
 
         let check_bool_expr e = if expr e != Bool

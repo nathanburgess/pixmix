@@ -4,8 +4,8 @@
 %token PLUS MINUS TIMES DIVIDE ASSIGN NOT
 %token EQ NEQ LT LEQ GT GEQ TRUE FALSE AND OR
 %token RETURN IF ELSE FOR WHILE NUM BOOL VOID
-%token STRING CHAR FLOAT IMAGE COLOR PIXEL OBJECT ARRAY
-%token LSQ_BRACE RSQ_BRACE DOT
+%token STRING CHAR FLOAT IMAGE COLOR PIXEL OBJECT THIS
+%token ARRAY LSQ_BRACE RSQ_BRACE DOT
 %token <float> LITERAL
 %token <string> STRLIT
 %token <string> ID
@@ -50,10 +50,10 @@ varDeclList:
     | varDeclList varDecl       { $2 :: $1 }
 
 objDecl:
-    OBJECT ID ASSIGN LC_BRACE varDeclList fnDeclList RC_BRACE
+    OBJECT ID SEMI
     { { objName     = $2;
-        objLocals   = List.rev $5;
-        methods     = List.rev $6 }}
+        objLocals   = [];
+        methods     = [] } }
 
 stmtDecl:
       expr SEMI                 { Expr $1 }
@@ -85,6 +85,7 @@ statementsList:
 fnDeclList:
     /* nothing */               { [] }
     | fnDeclList fnDecl         { $2 :: $1}
+
 
 optionalParameters:
       /* nothing */             { [] }
@@ -118,7 +119,7 @@ expr:
     | FALSE            { BoolLit(false) }
     | ID               { Id($1) }
     | ID LSQ_BRACE expr RSQ_BRACE 
-                       { Arrop($1, $3) }
+                       { ArrOp($1, $3) }
     | ID DOT ID        { ObjLit($1, $3) }
     | ID DOT ID LPAREN actuals_opt RPAREN 
                        { ObjCall($1, $3, $5) }    

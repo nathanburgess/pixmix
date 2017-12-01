@@ -28,12 +28,14 @@ type expr =
     | Id            of string
     | Binop         of expr * op * expr
     | ArrayCreate   of varType * expr list
-    | Arrop         of string * expr
+    | ArrOp         of string * expr
     | ObjLit        of string * string
     | ObjCall       of string * string * expr list
     | Unop          of uop * expr
     | Assign        of string * expr
     | Call          of string * expr list
+    | Null
+    | This
     | Noexpr
 
 (* stmt most likely ready *)
@@ -53,20 +55,10 @@ type funDecl = {
     body            : stmt list;
 }
 
-(*)
-type stmnts = {
-    statements : stmt list;
-}
-*)
-
 type objDecl  = {
     objName         : string;
     objLocals       : bind list;
     methods         : funDecl list;
-}
-
-type stmts = {
-    statements : stmt list;
 }
 
 type program = {
@@ -98,7 +90,6 @@ let string_of_op = function
     | BitRight      -> ">>"
     | BitRightAssn  -> ">>="
     | Mod           -> "%"
-    | Mod           -> "%" 
 
 let string_of_uop = function
       Neg           -> "-"
@@ -111,7 +102,7 @@ let rec string_of_varType = function
       Num           -> "num"
     | Bool          -> "bool"
     | Void          -> "void"
-    | String        -> "String"
+    | String        -> "string"
     | Char          -> "char"
     | Object        -> "Object"
     | ArrayType(t)  -> string_of_varType t ^ "[]"
@@ -136,7 +127,7 @@ let rec string_of_expr = function
             | head :: tail -> "[" ^ (string_list tail) ^ ", " ^ (string_of_expr head) ^ "]"
                 in
                 string_list expressions
-    | Arrop(s, e) ->
+    | ArrOp(s, e) ->
         s ^ "[" ^ string_of_expr e ^ "]"
     | ObjLit(s1, s2) -> s1 ^ "." ^ s2 
     | ObjCall(s1, s2, e) ->

@@ -1,6 +1,13 @@
 (* Ocamllex scanner for PixMix *)
 
-{ open Parser }
+{ 
+    open Parser 
+    let unescape s =
+        Scanf.sscanf("\"" ^ s ^ "\"") "%S%!" (fun x-> x)
+}
+
+let ascii = ([' '-'!' '#'-'[' ']'-'~'])
+let escape = '\\' ['\\' ''' '"' 'n' 'r' 't']
 
 rule token = parse
       [' ' '\t' '\r' '\n']  { token lexbuf }      (* Whitespace *)
@@ -40,9 +47,11 @@ rule token = parse
     | "string"              { STRING }
     | "true"                { TRUE }
     | "false"               { FALSE }
+    | "Object"              { OBJECT }
+    | "this"                { THIS }
     | ['0'-'9']+ as lxm     { LITERAL(float_of_string lxm) }
     | ['a'-'z' 'A'-'Z']['a'-'z' 'A'-'Z' '0'-'9' '_']* as lxm { ID(lxm) }
-    | '"'((_*) as s)'"' { STRLIT(s) }
+    | '"'((ascii|escape)* as s)'"'{ STRLIT(unescape s) }
     | eof                   { EOF }
     | _ as char             { raise (Failure("illegal character " ^ Char.escaped char)) }
 and mlcomment = parse
