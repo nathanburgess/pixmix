@@ -8,7 +8,17 @@ type uop = Neg | Not | Incr | Decr | BitNeg
 (* Make sure Array of typ does not allow for array of array of array *)
 (* Cange name from typ to something less weird *)
 (* Object can only be of typ if we add class to typ so need to change this later *)
-type varType = Num | Bool | Void | String | Char | Object | Array of varType | Image | Pixel | Color
+type varType = 
+      Num 
+    | Array of varType 
+    | Bool 
+    | Char 
+    | Color
+    | Image 
+    | Object 
+    | Pixel 
+    | String 
+    | Void 
 
 type bind = varType * string
 
@@ -23,7 +33,6 @@ type expr =
     | ObjLit        of string * string
     | ObjCall       of string * string * expr list
     | Unop          of uop * expr
-    | DeclAssign    of varType * string * expr
     | Assign        of string * expr
     | Call          of string * expr list
     | Noexpr
@@ -79,7 +88,7 @@ let string_of_op = function
     | BitLeftAssn   -> "<<="
     | BitRight      -> ">>"
     | BitRightAssn  -> ">>="
-    | Mod           -> "%" (* make sure this pattern matching is exhaustive *)
+    | Mod           -> "%"
 
 let string_of_uop = function
       Neg           -> "-"

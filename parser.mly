@@ -37,10 +37,13 @@ decls:
     | decls stmtDecl            { { $1 with statements  = $2::$1.statements } }
     | decls fnDecl              { { $1 with functions   = $2::$1.functions  } }
 
+varBind:
+    varType ID                  { ($1, $2) }
+
 varDecl:
-      varType ID SEMI           { ($1, $2) }
-    /* @TODO - Get assignments on instantiation working
-    | varType ID ASSIGN expr SEMI  { DeclAssign($1, $2, $4) } */
+      varBind SEMI              { ($1) }
+    /* @TODO - Get this working somehow
+    | varBind ASSIGN expr SEMI  { ($1, $3) } */
 
 varDeclList:
       /* nothing */             { [] }
@@ -67,10 +70,6 @@ stmtDecl:
     | WHILE LPAREN expr RPAREN stmtDecl 
         { While($3, $5) }
 
-statementsList:
-      /* nothing */             { [] }
-    | statementsList stmtDecl   { $2 :: $1 }
-
 fnDecl:
     varType ID LPAREN optionalParameters RPAREN LBRACE varDeclList statementsList RBRACE
     { { returnType  = $1;
@@ -79,27 +78,30 @@ fnDecl:
         fnLocals    = List.rev $7;
         body        = List.rev $8 } }
 
+statementsList:
+      /* nothing */             { [] }
+    | statementsList stmtDecl   { $2 :: $1 }
+
 optionalParameters:
       /* nothing */             { [] }
     | parametersList            { List.rev $1 }
 
 parametersList:
-      varType ID                { [($1,$2)] }
+      varType ID                { [($1, $2)] }
     | parametersList COMMA varType ID  
-        { ($3,$4) :: $1 }
+        { ($3, $4) :: $1 }
 
 varType:
       NUM                       { Num }
-    | BOOL                      { Bool }
-    | VOID                      { Void }
-    | STRING                    { String }
-    | FLOAT                     { Float }
-    | CHAR                      { Char }
-    | OBJECT                    { Object }
     | ARRAY                     { Array }
-    | IMAGE                     { Image }
-    | PIXEL                     { Pixel }
+    | BOOL                      { Bool }
+    | CHAR                      { Char }
     | COLOR                     { Color }
+    | IMAGE                     { Image }
+    | OBJECT                    { Object }
+    | PIXEL                     { Pixel }
+    | STRING                    { String }
+    | VOID                      { Void }
 
 optionalExpr:
       /* nothing */             { Noexpr }
