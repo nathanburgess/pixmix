@@ -1,6 +1,6 @@
 %{ open Ast %}
 
-%token SEMI LPAREN RPAREN LBRACE RBRACE COMMA
+%token SEMI LPAREN RPAREN LCURLY RCURLY COMMA
 %token PLUS MINUS TIMES DIVIDE ASSIGN NOT
 %token EQ NEQ LT LEQ GT GEQ TRUE FALSE AND OR
 %token RETURN IF ELSE FOR WHILE NUM BOOL VOID
@@ -50,16 +50,16 @@ varDeclList:
     | varDeclList varDecl       { $2 :: $1 }
 
 objDecl:
-    OBJECT ID LBRACE varDeclList statementsList RBRACE
+    OBJECT ID LCURLY ASSIGN varDeclList fnDeclList RCURLY
     { { objName     = $2;
-        objLocals   = List.rev $4;
-        methods     = List.rev $5 }}
+        objLocals   = List.rev $5;
+        methods     = List.rev $6 }}
 
 stmtDecl:
       expr SEMI                 { Expr $1 }
     | RETURN SEMI               { Return Noexpr }
     | RETURN expr SEMI          { Return $2 }
-    | LBRACE statementsList RBRACE   
+    | LCURLY statementsList RCURLY   
         { Block(List.rev $2) }
     | IF LPAREN expr RPAREN stmtDecl %prec NOELSE 
         { If($3, $5, Block([])) }
@@ -67,11 +67,11 @@ stmtDecl:
         { If($3, $5, $7) }
     | FOR LPAREN optionalExpr SEMI expr SEMI optionalExpr RPAREN stmtDecl
         { For($3, $5, $7, $9) }
-    | WHILE LPAREN expr RPAREN stmtDecl 
+    | WHILE LPAREN expr RPAREN stmtDecl
         { While($3, $5) }
 
 fnDecl:
-    varType ID LPAREN optionalParameters RPAREN LBRACE varDeclList statementsList RBRACE
+    varType ID LPAREN optionalParameters RPAREN LCURLY varDeclList statementsList RCURLY
     { { returnType  = $1;
         fnName      = $2;
         parameters  = $4;
@@ -81,6 +81,10 @@ fnDecl:
 statementsList:
       /* nothing */             { [] }
     | statementsList stmtDecl   { $2 :: $1 }
+
+fnDeclList:
+    /* nothing */               { [] }
+    | fnDeclList fnDecl         { $2 :: $1}
 
 optionalParameters:
       /* nothing */             { [] }
@@ -93,15 +97,15 @@ parametersList:
 
 varType:
       NUM                       { Num }
-    | ARRAY                     { Array }
-    | BOOL                      { Bool }
     | CHAR                      { Char }
+    | BOOL                      { Bool }
+    | STRING                    { String }
+    | VOID                      { Void }
     | COLOR                     { Color }
     | IMAGE                     { Image }
     | OBJECT                    { Object }
     | PIXEL                     { Pixel }
-    | STRING                    { String }
-    | VOID                      { Void }
+    | LBRACKET varType RBRACKET { ArrayType($2) }
 
 optionalExpr:
       /* nothing */             { Noexpr }

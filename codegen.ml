@@ -15,21 +15,23 @@ let translate program =
     let context = L.global_context () in
     let the_module = L.create_module context "PixMix"
     and i32_t  = L.i32_type     context
+    and f_t    = L.double_type  context
     and i8_t   = L.i8_type      context
     and i1_t   = L.i1_type      context
     and str_t  = L.pointer_type (L.i8_type context)
     and void_t = L.void_type    context in
 
-    let ltype_of_typ = function
-          A.Int -> i32_t
-        | A.Bool -> i1_t
-        | A.String -> str_t
-        | A.Void -> void_t in
+    let rec ltype_of_type = function
+          A.Num             -> f_t
+        | A.Bool            -> i1_t
+        | A.String          -> str_t
+        | A.Void            -> void_t
+        | A.ArrayType(t)    -> L.pointer_type (ltype_of_type t) in
 
     (* Declare each global variable; remember its value in a map *)
     let global_vars =
         let global_var m (t, n) =
-            let init = L.const_float (ltype_of_typ t) 0
+            let init = L.const_float (ltype_of_type t) 0.
             in StringMap.add n (L.define_global n init the_module) m in
         List.fold_left global_var StringMap.empty program.variables in
 
@@ -42,8 +44,8 @@ let translate program =
         let function_decl m fdecl =
             let name = fdecl.A.fname
             and formal_types =
-                Array.of_list (List.map (fun (t,_) -> ltype_of_typ t) fdecl.A.formals)
-            in let ftype = L.function_type (ltype_of_typ fdecl.A.typ) formal_types in
+                Array.of_list (List.map (fun (t,_) -> ltype_of_type t) fdecl.A.formals)
+            in let ftype = L.function_type (ltype_of_type fdecl.A.typ) formal_types in
             StringMap.add name (L.define_function name ftype the_module, fdecl) m in
         List.fold_left function_decl StringMap.empty functions in
 
@@ -60,12 +62,12 @@ let translate program =
            value, if appropriate, and remember their values in the "locals" map *)
         let local_vars =
             let add_formal m (t, n) p = L.set_value_name n p;
-                let local = L.build_alloca (ltype_of_typ t) n builder in
+                let local = L.build_alloca (ltype_of_type t) n builder in
                 ignore (L.build_store p local builder);
                 StringMap.add n local m in
 
             let add_local m (t, n) =
-                let local_var = L.build_alloca (ltype_of_typ t) n builder
+                let local_var = L.build_alloca (ltype_of_type t) n builder
                 in StringMap.add n local_var m in
 
             let formals = List.fold_left2 add_formal StringMap.empty fdecl.A.formals
@@ -175,7 +177,7 @@ let translate program =
         (* Add a return if the last block falls off the end *)
         add_terminal builder (match fdecl.A.typ with
               A.Void -> L.build_ret_void
-            | t -> L.build_ret (L.const_int (ltype_of_typ t) 0))
+            | t -> L.build_ret (L.const_int (ltype_of_type t) 0))
     in
 
     List.iter build_function_body functions;
