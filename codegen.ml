@@ -11,15 +11,15 @@ module A = Ast
 
 module StringMap = Map.Make(String)
 
-let translate program =
-    let context = L.global_context () in
-    let the_module = L.create_module context "PixMix"
-    and i32_t  = L.i32_type     context
-    and f_t    = L.double_type  context
-    and i8_t   = L.i8_type      context
-    and i1_t   = L.i1_type      context
-    and str_t  = L.pointer_type (L.i8_type context)
-    and void_t = L.void_type    context in
+let translate (program:A.program) =
+    let context     = L.global_context () in
+    let the_module  = L.create_module   context "PixMix"
+    and i32_t       = L.i32_type        context
+    and f_t         = L.double_type     context
+    and i8_t        = L.i8_type         context
+    and i1_t        = L.i1_type         context
+    and str_t       = L.pointer_type    (L.i8_type context)
+    and void_t      = L.void_type       context in
 
     let rec ltype_of_type = function
           A.Num             -> f_t
@@ -42,16 +42,16 @@ let translate program =
     (* Define each function (arguments and return type) so we can call it *)
     let function_decls =
         let function_decl m fdecl =
-            let name = fdecl.A.fname
+            let name = fdecl.A.fnName
             and formal_types =
-                Array.of_list (List.map (fun (t,_) -> ltype_of_type t) fdecl.A.formals)
-            in let ftype = L.function_type (ltype_of_type fdecl.A.typ) formal_types in
+                Array.of_list (List.map (fun (t,_) -> ltype_of_type t) fdecl.A.fnParameters)
+            in let ftype = L.function_type (ltype_of_type fdecl.A.fnReturnType) formal_types in
             StringMap.add name (L.define_function name ftype the_module, fdecl) m in
-        List.fold_left function_decl StringMap.empty functions in
+        List.fold_left function_decl StringMap.empty program.functions in
 
     (* Fill in the body of the given function *)
     let build_function_body fdecl =
-        let (the_function, _) = StringMap.find fdecl.A.fname function_decls in
+        let (the_function, _) = StringMap.find fdecl.A.fnName function_decls in
         let builder = L.builder_at_end context (L.entry_block the_function) in
 
         let int_format_str = L.build_global_stringptr "%d\n" "fmt" builder in
@@ -70,9 +70,9 @@ let translate program =
                 let local_var = L.build_alloca (ltype_of_type t) n builder
                 in StringMap.add n local_var m in
 
-            let formals = List.fold_left2 add_formal StringMap.empty fdecl.A.formals
+            let formals = List.fold_left2 add_formal StringMap.empty fdecl.A.fnParameters
                     (Array.to_list (L.params the_function)) in
-            List.fold_left add_local formals fdecl.A.locals in
+            List.fold_left add_local formals fdecl.A.fnLocals in
 
         (* Return the value for a variable or formal argument *)
         let lookup n = try StringMap.find n local_vars
@@ -81,7 +81,7 @@ let translate program =
 
         (* Construct code for an expression; return its value *)
         let rec expr builder = function
-              A.Literal i -> L.const_int i32_t i
+              A.Literal i -> L.const_float f_t i
             | A.BoolLit b -> L.const_int i1_t (if b then 1 else 0)
             | A.StringLit s -> L.build_global_stringptr s "tmp" builder
             | A.Noexpr -> L.const_int i32_t 0
@@ -117,7 +117,7 @@ let translate program =
             | A.Call (f, act) ->
                 let (fdef, fdecl) = StringMap.find f function_decls in
                 let actuals = List.rev (List.map (expr builder) (List.rev act)) in
-                let result = (match fdecl.A.typ with A.Void -> ""
+                let result = (match fdecl.A.fnReturnType with A.Void -> ""
                                                    | _ -> f ^ "_result") in
                 L.build_call fdef (Array.of_list actuals) result builder
         in
@@ -134,7 +134,7 @@ let translate program =
         let rec stmt builder = function
               A.Block sl -> List.fold_left stmt builder sl
             | A.Expr e -> ignore (expr builder e); builder
-            | A.Return e -> ignore (match fdecl.A.typ with
+            | A.Return e -> ignore (match fdecl.A.fnReturnType with
                   A.Void -> L.build_ret_void builder
                 | _ -> L.build_ret (expr builder e) builder); builder
             | A.If (predicate, then_stmt, else_stmt) ->
@@ -172,13 +172,13 @@ let translate program =
         in
 
         (* Build the code for each statement in the function *)
-        let builder = stmt builder (A.Block fdecl.A.body) in
+        let builder = stmt builder (A.Block fdecl.A.fnBody) in
 
         (* Add a return if the last block falls off the end *)
-        add_terminal builder (match fdecl.A.typ with
+        add_terminal builder (match fdecl.A.fnReturnType with
               A.Void -> L.build_ret_void
             | t -> L.build_ret (L.const_int (ltype_of_type t) 0))
     in
 
-    List.iter build_function_body functions;
+    List.iter build_function_body program.functions;
     the_module

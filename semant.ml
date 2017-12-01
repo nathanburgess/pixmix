@@ -50,25 +50,25 @@ let check program =
     let built_in_decls =  
         StringMap.add "print"
         { 
-            returnType = Void; 
+            fnReturnType = Void; 
             fnName = "print"; 
-            parameters = [(String, "x")];
+            fnParameters = [(String, "x")];
             fnLocals = []; 
-            body = [] 
+            fnBody = [] 
         } (StringMap.add "printb"
         { 
-            returnType = Void; 
+            fnReturnType = Void; 
             fnName = "printb"; 
-            parameters = [(Bool, "x")];
+            fnParameters = [(Bool, "x")];
             fnLocals = []; 
-            body = [] 
+            fnBody = [] 
         } (StringMap.singleton "printbig"
         { 
-            returnType = Void; 
+            fnReturnType = Void; 
             fnName = "printbig"; 
-            parameters = [(Num, "x")];
+            fnParameters = [(Num, "x")];
             fnLocals = []; 
-            body = [] 
+            fnBody = [] 
         })        )
     in
 
@@ -83,10 +83,10 @@ let check program =
     let check_function func =
 
         List.iter (check_not_void (fun n -> "illegal void formal " ^ n ^
-                                            " in " ^ func.fnName)) func.parameters;
+                                            " in " ^ func.fnName)) func.fnParameters;
 
         report_duplicate (fun n -> "duplicate formal " ^ n ^ " in " ^ func.fnName)
-            (List.map snd func.parameters);
+            (List.map snd func.fnParameters);
 
         List.iter (check_not_void (fun n -> "illegal void local " ^ n ^
                                             " in " ^ func.fnName)) func.fnLocals;
@@ -96,7 +96,7 @@ let check program =
 
         (* Type of each variable (global, formal, or local *)
         let symbols = List.fold_left (fun m (t, n) -> StringMap.add n t m)
-                StringMap.empty (program.variables @ func.parameters @ func.fnLocals )
+                StringMap.empty (program.variables @ func.fnParameters @ func.fnLocals )
         in
 
         let type_of_identifier s =
@@ -133,16 +133,16 @@ let check program =
                                              " = " ^ string_of_varType rt ^ " in " ^ 
                                              string_of_expr ex))
             | Call(fname, actuals) as call -> let fd = function_decl fname in
-                if List.length actuals != List.length fd.parameters then
+                if List.length actuals != List.length fd.fnParameters then
                     raise (Failure ("expecting " ^ string_of_int
-                                        (List.length fd.parameters) ^ " arguments in " ^ string_of_expr call))
+                                        (List.length fd.fnParameters) ^ " arguments in " ^ string_of_expr call))
                 else
                     List.iter2 (fun (ft, _) e -> let et = expr e in
                                    ignore (check_assign ft et
                                                (Failure ("illegal actual argument found " ^ string_of_varType et ^
                                                          " expected " ^ string_of_varType ft ^ " in " ^ string_of_expr e))))
-                        fd.parameters actuals;
-                fd.returnType
+                        fd.fnParameters actuals;
+                fd.fnReturnType
             (* | ArrayCreate(t, e) -> 
             | ArrOp(t, e) -> 
             | ObjLit(oid, var) -> 
@@ -163,9 +163,9 @@ let check program =
                 | [] -> ()
                 in check_block sl
             | Expr e -> ignore (expr e)
-            | Return e -> let t = expr e in if t = func.returnType then () else
+            | Return e -> let t = expr e in if t = func.fnReturnType then () else
                     raise (Failure ("return gives " ^ string_of_varType t ^ " expected " ^
-                                    string_of_varType func.returnType ^ " in " ^ string_of_expr e))
+                                    string_of_varType func.fnReturnType ^ " in " ^ string_of_expr e))
 
             | If(p, b1, b2) -> check_bool_expr p; stmt b1; stmt b2
             | For(e1, e2, e3, st) -> ignore (expr e1); check_bool_expr e2;
@@ -173,7 +173,7 @@ let check program =
             | While(p, s) -> check_bool_expr p; stmt s
         in
 
-        stmt (Block func.body)
+        stmt (Block func.fnBody)
 
     in
 
