@@ -1,7 +1,7 @@
 num main () {
 
-    string a;
-    string b;
+    float a;
+    float b;
     num sum;
 
     a = "hello";

@@ -1,8 +1,8 @@
 num main () {
 
-    num a;
-    num b;
-    num sum;
+    float a;
+    float b;
+    float sum;
 
     a = 2;
     b = 3;

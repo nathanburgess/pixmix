@@ -1,9 +1,9 @@
-fun add(int x, int y)
+fun add(num x, num y)
 {
   return x + y;
 }
 
-int main()
+num main()
 {
   string a;
   a = "hello";
