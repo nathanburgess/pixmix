@@ -1,6 +1,6 @@
-int main() {
+int main () {
     string hw;
-    hw = "Hello World!";
+    hw = "@@@";
     Console.log(hw);
     return 0;
 }
