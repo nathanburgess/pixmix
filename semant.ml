@@ -69,7 +69,7 @@ let check program =
             fnParameters = [(Num, "x")];
             fnLocals = []; 
             fnBody = [] 
-        })        )
+        }))
     in
 
     let function_decls = List.fold_left (fun m fd -> StringMap.add fd.fnName fd m)
