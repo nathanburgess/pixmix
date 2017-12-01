@@ -97,7 +97,6 @@ varType:
     | BOOL                      { Bool }
     | VOID                      { Void }
     | STRING                    { String }
-    | FLOAT                     { Float }
     | CHAR                      { Char }
     | OBJECT                    { Object }
     | ARRAY                     { Array }

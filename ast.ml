@@ -8,7 +8,7 @@ type uop = Neg | Not | Incr | Decr | BitNeg
 (* Make sure Array of typ does not allow for array of array of array *)
 (* Cange name from typ to something less weird *)
 (* Object can only be of typ if we add class to typ so need to change this later *)
-type varType = Num | Bool | Void | String | Char | Object | Array of varType | Image | Pixel | Color
+type varType = Num | Bool | Void | String | Char | Object | Array | Image | Pixel | Color
 
 type bind = varType * string
 
@@ -44,10 +44,11 @@ type funDecl = {
     fnLocals        : bind list;
     body            : stmt list;
 }
-
+(*)
 type stmnts = {
     statements : stmt list;
 }
+*)
 
 type objDecl  = {
     objName         : string;
@@ -58,12 +59,10 @@ type objDecl  = {
 type program = {
     variables       : bind list;
     objects         : objDecl list;
-    statements      : stmnts list;
+    statements      : stmt list;
     functions       : funDecl list;
 }
 
-
-(*
 (* Pretty-printing functions *)
 let string_of_op = function
       Add           -> "+"
@@ -101,7 +100,7 @@ let rec string_of_type = function
     | String        -> "String"
     | Char          -> "char"
     | Object        -> "Object"
-    | Array(t)      -> string_of_type t ^ "[]"
+    | Array(t)      -> string_of_type t ^ "[]" 
     | Image         -> "Image"
     | Pixel         -> "Pixel"
     | Color         -> "Color"
@@ -168,4 +167,3 @@ let string_of_program globals =
     String.concat "" (List.map string_of_odecl globals.objects) ^ "\n" ^
     (*String.concat "" (List.map string_of_stmt globals.statements) ^ "\n" ^*)
     String.concat "\n" (List.map string_of_fdecl globals.functions)
-*)
