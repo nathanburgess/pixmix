@@ -6,9 +6,18 @@ type op = Add | Sub | Mult | Div | Mod | Equal | Neq | Less | Leq | Greater | Ge
 type uop = Neg | Not | Incr | Decr | BitNeg
 
 (* Make sure Array of typ does not allow for array of array of array *)
-(* Cange name from typ to something less weird *)
-(* Object can only be of typ if we add class to typ so need to change this later *)
-type varType = Num | Bool | Void | String | Char | Object | Array | Image | Pixel | Color
+(* Object can only be of varType if we add class to typ so need to change this later *)
+type varType = 
+      Num 
+    | ArrayType of varType 
+    | Bool 
+    | Char 
+    | Color
+    | Image 
+    | Object 
+    | Pixel 
+    | String 
+    | Void 
 
 type bind = varType * string
 
@@ -23,7 +32,6 @@ type expr =
     | ObjLit        of string * string
     | ObjCall       of string * string * expr list
     | Unop          of uop * expr
-    | DeclAssign    of varType * string * expr
     | Assign        of string * expr
     | Call          of string * expr list
     | Noexpr
@@ -44,6 +52,7 @@ type funDecl = {
     fnLocals        : bind list;
     body            : stmt list;
 }
+
 (*)
 type stmnts = {
     statements : stmt list;
@@ -54,6 +63,10 @@ type objDecl  = {
     objName         : string;
     objLocals       : bind list;
     methods         : funDecl list;
+}
+
+type stmts = {
+    statements : stmt list;
 }
 
 type program = {
@@ -84,7 +97,8 @@ let string_of_op = function
     | BitLeftAssn   -> "<<="
     | BitRight      -> ">>"
     | BitRightAssn  -> ">>="
-    | Mod           -> "%" (* make sure this pattern matching is exhaustive *)
+    | Mod           -> "%"
+    | Mod           -> "%" 
 
 let string_of_uop = function
       Neg           -> "-"
@@ -93,19 +107,19 @@ let string_of_uop = function
     | Decr          -> "--"
     | BitNeg        -> "~"
 
-let rec string_of_type = function
+let rec string_of_varType = function
       Num           -> "num"
     | Bool          -> "bool"
     | Void          -> "void"
     | String        -> "String"
     | Char          -> "char"
     | Object        -> "Object"
-    | Array(t)      -> string_of_type t ^ "[]" 
+    | ArrayType(t)  -> string_of_varType t ^ "[]"
     | Image         -> "Image"
     | Pixel         -> "Pixel"
     | Color         -> "Color"
 
-(* The carrot "^" concatenates strings! *)
+
 let rec string_of_expr = function
       Literal(l) -> string_of_float l
     | BoolLit(true) -> "true"
@@ -117,7 +131,7 @@ let rec string_of_expr = function
     | ArrayCreate(varType, expressions) -> 
         let rec string_list expressions = match expressions with
             [] -> ""
-            | [head] -> "[" ^ (string_of_type varType) ^ ", " ^
+            | [head] -> "[" ^ (string_of_varType varType) ^ ", " ^
             (string_of_expr head) ^ "]"
             | head :: tail -> "[" ^ (string_list tail) ^ ", " ^ (string_of_expr head) ^ "]"
                 in
@@ -133,27 +147,27 @@ let rec string_of_expr = function
         f ^ "(" ^ String.concat ", " (List.map string_of_expr el) ^ ")"
     | Noexpr -> ""
 
-let rec string_of_stmt = function
+let rec string_of_sdecl = function
       Block(stmts) ->
-        "{\n" ^ String.concat "" (List.map string_of_stmt stmts) ^ "}\n"
+        "{\n" ^ String.concat "" (List.map string_of_sdecl stmts) ^ "}\n"
     | Expr(expr) -> string_of_expr expr ^ ";\n";
     | Return(expr) -> "return " ^ string_of_expr expr ^ ";\n";
-    | If(e, s, Block([])) -> "if (" ^ string_of_expr e ^ ")\n" ^ string_of_stmt s
+    | If(e, s, Block([])) -> "if (" ^ string_of_expr e ^ ")\n" ^ string_of_sdecl s
     | If(e, s1, s2) ->  "if (" ^ string_of_expr e ^ ")\n" ^
-                        string_of_stmt s1 ^ "else\n" ^ string_of_stmt s2
+                        string_of_sdecl s1 ^ "else\n" ^ string_of_sdecl s2
     | For(e1, e2, e3, s) ->
         "for (" ^ string_of_expr e1  ^ " ; " ^ string_of_expr e2 ^ " ; " ^
-        string_of_expr e3  ^ ") " ^ string_of_stmt s
-    | While(e, s) -> "while (" ^ string_of_expr e ^ ") " ^ string_of_stmt s
+        string_of_expr e3  ^ ") " ^ string_of_sdecl s
+    | While(e, s) -> "while (" ^ string_of_expr e ^ ") " ^ string_of_sdecl s
 
-let string_of_vdecl (t, id) = string_of_type t ^ " " ^ id ^ ";\n"
+let string_of_vdecl (t, id) = string_of_varType t ^ " " ^ id ^ ";\n"
 
 let string_of_fdecl fdecl =
-    string_of_type fdecl.returnType ^ " " ^
+    string_of_varType fdecl.returnType ^ " " ^
     fdecl.fnName ^ "(" ^ String.concat ", " (List.map snd fdecl.parameters) ^
     ")\n{\n" ^
     String.concat "" (List.map string_of_vdecl fdecl.fnLocals) ^
-    String.concat "" (List.map string_of_stmt fdecl.body) ^
+    String.concat "" (List.map string_of_sdecl fdecl.body) ^
     "}\n"
 
 let string_of_odecl odecl =
@@ -165,5 +179,5 @@ let string_of_odecl odecl =
 let string_of_program globals =
     String.concat "" (List.map string_of_vdecl globals.variables) ^ "\n" ^
     String.concat "" (List.map string_of_odecl globals.objects) ^ "\n" ^
-    (*String.concat "" (List.map string_of_stmt globals.statements) ^ "\n" ^*)
+    (*String.concat "" (List.map string_of_sdecls globals.statements) ^ "\n" ^*)
     String.concat "\n" (List.map string_of_fdecl globals.functions)

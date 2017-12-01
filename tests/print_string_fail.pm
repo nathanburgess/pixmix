@@ -1,7 +1,7 @@
 int main()
 {
   string a;
-  a = "hi";
+  a = "@@@";
   Console.log( a );
   return 0;
 }
