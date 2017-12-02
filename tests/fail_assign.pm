@@ -5,7 +5,7 @@ num main () {
     
 
     a = true;
-    b = false; #b was assigned incompatible
+    b = false; #b was assigned num/bool incompatible
 
     return 0;
 }
