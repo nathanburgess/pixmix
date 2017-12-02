@@ -48,17 +48,17 @@ type stmt =
     | While         of expr * stmt
 
 type funDecl = {
-    returnType      : varType;
+    fnReturnType    : varType;
     fnName          : string;
-    parameters      : bind list;
+    fnParameters    : bind list;
     fnLocals        : bind list;
-    body            : stmt list;
+    fnBody          : stmt list;
 }
 
 type objDecl  = {
     objName         : string;
     objLocals       : bind list;
-    methods         : funDecl list;
+    objMethods      : funDecl list;
 }
 
 type program = {
@@ -154,17 +154,17 @@ let rec string_of_sdecl = function
 let string_of_vdecl (t, id) = string_of_varType t ^ " " ^ id ^ ";\n"
 
 let string_of_fdecl fdecl =
-    string_of_varType fdecl.returnType ^ " " ^
-    fdecl.fnName ^ "(" ^ String.concat ", " (List.map snd fdecl.parameters) ^
+    string_of_varType fdecl.fnReturnType ^ " " ^
+    fdecl.fnName ^ "(" ^ String.concat ", " (List.map snd fdecl.fnParameters) ^
     ")\n{\n" ^
     String.concat "" (List.map string_of_vdecl fdecl.fnLocals) ^
-    String.concat "" (List.map string_of_sdecl fdecl.body) ^
+    String.concat "" (List.map string_of_sdecl fdecl.fnBody) ^
     "}\n"
 
 let string_of_odecl odecl =
     "Object " ^ odecl.objName ^ " {" ^
     String.concat "" (List.map string_of_vdecl odecl.objLocals) ^
-    String.concat "" (List.map string_of_fdecl odecl.methods) ^
+    String.concat "" (List.map string_of_fdecl odecl.objMethods) ^
     "}\n"
 
 let string_of_program globals =

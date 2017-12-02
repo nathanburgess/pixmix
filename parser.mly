@@ -53,7 +53,7 @@ objDecl:
     OBJECT ID SEMI
     { { objName     = $2;
         objLocals   = [];
-        methods     = [] } }
+        objMethods     = [] } }
 
 stmtDecl:
       expr SEMI                 { Expr $1 }
@@ -72,11 +72,11 @@ stmtDecl:
 
 fnDecl:
     varType ID LPAREN optionalParameters RPAREN LC_BRACE varDeclList statementsList RC_BRACE
-    { { returnType  = $1;
-        fnName      = $2;
-        parameters  = $4;
-        fnLocals    = List.rev $7;
-        body        = List.rev $8 } }
+    { { fnReturnType    = $1;
+        fnName          = $2;
+        fnParameters    = $4;
+        fnLocals        = List.rev $7;
+        fnBody          = List.rev $8 } }
 
 statementsList:
       /* nothing */             { [] }
