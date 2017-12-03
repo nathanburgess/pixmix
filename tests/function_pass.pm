@@ -1,4 +1,4 @@
-fun add(num x, num y)
+num add(num x, num y)
 {
   return x + y;
 }
