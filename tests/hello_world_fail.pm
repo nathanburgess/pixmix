@@ -1,4 +1,4 @@
-int main () {
+num main () {
     string hw;
     hw = "@@@";
     Console.log(hw);

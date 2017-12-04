@@ -1,4 +1,4 @@
-fun fib(int x)
+fun fib(num x)
 {
   if (x is 0)
   return 0;
@@ -6,8 +6,8 @@ fun fib(int x)
   return 1;
 }
 
-int main()
+num main()
 {
-  console.read(int x);    //user input
-  console.log(fib(x - 1) + fib(x - 2));   //print
+  console.read(num x);    #user input
+  console.log(fib(x - 1) + fib(x - 2));   #print
 }

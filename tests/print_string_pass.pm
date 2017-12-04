@@ -1,4 +1,4 @@
-int main()
+num main()
 {
   string a;
   a = "hi";

@@ -1,7 +1,7 @@
-num main () {
+ num main () {
 
-    string a;
-    string b;
+    float a;
+    float b;
     num sum;
 
     a = "hello";
@@ -9,6 +9,6 @@ num main () {
     sum = a + b;
 
     Console.log(sum);
-
     return 0;
+    
 }

@@ -1,8 +1,8 @@
-int main () {
+num main () {
 
     string a;
     string b;
-    int sum;
+    num sum;
 
     a = "hello";
     b = "world";
