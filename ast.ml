@@ -137,6 +137,8 @@ let rec string_of_expr = function
     | Call(f, el) ->
         f ^ "(" ^ String.concat ", " (List.map string_of_expr el) ^ ")"
     | Noexpr -> ""
+    | Null -> "null"
+    | This -> "this"
 
 let rec string_of_sdecl = function
       Block(stmts) ->
