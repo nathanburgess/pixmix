@@ -1,14 +1,13 @@
-/* Ocamlyacc parser for PixMix */
+%{ open Ast %}
 
-%{
-    open Ast
-%}
-
-%token SEMI LPAREN RPAREN LBRACE RBRACE COMMA
+%token SEMI LPAREN RPAREN LC_BRACE RC_BRACE COMMA
 %token PLUS MINUS TIMES DIVIDE ASSIGN NOT
 %token EQ NEQ LT LEQ GT GEQ TRUE FALSE AND OR
-%token RETURN IF ELSE FOR WHILE INT BOOL VOID
-%token <int> LITERAL
+%token RETURN IF ELSE FOR WHILE NUM BOOL VOID
+%token STRING CHAR FLOAT IMAGE COLOR PIXEL OBJECT THIS
+%token ARRAY LSQ_BRACE RSQ_BRACE DOT
+%token <float> LITERAL
+%token <string> STRLIT
 %token <string> ID
 %token EOF
 
@@ -29,65 +28,102 @@
 %%
 
 program:
-    decls EOF { $1 }
+    decls EOF                   { $1 }
+        
+decls:      
+      /* nothing */             { { variables = []; objects = []; statements = []; functions = []; } }
+    | decls varDecl             { { $1 with variables   = $2::$1.variables  } }
+    | decls objDecl             { { $1 with objects     = $2::$1.objects    } }
+    | decls stmtDecl            { { $1 with statements  = $2::$1.statements } }
+    | decls fnDecl              { { $1 with functions   = $2::$1.functions  } }
 
-decls:
-      /* nothing */ { [], [] }
-    | decls vdecl { ($2 :: fst $1), snd $1 }
-    | decls fdecl { fst $1, ($2 :: snd $1) }
+varBind:
+    varType ID                  { ($1, $2) }
 
-fdecl:
-    typ ID LPAREN formals_opt RPAREN LBRACE vdecl_list stmt_list RBRACE
-    { { typ = $1;
-        fname = $2;
-        formals = $4;
-        locals = List.rev $7;
-        body = List.rev $8 } }
+varDecl:
+      varBind SEMI              { ($1) }
+    /* @TODO - Get this working somehow
+    | varBind ASSIGN expr SEMI  { ($1, $3) } */
 
-formals_opt:
-      /* nothing */ { [] }
-    | formal_list   { List.rev $1 }
+varDeclList:
+      /* nothing */             { [] }
+    | varDeclList varDecl       { $2 :: $1 }
 
-formal_list:
-      typ ID                   { [($1,$2)] }
-    | formal_list COMMA typ ID { ($3,$4) :: $1 }
+objDecl:
+    OBJECT ID SEMI
+    { { objName     = $2;
+        objLocals   = [];
+        objMethods     = [] } }
 
-typ:
-      INT { Int }
-    | BOOL { Bool }
-    | VOID { Void }
+stmtDecl:
+      expr SEMI                 { Expr $1 }
+    | RETURN SEMI               { Return Noexpr }
+    | RETURN expr SEMI          { Return $2 }
+    | LC_BRACE statementsList RC_BRACE   
+        { Block(List.rev $2) }
+    | IF LPAREN expr RPAREN stmtDecl %prec NOELSE 
+        { If($3, $5, Block([])) }
+    | IF LPAREN expr RPAREN stmtDecl ELSE stmtDecl    
+        { If($3, $5, $7) }
+    | FOR LPAREN optionalExpr SEMI expr SEMI optionalExpr RPAREN stmtDecl
+        { For($3, $5, $7, $9) }
+    | WHILE LPAREN expr RPAREN stmtDecl
+        { While($3, $5) }
 
-vdecl_list:
-      /* nothing */    { [] }
-    | vdecl_list vdecl { $2 :: $1 }
+fnDecl:
+    varType ID LPAREN optionalParameters RPAREN LC_BRACE varDeclList statementsList RC_BRACE
+    { { fnReturnType    = $1;
+        fnName          = $2;
+        fnParameters    = $4;
+        fnLocals        = List.rev $7;
+        fnBody          = List.rev $8 } }
 
-vdecl:
-    typ ID SEMI { ($1, $2) }
+statementsList:
+      /* nothing */             { [] }
+    | statementsList stmtDecl   { $2 :: $1 }
 
-stmt_list:
-      /* nothing */  { [] }
-    | stmt_list stmt { $2 :: $1 }
+fnDeclList:
+    /* nothing */               { [] }
+    | fnDeclList fnDecl         { $2 :: $1}
 
-stmt:
-      expr SEMI { Expr $1 }
-    | RETURN SEMI { Return Noexpr }
-    | RETURN expr SEMI { Return $2 }
-    | LBRACE stmt_list RBRACE { Block(List.rev $2) }
-    | IF LPAREN expr RPAREN stmt %prec NOELSE { If($3, $5, Block([])) }
-    | IF LPAREN expr RPAREN stmt ELSE stmt    { If($3, $5, $7) }
-    | FOR LPAREN expr_opt SEMI expr SEMI expr_opt RPAREN stmt
-      { For($3, $5, $7, $9) }
-    | WHILE LPAREN expr RPAREN stmt { While($3, $5) }
 
-expr_opt:
-      /* nothing */ { Noexpr }
-    | expr          { $1 }
+optionalParameters:
+      /* nothing */             { [] }
+    | parametersList            { List.rev $1 }
+
+parametersList:
+      varType ID                { [($1, $2)] }
+    | parametersList COMMA varType ID  
+        { ($3, $4) :: $1 }
+
+varType:
+      NUM                       { Num }
+    | BOOL                      { Bool }
+    | CHAR                      { Char }
+    | STRING                    { String }
+    | VOID                      { Void }
+    | COLOR                     { Color }
+    | IMAGE                     { Image }
+    | OBJECT                    { Object }
+    | PIXEL                     { Pixel }
+    | ARRAY varType             { ArrayType($2) }
+
+optionalExpr:
+      /* nothing */             { Noexpr }
+    | expr                      { $1 }
 
 expr:
       LITERAL          { Literal($1) }
+    | STRLIT           { StringLit($1) }
     | TRUE             { BoolLit(true) }
     | FALSE            { BoolLit(false) }
     | ID               { Id($1) }
+    | ID LSQ_BRACE expr RSQ_BRACE 
+                       { ArrOp($1, $3) }
+    | ID DOT ID        { ObjLit($1, $3) }
+    | ID DOT ID LPAREN actuals_opt RPAREN 
+                       { ObjCall($1, $3, $5) }    
+
     | expr PLUS   expr { Binop($1, Add,   $3) }
     | expr MINUS  expr { Binop($1, Sub,   $3) }
     | expr TIMES  expr { Binop($1, Mult,  $3) }
@@ -111,5 +147,5 @@ actuals_opt:
     | actuals_list  { List.rev $1 }
 
 actuals_list:
-     expr                    { [$1] }
-    | actuals_list COMMA expr { $3 :: $1 }
+     expr                       { [$1] }
+    | actuals_list COMMA expr   { $3 :: $1 }
