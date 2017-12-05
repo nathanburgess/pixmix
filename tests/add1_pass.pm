@@ -1,4 +1,4 @@
-num main () {
+
 
     float a;
     float b;
@@ -10,5 +10,5 @@ num main () {
 
     Console.log(sum);
 
-    return 0;
-}
+    
+
