@@ -29,8 +29,7 @@
 
 program:
     | decls EOF                         { $1 }
-    | WHILE LPAREN expr RPAREN stmtDecl { While($3, $5) }
-        
+    
 decls:      
     | /* nothing */                     { { variables = []; objects = []; statements = []; functions = []; } }
     | decls varDecl                     { { $1 with variables   = $2 :: $1.variables  } }
@@ -55,7 +54,7 @@ objDecl:
     { { objName    = $2;
         objLocals  = [];
         objMethods = [] } }
-        
+
 statementsList:
     | /* nothing */                     { [] }
     | statementsList stmtDecl           { $2 :: $1 }
@@ -71,6 +70,7 @@ stmtDecl:
         { If($3, $5, $7) }
     | FOR LPAREN optionalExpr SEMI expr SEMI optionalExpr RPAREN stmtDecl
         { For($3, $5, $7, $9) }
+    | WHILE LPAREN expr RPAREN stmtDecl { While($3, $5) }
 
 fnDecl:
     varType ID LPAREN optionalParameters RPAREN LC_BRACE varDeclList statementsList RC_BRACE
