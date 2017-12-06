@@ -4,13 +4,36 @@ let convert ast = function
     | [] -> []
 
 type sexpr =
-    |(* List expressions to resolve *)
+      SLiteral      of int
+    | SBoolLit      of bool
+    | SStringLit    of string
+    | SId           of string
+    | SBinop        of expr * op * expr
+    | SArrayCreate  of varType * expr list
+    | SArrOp        of string * expr
+    | SObjLit       of string * string
+    | SObjCall      of string * string * expr list
+    | SUnop         of uop * expr
+    | SCall         of string * expr list
+    | Null
+    | This
+    | Noexpr
 
 type sstmt =
-    | (*List statements to resolve *)
+      SBlock        of sstmt list
+    | SExpr         of sexpr
+    | SReturn       of sexpr
+    | SIf           of sexpr * sstmt * sstmt
+    | SFor          of sexpr * sexpr * sexpr * sstmt
+    | SWhile        of sexpr * sstmt
 
-type sfuncdecl =
-    | (* List function declarations to resolve *)
+type sfunDecl = {
+    sfnreturnType    : varType;
+    sfnName          : string;
+    sfnParameters    : bind list;
+    sfnLocals        : bind list;
+    sfnBody          : stmt list;
+}
 
 type sobjdecl =
     | (*List object declaration components to resolve *)
