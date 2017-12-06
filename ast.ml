@@ -22,7 +22,7 @@ type varType =
 type bind = varType * string
 
 type expr =
-      Literal       of float
+      Literal       of int
     | BoolLit       of bool
     | StringLit     of string
     | Id            of string
@@ -112,7 +112,7 @@ let rec string_of_varType = function
 
 
 let rec string_of_expr = function
-      Literal(l) -> string_of_float l
+      Literal(l) -> string_of_int l
     | BoolLit(true) -> "true"
     | BoolLit(false) -> "false"
     | StringLit(s) -> s
@@ -172,5 +172,5 @@ let string_of_odecl odecl =
 let string_of_program globals =
     String.concat "" (List.map string_of_vdecl globals.variables) ^ "\n" ^
     String.concat "" (List.map string_of_odecl globals.objects) ^ "\n" ^
-    (*String.concat "" (List.map string_of_sdecls globals.statements) ^ "\n" ^*)
+    String.concat "" (List.map string_of_sdecl globals.statements) ^ "\n" ^
     String.concat "\n" (List.map string_of_fdecl globals.functions)

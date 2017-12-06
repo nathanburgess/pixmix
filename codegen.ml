@@ -22,7 +22,7 @@ let translate (program:A.program) =
     and void_t      = L.void_type       context in
 
     let rec ltype_of_type = function
-          A.Num             -> f_t
+          A.Num             -> i32_t
         | A.Bool            -> i1_t
         | A.String          -> str_t
         | A.Void            -> void_t
@@ -31,7 +31,7 @@ let translate (program:A.program) =
     (* Declare each global variable; remember its value in a map *)
     let global_vars =
         let global_var m (t, n) =
-            let init = L.const_float (ltype_of_type t) 0.
+            let init = L.const_int (ltype_of_type t) 0
             in StringMap.add n (L.define_global n init the_module) m in
         List.fold_left global_var StringMap.empty program.variables in
 
@@ -81,7 +81,7 @@ let translate (program:A.program) =
 
         (* Construct code for an expression; return its value *)
         let rec expr builder = function
-              A.Literal i -> L.const_float f_t i
+              A.Literal i -> L.const_int i32_t i
             | A.BoolLit b -> L.const_int i1_t (if b then 1 else 0)
             | A.StringLit s -> L.build_global_stringptr s "tmp" builder
             | A.Noexpr -> L.const_int i32_t 0
