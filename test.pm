@@ -1,3 +1,5 @@
-num main() {
-    return 0;
-}
+string hello;
+
+hello = "Hello world :)";
+
+printf(hello);

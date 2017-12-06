@@ -1,0 +1,778 @@
+{
+	"auto_complete":
+	{
+		"selected_items":
+		[
+			[
+				"stat",
+				"statementsList"
+			],
+			[
+				"strin",
+				"string_of_int"
+			],
+			[
+				"Stri",
+				"StringMap"
+			],
+			[
+				"area_o",
+				"area_of_ring"
+			],
+			[
+				"evalu",
+				"evaluateEnd"
+			],
+			[
+				"print",
+				"print_byte"
+			],
+			[
+				"addiu",
+				"add_immediate_unsigned\t$t = $s + C (unsigned)"
+			],
+			[
+				"bg",
+				"branch_if_greater_than_zero\tslt $at,$zero,$rs; bne $at,$zero,Label"
+			],
+			[
+				"bq",
+				"branch_if_equal_to_zero\tbeq $rs,$zero,Label"
+			],
+			[
+				"prin",
+				"print_byte"
+			],
+			[
+				"bneq",
+				"branch_on_not_equal\tif ($s != $t) go to PC+4+4*C"
+			],
+			[
+				"cont",
+				"continueLoop2"
+			],
+			[
+				"slt",
+				"set_on_less_than_unsigned\t$d = ($s < $t)"
+			],
+			[
+				"j",
+				"jump_\tPC = PC+4[31:28] . C*4"
+			],
+			[
+				"bran",
+				"branch_on_equal\tif ($s == $t) go to PC+4+4*C"
+			],
+			[
+				"beq",
+				"branch_on_equal\tif ($s == $t) go to PC+4+4*C"
+			],
+			[
+				"gra",
+				"graquantum"
+			],
+			[
+				"inner",
+				"innerHeight"
+			],
+			[
+				"in",
+				"innerHeight"
+			],
+			[
+				"inne",
+				"innerHeight"
+			]
+		]
+	},
+	"buffers":
+	[
+		{
+			"file": "ast.ml",
+			"settings":
+			{
+				"buffer_size": 5761,
+				"encoding": "UTF-8",
+				"line_ending": "Windows"
+			}
+		},
+		{
+			"file": "sast.ml",
+			"settings":
+			{
+				"buffer_size": 214,
+				"encoding": "UTF-8",
+				"line_ending": "Windows"
+			}
+		},
+		{
+			"file": "codegen.ml",
+			"settings":
+			{
+				"buffer_size": 8476,
+				"encoding": "UTF-8",
+				"line_ending": "Windows"
+			}
+		},
+		{
+			"file": "parser.mly",
+			"settings":
+			{
+				"buffer_size": 5349,
+				"encoding": "UTF-8",
+				"line_ending": "Windows"
+			}
+		},
+		{
+			"contents": "(* Top-level of the PixMix compiler: scan & parse the input,\n   check the resulting AST, generate LLVM IR, and dump the module *)\n\nmodule StringMap = Map.Make(String)\n\ntype action = Ast | LLVM_IR | Compile\n\nlet _ =\n    let action = ref Compile in\n    let set_action a () = action := a in\n    let speclist = [\n        (\"-a\", Arg.Unit (set_action Ast), \"Print the SAST\");\n        (\"-l\", Arg.Unit (set_action LLVM_IR), \"Print the generated LLVM IR\");\n        (\"-c\", Arg.Unit (set_action Compile),\n         \"Check and print the generated LLVM IR (default)\");\n    ] in  \n    let usage_msg = \"usage: ./pixmix.native [-a|-l|-c] [file.pm]\" in\n    let channel = ref stdin in\n    Arg.parse speclist (fun filename -> channel := open_in filename) usage_msg;\n\n    let lexbuf = Lexing.from_channel !channel in\n    let ast = Parser.program Scanner.token lexbuf in\n        Semant.check ast;\n        \n    match !action with\n      Ast -> print_string (Ast.string_of_program ast)\n    | LLVM_IR -> print_string (Llvm.string_of_llmodule (Codegen.translate ast))\n    | Compile -> let m = Codegen.translate ast in\n        Llvm_analysis.assert_valid_module m;\n        print_string (Llvm.string_of_llmodule m)",
+			"file": "pixmix.ml",
+			"file_size": 1201,
+			"file_write_time": 131570500491085587,
+			"settings":
+			{
+				"buffer_size": 1184,
+				"encoding": "UTF-8",
+				"line_ending": "Windows"
+			}
+		},
+		{
+			"file": "scanner.mll",
+			"settings":
+			{
+				"buffer_size": 2272,
+				"line_ending": "Windows"
+			}
+		},
+		{
+			"file": "semant.ml",
+			"settings":
+			{
+				"buffer_size": 7372,
+				"line_ending": "Windows"
+			}
+		},
+		{
+			"file": "Makefile",
+			"settings":
+			{
+				"buffer_size": 2147,
+				"encoding": "UTF-8",
+				"line_ending": "Windows"
+			}
+		},
+		{
+			"file": "test.pm",
+			"settings":
+			{
+				"buffer_size": 117,
+				"encoding": "UTF-8",
+				"line_ending": "Windows"
+			}
+		}
+	],
+	"build_system": "",
+	"build_system_choices":
+	[
+	],
+	"build_varint": "",
+	"command_palette":
+	{
+		"height": 236.0,
+		"last_filter": "indent",
+		"selected_items":
+		[
+			[
+				"indent",
+				"Indentation: Reindent Lines"
+			],
+			[
+				"install",
+				"Package Control: Install Package"
+			],
+			[
+				"format",
+				"Format: Javascript"
+			],
+			[
+				"markdown",
+				"Markdown Preview: Preview in Browser"
+			],
+			[
+				"rein",
+				"Indentation: Reindent Lines"
+			],
+			[
+				"inde",
+				"Indentation: Reindent Lines"
+			],
+			[
+				"comment",
+				"Toggle Block Comment"
+			],
+			[
+				"reind",
+				"Indentation: Reindent Lines"
+			],
+			[
+				"json",
+				"JSON Reindent: reindent file or selection"
+			],
+			[
+				"packagein",
+				"Package Control: Install Package"
+			]
+		],
+		"width": 412.0
+	},
+	"console":
+	{
+		"height": 126.0,
+		"history":
+		[
+			"import urllib.request,os,hashlib; h = 'df21e130d211cfc94d9b0905775a7c0f' + '1e3d39e33b79698005270310898eea76'; pf = 'Package Control.sublime-package'; ipp = sublime.installed_packages_path(); urllib.request.install_opener( urllib.request.build_opener( urllib.request.ProxyHandler()) ); by = urllib.request.urlopen( 'http://packagecontrol.io/' + pf.replace(' ', '%20')).read(); dh = hashlib.sha256(by).hexdigest(); print('Error validating download (got %s instead of %s), please try manual install' % (dh, h)) if dh != h else open(os.path.join( ipp, pf), 'wb' ).write(by)",
+			"import urllib.request,os,hashlib; h = '2915d1851351e5ee549c20394736b442' + '8bc59f460fa1548d1514676163dafc88'; pf = 'Package Control.sublime-package'; ipp = sublime.installed_packages_path(); urllib.request.install_opener( urllib.request.build_opener( urllib.request.ProxyHandler()) ); by = urllib.request.urlopen( 'http://packagecontrol.io/' + pf.replace(' ', '%20')).read(); dh = hashlib.sha256(by).hexdigest(); print('Error validating download (got %s instead of %s), please try manual install' % (dh, h)) if dh != h else open(os.path.join( ipp, pf), 'wb' ).write(by)"
+		]
+	},
+	"distraction_free":
+	{
+		"menu_visible": true,
+		"show_minimap": false,
+		"show_open_files": false,
+		"show_tabs": false,
+		"side_bar_visible": false,
+		"status_bar_visible": false
+	},
+	"file_history":
+	[
+		"/D/Development/Projects/OCaml/pixmix/ast - Copy.ml",
+		"/D/Development/Projects/OCaml/pixmix/Makefile",
+		"/D/Development/Projects/NodeJS/sir-reginald-botkins/index.js",
+		"/D/Development/Projects/NodeJS/sir-reginald-botkins/src/reginald.js",
+		"/D/Downloads/blizzards.sql",
+		"/D/Downloads/blizzards_users (1).sql",
+		"/D/Downloads/blizzards_users.sql",
+		"/D/Downloads/bungies.sql",
+		"/D/Development/Apps/CMDer/vendor/init.bat",
+		"/D/Development/Apps/CMDer/vendor/profile.ps1",
+		"/D/Development/Apps/CMDer/config/settings",
+		"/D/Development/Apps/CMDer/config/user-profile.cmd",
+		"/D/Development/Apps/CMDer/config/user-aliases.cmd",
+		"/D/Development/Projects/OCaml/pixmix/a.pm",
+		"/D/Development/Apps/CMDer2/config/user-aliases.cmd",
+		"/C/Users/Nathan/Desktop/init.bat",
+		"/C/Users/Nathan/AppData/Local/lxss/root/projects/node/srb/index.js",
+		"/D/Development/Projects/NodeJS/sir-reginald-botkins/src/lib/String.js",
+		"/D/Development/Projects/NodeJS/sir-reginald-botkins/src/models/MessageModel.js",
+		"/C/Users/Nathan/AppData/Local/lxss/root/projects/Node.js/srb/index.js",
+		"/D/Development/Projects/NodeJS/sir-reginald-botkins/package.json",
+		"/D/Development/Projects/NodeJS/sir-reginald-botkins/package",
+		"/D/Development/Projects/NodeJS/sir-reginald-botkins/src/lib/Cassandra.js",
+		"/D/Development/Projects/C and CPP/PLT_HW3/q1.s",
+		"/D/Development/Machines/CPP/Vagrantfile",
+		"/D/Development/Projects/C and CPP/PLT_HW3/Makefile",
+		"/D/Development/Projects/C and CPP/PLT_HW3/q1.c",
+		"/D/Development/~/.ssh/config",
+		"/D/Development/VMs/School/code/untitled/CMakeLists.txt",
+		"/D/Development/VMs/School/code/untitled/main.cpp",
+		"/D/Development/Projects/OCaml/pixmix/test.pm",
+		"/D/Development/Projects/OCaml/pixmix/tests/print_string_pass.pm",
+		"/C/Users/Nathan/AppData/Local/Temp/7zO04CC3FE7/ast.ml",
+		"/C/Users/Nathan/AppData/Local/Temp/7zO817473E4/parser.mly",
+		"/C/Users/Nathan/AppData/Local/Temp/7zO817E8D44/ast.ml",
+		"/D/Downloads/tone (1).json",
+		"/D/Downloads/tone.json",
+		"/D/Development/Projects/NodeJS/sir-reginald-botkins/config/database.js",
+		"/D/Development/Projects/NodeJS/sir-reginald-botkins/src/commands/chat/gaming/blizz.js",
+		"/D/Development/Projects/NodeJS/sir-reginald-botkins/src/commands/chat/gaming/bnet",
+		"/D/Development/Projects/NodeJS/sir-reginald-botkins/src/commands/chat/gaming/bnet.js",
+		"/D/Development/Projects/NodeJS/sir-reginald-botkins/src/lib/MySQL.js",
+		"/D/Development/Projects/NodeJS/sir-reginald-botkins/src/lib/Redis.js",
+		"/D/Downloads/aws-env-control.sh",
+		"/D/Downloads/aws-env-control (1).sh",
+		"/D/Development/Projects/NodeJS/sir-reginald-botkins/src/commands/console/help.js",
+		"/D/Development/Projects/NodeJS/sir-reginald-botkins/src/lib/BaseCommand.js",
+		"/D/Development/Projects/NodeJS/sir-reginald-botkins/src/lib/Graphics/Destiny.js",
+		"/D/Development/Projects/NodeJS/sir-reginald-botkins/src/lib/Graphics/Leaderboard.js",
+		"/D/Development/Projects/NodeJS/sir-reginald-botkins/src/lib/Commands.js",
+		"/D/Development/Projects/NodeJS/sir-reginald-botkins/src/commands/console/users/user.js",
+		"/D/Development/Projects/NodeJS/sir-reginald-botkins/config/reginald.js",
+		"/D/Development/Projects/NodeJS/sir-reginald-botkins/src/schemas/ChannelSchema.js",
+		"/C/Users/Nathan/AppData/Local/Temp/7zOC114A5BA/ast.ml",
+		"/C/Users/Nathan/AppData/Local/Temp/7zO46EB62EA/ast.ml",
+		"/C/Users/Nathan/AppData/Local/Temp/7zO46E6310A/parser.mly",
+		"/C/Users/Nathan/AppData/Local/Temp/7zO46E4453A/codegen.ml",
+		"/D/Development/Projects/Python/temp.py",
+		"/D/Development/Projects/OCaml/microc/parser.mly",
+		"/C/Users/Nathan/AppData/Roaming/Sublime Text 3/Packages/Git/Git.sublime-settings",
+		"/C/Users/Nathan/AppData/Local/Temp/7zOC3EB617D/cimple.ml",
+		"/C/Users/Nathan/AppData/Local/Temp/7zOC3E9ADCF/ctree.ml",
+		"/C/Users/Nathan/AppData/Local/Temp/7zOC3EB003D/codegen.ml",
+		"/C/Users/Nathan/AppData/Local/Temp/7zOC3EB1DBD/ccodegen.ml",
+		"/D/Development/Projects/OCaml/pm2/test.pm",
+		"/D/Development/Projects/OCaml/pm2/bindings.c",
+		"/D/Development/Projects/OCaml/pm2/_tags",
+		"/D/Development/Projects/OCaml/pm2/myocamlbuild.ml",
+		"/D/Development/Projects/OCaml/pm2/token.ml",
+		"/D/Development/Projects/OCaml/pm2/lexer.ml",
+		"/D/Development/Projects/OCaml/pm2/ast.ml",
+		"/D/Development/Projects/OCaml/pm2/parser.ml",
+		"/D/Development/Projects/OCaml/pm2/toplevel.ml",
+		"/D/Development/Projects/OCaml/pm2/pixmix.ml",
+		"/D/Development/Projects/OCaml/pm2/codegen.ml",
+		"/D/Development/Projects/OCaml/pixmix/parser.mly",
+		"/D/Development/Projects/OCaml/pixmix/parser.ml",
+		"/D/Development/Projects/OCaml/pixmix/semant.ml",
+		"/D/Development/Projects/OCaml/pixmix/scanner.mll",
+		"/D/Development/Projects/OCaml/pixmix/pixmix.ml",
+		"/D/Development/Projects/OCaml/pixmix/lexer.ml",
+		"/D/Development/Projects/OCaml/pixmix/token.ml",
+		"/D/Development/Projects/OCaml/pixmix/myocamlbuild.ml",
+		"/D/Development/Projects/OCaml/pixmix/ast.ml",
+		"/D/Development/Projects/OCaml/pixmix/toplevel.ml",
+		"/D/Development/Projects/OCaml/pixmix/codegen.ml",
+		"/D/Development/Projects/OCaml/pixmix/_tags",
+		"/D/Development/Projects/OCaml/pixmix/codegen.ml.old",
+		"/D/Development/Machines/OCaml/Vagrantfile",
+		"/D/Development/Projects/OCaml/pixmix/tests/fun1.mc",
+		"/C/Users/Nathan/AppData/Local/Temp/7zO46F13C1B/codegen.ml",
+		"/C/Users/Nathan/.viminfo",
+		"/C/Users/Nathan/.gitconfig",
+		"/C/Users/Nathan/.bashrc",
+		"/C/Users/Nathan/AppData/Local/Temp/7zO46F17B30/codegen.ml",
+		"/C/Users/Nathan/AppData/Local/Temp/7zE46F82D0B/codegen.ml",
+		"/C/Users/Nathan/AppData/Local/Temp/7zO80D8E31B/ast.ml",
+		"/C/Users/Nathan/AppData/Local/Temp/7zO80D0D468/ast.ml",
+		"/C/Users/Nathan/AppData/Local/Temp/7zO80D493D4/ast.ml",
+		"/C/Users/Nathan/AppData/Local/Temp/7zO80D6B072/codegen.ml",
+		"/C/Users/Nathan/AppData/Local/Temp/7zOC83DAC31/codegen.ml",
+		"/D/Development/Projects/OCaml/pixmix/a.ml",
+		"/C/Users/Nathan/AppData/Local/Temp/7zO03A915D3/_tags",
+		"/D/Development/Projects/OCaml/pm/scanner.mll",
+		"/D/Development/Projects/OCaml/pm/ast.ml",
+		"/C/Users/Nathan/AppData/Local/Temp/7zO027FC58B/ast.ml",
+		"/C/Users/Nathan/AppData/Local/Temp/7zO0278CC2C/compile.ml",
+		"/C/Users/Nathan/AppData/Local/Temp/7zO0279B5EC/translate.ml",
+		"/D/Development/Projects/OCaml/pixmix/microc.ml",
+		"/D/Development/Projects/OCaml/stop/Makefile",
+		"/C/Users/Nathan/AppData/Local/Temp/7zO80AB4639/sast.ml",
+		"/C/Users/Nathan/AppData/Local/Temp/7zO044D7247/ast.ml",
+		"/C/Users/Nathan/AppData/Local/Temp/7zECC520C40/test-allfeatures.ll",
+		"/D/Development/Projects/OCaml/stop/parse",
+		"/D/Development/Projects/OCaml/stop/code.md",
+		"/D/Development/Projects/OCaml/stop/file.stp",
+		"/D/Development/Projects/OCaml/microc/codegen.ml",
+		"/D/Development/Projects/OCaml/pixmix/t.ml",
+		"/D/Development/Projects/OCaml/pixmix/pm.ml",
+		"/D/Development/Projects/OCaml/pixmix/cg.ml",
+		"/C/Users/Nathan/AppData/Roaming/Sublime Text 3/Packages/User/Preferences.sublime-settings",
+		"/C/Users/Nathan/AppData/Roaming/Sublime Text 3/Packages/Default/Preferences.sublime-settings",
+		"/D/Development/Projects/OCaml/pixmix/test.mc",
+		"/D/Development/Machines/Web/Vagrantfile",
+		"/D/Development/Machines/OCaml/~/.ssh/known_hosts",
+		"/D/Development/Machines/OCaml/~/.ssh/config/known_hosts",
+		"/D/Development/Machines/OCaml/Vagrant",
+		"/D/Downloads/asset_sql_content_9d7532501d78552adce26945a198235d/asset_sql_content_9d7532501d78552adce26945a198235d.content"
+	],
+	"find":
+	{
+		"height": 41.0
+	},
+	"find_in_files":
+	{
+		"height": 112.0,
+		"where_history":
+		[
+			""
+		]
+	},
+	"find_state":
+	{
+		"case_sensitive": false,
+		"find_history":
+		[
+			"stringmap",
+			"the_module",
+			"Display this list",
+			"updateStats",
+			"Messages",
+			"cassandra",
+			"l",
+			"main",
+			"min",
+			"main"
+		],
+		"highlight": true,
+		"in_selection": false,
+		"preserve_case": false,
+		"regex": false,
+		"replace_history":
+		[
+		],
+		"reverse": false,
+		"show_context": true,
+		"use_buffer2": true,
+		"whole_word": false,
+		"wrap": true
+	},
+	"groups":
+	[
+		{
+			"selected": 1,
+			"sheets":
+			[
+				{
+					"buffer": 0,
+					"file": "ast.ml",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 5761,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								624,
+								624
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/sublime-better-ocaml/OCaml.tmLanguage",
+							"tab_size": 4,
+							"translate_tabs_to_spaces": true
+						},
+						"translation.x": 0.0,
+						"translation.y": 342.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 1,
+					"type": "text"
+				},
+				{
+					"buffer": 1,
+					"file": "sast.ml",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 214,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								214,
+								214
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/sublime-better-ocaml/OCaml.tmLanguage",
+							"tab_size": 4,
+							"translate_tabs_to_spaces": true
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 0,
+					"type": "text"
+				},
+				{
+					"buffer": 2,
+					"file": "codegen.ml",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 8476,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								941,
+								941
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/sublime-better-ocaml/OCaml.tmLanguage",
+							"tab_size": 4,
+							"translate_tabs_to_spaces": true
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 3,
+					"type": "text"
+				},
+				{
+					"buffer": 3,
+					"file": "parser.mly",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 5349,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								1128,
+								1128
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/OCaml/OCamlyacc.tmLanguage",
+							"tab_size": 4,
+							"translate_tabs_to_spaces": true
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 7,
+					"type": "text"
+				},
+				{
+					"buffer": 4,
+					"file": "pixmix.ml",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 1184,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								1184,
+								1184
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/sublime-better-ocaml/OCaml.tmLanguage",
+							"tab_size": 4,
+							"translate_tabs_to_spaces": true
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 2,
+					"type": "text"
+				},
+				{
+					"buffer": 5,
+					"file": "scanner.mll",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 2272,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								0,
+								0
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/sublime-better-ocaml/OCamllex.tmLanguage",
+							"tab_size": 4,
+							"translate_tabs_to_spaces": true
+						},
+						"translation.x": 0.0,
+						"translation.y": 342.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 8,
+					"type": "text"
+				},
+				{
+					"buffer": 6,
+					"file": "semant.ml",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 7372,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								789,
+								789
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/sublime-better-ocaml/OCaml.tmLanguage",
+							"tab_size": 4,
+							"translate_tabs_to_spaces": true
+						},
+						"translation.x": 0.0,
+						"translation.y": 114.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 5,
+					"type": "text"
+				},
+				{
+					"buffer": 7,
+					"file": "Makefile",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 2147,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								850,
+								850
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/Makefile/Makefile.sublime-syntax"
+						},
+						"translation.x": 0.0,
+						"translation.y": 57.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 4,
+					"type": "text"
+				},
+				{
+					"buffer": 8,
+					"file": "test.pm",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 117,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								117,
+								117
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/Perl/Perl.sublime-syntax"
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 6,
+					"type": "text"
+				}
+			]
+		}
+	],
+	"incremental_find":
+	{
+		"height": 27.0
+	},
+	"input":
+	{
+		"height": 0.0
+	},
+	"layout":
+	{
+		"cells":
+		[
+			[
+				0,
+				0,
+				1,
+				1
+			]
+		],
+		"cols":
+		[
+			0.0,
+			1.0
+		],
+		"rows":
+		[
+			0.0,
+			1.0
+		]
+	},
+	"menu_visible": true,
+	"output.find_results":
+	{
+		"height": 0.0
+	},
+	"output.unicode_preview":
+	{
+		"height": 357.0
+	},
+	"pinned_build_system": "",
+	"project": "PixMix.sublime-project",
+	"replace":
+	{
+		"height": 50.0
+	},
+	"save_all_on_build": true,
+	"select_file":
+	{
+		"height": 0.0,
+		"last_filter": "",
+		"selected_items":
+		[
+		],
+		"width": 0.0
+	},
+	"select_project":
+	{
+		"height": 0.0,
+		"last_filter": "",
+		"selected_items":
+		[
+		],
+		"width": 0.0
+	},
+	"select_symbol":
+	{
+		"height": 58.0,
+		"last_filter": "",
+		"selected_items":
+		[
+		],
+		"width": 392.0
+	},
+	"selected_group": 0,
+	"settings":
+	{
+	},
+	"show_minimap": true,
+	"show_open_files": true,
+	"show_tabs": true,
+	"side_bar_visible": true,
+	"side_bar_width": 150.0,
+	"status_bar_visible": true,
+	"template_settings":
+	{
+	}
+}
