@@ -5,7 +5,7 @@
 %token EQ NEQ LT LEQ GT GEQ TRUE FALSE AND OR
 %token RETURN IF ELSE FOR WHILE NUM BOOL VOID
 %token STRING CHAR INT IMAGE COLOR PIXEL OBJECT THIS
-%token ARRAY LSQ_BRACE RSQ_BRACE DOT
+%token ARRAY LSQ_BRACE RSQ_BRACE DOT NEW
 %token <int> LITERAL
 %token <string> STRLIT
 %token <string> ID
@@ -31,32 +31,27 @@ program:
     decls EOF                               { $1 }
                     
 decls:                  
-      /* nothing */                         { { variables = []; objects = []; statements = []; functions = []; } }
+    | /* nothing */                         { { variables = []; objects = []; statements = []; functions = []; } }
     | decls varDecl                         { { $1 with variables   = $2::$1.variables  } }
     | decls objDecl                         { { $1 with objects     = $2::$1.objects    } }
     | decls stmtDecl                        { { $1 with statements  = $2::$1.statements } }
     | decls fnDecl                          { { $1 with functions   = $2::$1.functions  } }
             
-varBind:            
-    varType ID                              { ($1, $2) }
-            
 varDecl:            
-      varBind SEMI                          { ($1) }
-    /* @TODO - Get this working somehow
-    | varBind ASSIGN expr SEMI  { ($1, $3) } */
+    | varType ID SEMI                       { ($1, $2) }
 
 varDeclList:
-      /* nothing */                         { [] }
+    | /* nothing */                         { [] }
     | varDeclList varDecl                   { $2 :: $1 }
 
 objDecl:
     OBJECT ID SEMI
-    { { objName     = $2;
-        objLocals   = [];
-        objMethods     = [] } }
+    { { objName                             = $2;
+        objLocals                           = [];
+        objMethods                          = [] } }
 
 stmtDecl:
-      expr SEMI                             { Expr $1 }
+    | expr SEMI                             { Expr $1 }
     | RETURN SEMI                           { Return Noexpr }
     | RETURN expr SEMI                      { Return $2 }
     | LC_BRACE statementsList RC_BRACE      { Block(List.rev $2) }
@@ -67,33 +62,34 @@ stmtDecl:
     | FOR LPAREN optionalExpr SEMI expr SEMI optionalExpr RPAREN stmtDecl
         { For($3, $5, $7, $9) }
     | WHILE LPAREN expr RPAREN stmtDecl     { While($3, $5) }
+    | varType ID ASSIGN expr SEMI           { DeclAssign($1, $2, $4) }
 
 fnDecl:
     varType ID LPAREN optionalParameters RPAREN LC_BRACE varDeclList statementsList RC_BRACE
-    { { fnReturnType    = $1;
-        fnName          = $2;
-        fnParameters    = $4;
-        fnLocals        = List.rev $7;
-        fnBody          = List.rev $8 } }
+    { { fnReturnType                        = $1;
+        fnName                              = $2;
+        fnParameters                        = $4;
+        fnLocals                            = List.rev $7;
+        fnBody                              = List.rev $8 } }
 
 statementsList:
-      /* nothing */                         { [] }
+    | /* nothing */                         { [] }
     | statementsList stmtDecl               { $2 :: $1 }
-            
+
 fnDeclList:         
-    /* nothing */                           { [] }
+    | /* nothing */                         { [] }
     | fnDeclList fnDecl                     { $2 :: $1}
             
 optionalParameters:         
-      /* nothing */                         { [] }
+    | /* nothing */                         { [] }
     | parametersList                        { List.rev $1 }
             
 parametersList:         
-      varType ID                            { [($1, $2)] }
+    | varType ID                            { [($1, $2)] }
     | parametersList COMMA varType ID       { ($3, $4) :: $1 }
 
 varType:
-      NUM                                   { Num }
+    | NUM                                   { Num }
     | BOOL                                  { Bool }
     | CHAR                                  { Char }
     | STRING                                { String }
@@ -105,11 +101,11 @@ varType:
     | ARRAY                                 { Array }
             
 optionalExpr:           
-      /* nothing */                         { Noexpr }
+    | /* nothing */                         { Noexpr }
     | expr                                  { $1 }
             
 expr:           
-      LITERAL                               { Literal($1) }
+    | LITERAL                               { Literal($1) }
     | STRLIT                                { StringLit($1) }
     | TRUE                                  { BoolLit(true) }
     | FALSE                                 { BoolLit(false) }
@@ -136,9 +132,9 @@ expr:
     | LPAREN expr RPAREN                    { $2 }
             
 actuals_opt:            
-      /* nothing */                         { [] }
+    | /* nothing */                         { [] }
     | actuals_list                          { List.rev $1 }
             
 actuals_list:           
-     expr                                   { [$1] }
+    | expr                                  { [$1] }
     | actuals_list COMMA expr               { $3 :: $1 }
