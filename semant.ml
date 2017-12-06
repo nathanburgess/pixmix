@@ -1,6 +1,7 @@
 (* Semantic checking for the PixMix compiler *)
 
 open Ast
+open Sast
 
 module StringMap = Map.Make(String)
 
