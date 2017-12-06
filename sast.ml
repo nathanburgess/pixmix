@@ -32,11 +32,18 @@ type sfunDecl = {
     sfnName          : string;
     sfnParameters    : bind list;
     sfnLocals        : bind list;
-    sfnBody          : stmt list;
+    sfnBody          : sstmt list;
 }
 
-type sobjdecl =
-    | (*List object declaration components to resolve *)
+type sobjDecl = {
+    sobjName         : string;
+    sobjLocals       : bind list;
+    sobjMethods      : sfunDecl;
+}
 
-type sprogram =
-    | (*List program components to resolve *)
+type sprogram = {
+    svariables       : bind list;
+    sobjects         : sobjDecl list;
+    statements       : sstmt list;
+    functions        : sfunDecl list;
+}
