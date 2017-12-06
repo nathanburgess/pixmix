@@ -26,6 +26,8 @@ let translate (program:A.program) =
         | A.Bool            -> i1_t
         | A.String          -> str_t
         | A.Void            -> void_t
+        | A.Array           -> i8_t
+        | A.Object          -> i8_t
         (* | A.Array           -> L.pointer_type (ltype_of_type t) *)
     in
 
@@ -72,8 +74,9 @@ let translate (program:A.program) =
                 in StringMap.add n local_var m in
 
             let formals = List.fold_left2 add_formal StringMap.empty fdecl.A.fnParameters
-                    (Array.to_list (L.params the_function)) in
-            List.fold_left add_local formals fdecl.A.fnLocals in
+                (Array.to_list (L.params the_function)) in
+
+        List.fold_left add_local formals fdecl.A.fnLocals in
 
         (* Return the value for a variable or formal argument *)
         let lookup n = try StringMap.find n local_vars
@@ -131,7 +134,13 @@ let translate (program:A.program) =
         (* Build the code for the given statement; return the builder for
            the statement's successor *)
         let rec stmt builder = function
-              A.Block sl -> List.fold_left stmt builder sl
+            | A.Block sl -> List.fold_left stmt builder sl
+
+
+            | A.DeclAssign (v, s, e) -> let e' = expr builder e in
+                ignore (L.build_store e' (lookup s) builder); 
+                builder
+            
             | A.Expr e -> ignore (expr builder e); builder
             | A.Return e -> ignore (match fdecl.A.fnReturnType with
                   A.Void -> L.build_ret_void builder
@@ -166,8 +175,7 @@ let translate (program:A.program) =
                 ignore (L.build_cond_br bool_val body_bb merge_bb pred_builder);
                 L.builder_at_end context merge_bb
 
-            | A.For (e1, e2, e3, body) -> stmt builder
-                                              ( A.Block [A.Expr e1 ; A.While (e2, A.Block [body ; A.Expr e3]) ] )
+            | A.For (e1, e2, e3, body) -> stmt builder ( A.Block [A.Expr e1 ; A.While (e2, A.Block [body ; A.Expr e3]) ] )
         in
 
         (* Build the code for each statement in the function *)
@@ -175,7 +183,7 @@ let translate (program:A.program) =
 
         (* Add a return if the last block falls off the end *)
         add_terminal builder (match fdecl.A.fnReturnType with
-              A.Void -> L.build_ret_void
+            | A.Void -> L.build_ret_void
             | t -> L.build_ret (L.const_int (ltype_of_type t) 0))
     in
 

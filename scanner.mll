@@ -50,6 +50,7 @@ rule token = parse
     | "Array"               { ARRAY }
     | "Object"              { OBJECT }
     | "this"                { THIS }
+    | "new"                 { NEW }
     | ['0'-'9']+ as lxm     { LITERAL(int_of_string lxm) }
     | ['a'-'z' 'A'-'Z']['a'-'z' 'A'-'Z' '0'-'9' '_']* as lxm { ID(lxm) }
     | '"'((ascii|escape)* as s)'"'{ STRLIT(unescape s) }

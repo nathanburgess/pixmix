@@ -3,10 +3,8 @@
 :#
 num main()
 {
-    #Array a;
-    num b;      # declare a number
-    b = 200;    # assign a value
+	num a = 2;
+    a = 5;
 
-    # print value of b
-    print(b);
+    print(a);
 }

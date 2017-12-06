@@ -40,7 +40,8 @@ and expr =
 
 (* stmt most likely ready *)
 and stmt =
-      Block         of stmt list
+    | Block         of stmt list
+    | DeclAssign    of varType * string * expr
     | Expr          of expr
     | Return        of expr
     | If            of expr * stmt * stmt
@@ -139,8 +140,8 @@ let rec string_of_expr = function
     | This -> "this"
 
 let rec string_of_sdecl = function
-      Block(stmts) ->
-        "{\n" ^ String.concat "" (List.map string_of_sdecl stmts) ^ "}\n"
+    | Block(stmts) -> "{\n" ^ String.concat "" (List.map string_of_sdecl stmts) ^ "}\n"
+    | DeclAssign(t, v, e) -> string_of_varType t ^ " " ^ v ^ " = " ^ string_of_expr e
     | Expr(expr) -> string_of_expr expr ^ ";\n";
     | Return(expr) -> "return " ^ string_of_expr expr ^ ";\n";
     | If(e, s, Block([])) -> "if (" ^ string_of_expr e ^ ")\n" ^ string_of_sdecl s

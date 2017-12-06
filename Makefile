@@ -24,6 +24,10 @@ default:
 test: 
 	@./pixmix.native test.pm | lli $$1 || true
 
+.PHONY : debug
+debug:
+	OCAMLRUNPARAM='p' ocamlyacc -v parser.mly
+
 .PHONY : all
 all: 
 	@eval `opam config env`

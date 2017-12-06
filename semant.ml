@@ -95,8 +95,10 @@ let check program =
             (List.map snd func.fnLocals);
 
         (* Type of each variable (global, formal, or local *)
-        let symbols = List.fold_left (fun m (t, n) -> StringMap.add n t m)
-                StringMap.empty (program.variables @ func.fnParameters @ func.fnLocals )
+        let symbols = List.fold_left (fun m (t, n) -> 
+                Printf.printf "; Adding to symbols: %s\n" n;
+            StringMap.add n t m)
+            StringMap.empty (program.variables @ func.fnParameters @ func.fnLocals )
         in
 
         let type_of_identifier s =
@@ -127,20 +129,17 @@ let check program =
                  | _ -> raise (Failure ("illegal unary operator " ^ string_of_uop op ^
                                         string_of_varType t ^ " in " ^ string_of_expr ex)))
             | Noexpr -> Void
-            | Assign(var, e) as ex -> let lt = type_of_identifier var
+            | Assign(var, e) as ex -> 
+                let lt = type_of_identifier var
                 and rt = expr e in
                 check_assign lt rt (Failure ("illegal assignment " ^ string_of_varType lt ^
-                                             " = " ^ string_of_varType rt ^ " in " ^ 
-                                             string_of_expr ex))
+                    " = " ^ string_of_varType rt ^ " in " ^ string_of_expr ex))
             | Call(fname, actuals) as call -> let fd = function_decl fname in
                 if List.length actuals != List.length fd.fnParameters then
-                    raise (Failure ("expecting " ^ string_of_int
-                                        (List.length fd.fnParameters) ^ " arguments in " ^ string_of_expr call))
+                    raise (Failure ("expecting " ^ string_of_int (List.length fd.fnParameters) ^ " arguments in " ^ string_of_expr call))
                 else
                     List.iter2 (fun (ft, _) e -> let et = expr e in
-                                   ignore (check_assign ft et
-                                               (Failure ("illegal actual argument found " ^ string_of_varType et ^
-                                                         " expected " ^ string_of_varType ft ^ " in " ^ string_of_expr e))))
+                        ignore (check_assign ft et (Failure ("illegal actual argument found " ^ string_of_varType et ^ " expected " ^ string_of_varType ft ^ " in " ^ string_of_expr e))))
                         fd.fnParameters actuals;
                 fd.fnReturnType
             (* | ArrayCreate(t, e) -> 
@@ -155,13 +154,16 @@ let check program =
 
         (* Verify a statement or throw an exception *)
         let rec stmt = function
-              Block sl -> let rec check_block = function
+            | Block sl -> let rec check_block = function
                   [Return _ as s] -> stmt s
                 | Return _ :: _ -> raise (Failure "nothing may follow a return")
                 | Block sl :: ss -> check_block (sl @ ss)
                 | s :: ss -> stmt s ; check_block ss
                 | [] -> ()
                 in check_block sl
+
+            | DeclAssign(t, var, e) as st -> ()
+
             | Expr e -> ignore (expr e)
             | Return e -> let t = expr e in if t = func.fnReturnType then () else
                     raise (Failure ("return gives " ^ string_of_varType t ^ " expected " ^
