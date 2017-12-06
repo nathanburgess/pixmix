@@ -47,6 +47,7 @@ rule token = parse
     | "string"              { STRING }
     | "true"                { TRUE }
     | "false"               { FALSE }
+    | "Array"               { ARRAY }
     | "Object"              { OBJECT }
     | "this"                { THIS }
     | ['0'-'9']+ as lxm     { LITERAL(int_of_string lxm) }
