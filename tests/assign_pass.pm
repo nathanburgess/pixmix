@@ -1,4 +1,4 @@
-num main () {
+
 
     bool a;
     bool b;
@@ -7,5 +7,5 @@ num main () {
     a = true;
     b = false; 
 
-    return 0;
-}
+    Console.log(a);
+    Console.log(b);

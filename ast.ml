@@ -3,13 +3,13 @@
 type op = Add | Sub | Mult | Div | Mod | Equal | Neq | Less | Leq | Greater | Geq | And | Or 
     | BitAnd | BitOr | BitXor | BitLeft | BitLeftAssn | BitRight | BitRightAssn
 
-type uop = Neg | Not | Incr | Decr | BitNeg
+and uop = Neg | Not | Incr | Decr | BitNeg
 
 (* Make sure Array of typ does not allow for array of array of array *)
 (* Object can only be of varType if we add class to typ so need to change this later *)
-type varType = 
+and varType = 
       Num 
-    | ArrayType of varType 
+    | Array
     | Bool 
     | Char 
     | Color
@@ -19,10 +19,10 @@ type varType =
     | String 
     | Void 
 
-type bind = varType * string
+and bind = varType * string
 
-type expr =
-      Literal       of float
+and expr =
+      Literal       of int
     | BoolLit       of bool
     | StringLit     of string
     | Id            of string
@@ -39,7 +39,7 @@ type expr =
     | Noexpr
 
 (* stmt most likely ready *)
-type stmt =
+and stmt =
       Block         of stmt list
     | Expr          of expr
     | Return        of expr
@@ -47,7 +47,7 @@ type stmt =
     | For           of expr * expr * expr * stmt
     | While         of expr * stmt
 
-type funDecl = {
+and funDecl = {
     fnReturnType    : varType;
     fnName          : string;
     fnParameters    : bind list;
@@ -55,22 +55,21 @@ type funDecl = {
     fnBody          : stmt list;
 }
 
-type objDecl  = {
+and objDecl  = {
     objName         : string;
     objLocals       : bind list;
     objMethods      : funDecl list;
 }
 
-type program = {
+and program = {
     variables       : bind list;
     objects         : objDecl list;
     statements      : stmt list;
     functions       : funDecl list;
 }
 
-(* Pretty-printing functions *)
 let string_of_op = function
-      Add           -> "+"
+    | Add           -> "+"
     | Sub           -> "-"
     | Mult          -> "*"
     | Div           -> "/"
@@ -105,14 +104,13 @@ let rec string_of_varType = function
     | String        -> "string"
     | Char          -> "char"
     | Object        -> "Object"
-    | ArrayType(t)  -> string_of_varType t ^ "[]"
+    | Array         -> "Array"
     | Image         -> "Image"
     | Pixel         -> "Pixel"
     | Color         -> "Color"
 
-
 let rec string_of_expr = function
-      Literal(l) -> string_of_float l
+      Literal(l) -> string_of_int l
     | BoolLit(true) -> "true"
     | BoolLit(false) -> "false"
     | StringLit(s) -> s
@@ -172,5 +170,5 @@ let string_of_odecl odecl =
 let string_of_program globals =
     String.concat "" (List.map string_of_vdecl globals.variables) ^ "\n" ^
     String.concat "" (List.map string_of_odecl globals.objects) ^ "\n" ^
-    (*String.concat "" (List.map string_of_sdecls globals.statements) ^ "\n" ^*)
+    String.concat "" (List.map string_of_sdecl globals.statements) ^ "\n" ^
     String.concat "\n" (List.map string_of_fdecl globals.functions)

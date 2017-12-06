@@ -1,4 +1,4 @@
-num main () {
+
 
     num a;
     num b;
@@ -7,5 +7,6 @@ num main () {
     a = 1;
     b = 2; 
 
-    return 0;
-}
+    Console.log(a);
+    Console.log(b);
+

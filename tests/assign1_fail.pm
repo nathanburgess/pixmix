@@ -1,4 +1,4 @@
-num main () {
+
 
     bool a;
     bool b;
@@ -7,5 +7,4 @@ num main () {
     a = true;
     b = 3; #b was assigned bool/num incompatible
 
-    return 0;
-}
+    

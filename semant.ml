@@ -52,7 +52,7 @@ let check program =
         { 
             fnReturnType = Void; 
             fnName = "print"; 
-            fnParameters = [(String, "x")];
+            fnParameters = [(Num, "x")];
             fnLocals = []; 
             fnBody = [] 
         } (StringMap.add "printb"
