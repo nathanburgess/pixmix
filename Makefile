@@ -13,7 +13,7 @@ clrYellow= \033[33;01m
 
 .PHONY : default
 default:
-	rm parser.mli parser.ml
+	rm parser.mli parser.ml || true
 	@echo "\n$(clrGreen)--==[ $(clrBlue)Compiling $(clrPurple)pixmix.native$(clrBlue)... $(clrGreen)]==--$(clrClear)"
 	@make all
 	@echo "\n\n$(clrGreen)--==[ $(clrBlue)Printing out $(clrPurple)LLVM IR$(clrBlue) code for test.pm... $(clrGreen)]==--$(clrClear)"
