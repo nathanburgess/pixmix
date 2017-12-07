@@ -13,6 +13,7 @@ clrYellow= \033[33;01m
 
 .PHONY : default
 default:
+	rm parser.mli parser.ml
 	@echo "\n$(clrGreen)--==[ $(clrBlue)Compiling $(clrPurple)pixmix.native$(clrBlue)... $(clrGreen)]==--$(clrClear)"
 	@make all
 	@echo "\n\n$(clrGreen)--==[ $(clrBlue)Printing out $(clrPurple)LLVM IR$(clrBlue) code for test.pm... $(clrGreen)]==--$(clrClear)"
@@ -22,7 +23,7 @@ default:
 
 .PHONY : test
 test: 
-	@./pixmix.native test.pm | lli $$1 || true
+	@OCAMLRUNPARAM='p' ./pixmix.native test.pm | lli $$1 || true
 
 .PHONY : debug
 debug:
