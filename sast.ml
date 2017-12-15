@@ -1,49 +1,65 @@
-module A = Ast
+type binop =
+    | Add
+    | Sub
+    | Mult
+    | Div
+    | Mod
+    | Equal
+    | Neq
+    | Less
+    | Leq
+    | Greater
+    | Geq
+    | And
+    | Or
 
-let convert ast = function
-    | [] -> []
+and unop = Neg | Not
 
-type sexpr =
-      SLiteral      of int
-    | SBoolLit      of bool
-    | SStringLit    of string
-    | SId           of string
-    | SBinop        of expr * op * expr
-    | SArrayCreate  of varType * expr list
-    | SArrOp        of string * expr
-    | SObjLit       of string * string
-    | SObjCall      of string * string * expr list
-    | SUnop         of uop * expr
-    | SCall         of string * expr list
+and varType =
+    | NullType
+    | VoidType
+    | IntType
+    | FloatType
+    | StringType
+    | BoolType
+    | NodeType
+    | ArrayType of varType
+
+and formal = Formal         of varType * string
+
+and local  = Local          of varType * string * expr
+
+and expr =
     | Null
-    | This
     | Noexpr
+    | IntLit                of int
+    | FloatLit              of float
+    | StringLit             of string
+    | BoolLit               of bool
+    | Node                  of int * expr
+    | Binop                 of expr * binop * expr
+    | Unop                  of unop * expr
+    | Id                    of string
+    | Assign                of string * expr
+    | Call                  of string * expr list
+    | CallDefault           of expr * string * expr list
+    | ArrayCreate           of varType * expr list
+    | ArrayAccess           of expr * expr
 
-type sstmt =
-      SBlock        of sstmt list
-    | SExpr         of sexpr
-    | SReturn       of sexpr
-    | SIf           of sexpr * sstmt * sstmt
-    | SFor          of sexpr * sexpr * sexpr * sstmt
-    | SWhile        of sexpr * sstmt
+and stmt =
+    | Expr                  of expr
+    | Return                of expr
+    | For                   of expr * expr * expr * stmt list
+    | If                    of expr * stmt list * stmt list
+    | While                 of expr * stmt list
 
-type sfunDecl = {
-    sfnreturnType    : varType;
-    sfnName          : string;
-    sfnParameters    : bind list;
-    sfnLocals        : bind list;
-    sfnBody          : sstmt list;
+and funcDecl = {
+    returnType  :           varType;
+    name        :           string;
+    args        :           formal list;
+    body        :           stmt list;
+    locals      :           formal list;
+    parent      :           string;
 }
 
-type sobjDecl = {
-    sobjName         : string;
-    sobjLocals       : bind list;
-    sobjMethods      : sfunDecl;
-}
-
-type sprogram = {
-    svariables       : bind list;
-    sobjects         : sobjDecl list;
-    statements       : sstmt list;
-    functions        : sfunDecl list;
-}
+and program = funcDecl list

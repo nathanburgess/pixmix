@@ -1,64 +1,82 @@
-(* Ocamllex scanner for PixMix *)
-
-{ 
-    open Parser 
-    let unescape s =
-        Scanf.sscanf("\"" ^ s ^ "\"") "%S%!" (fun x-> x)
+{
+  open Parser
+  let unescape s = Scanf.sscanf ("\"" ^ s ^ "\"") "%S%!" (fun x -> x)
 }
 
-let ascii = ([' '-'!' '#'-'[' ']'-'~'])
-let escape = '\\' ['\\' ''' '"' 'n' 'r' 't']
+let digit       = ['0'-'9']
+let letter      = ['a'-'z' 'A'-'Z']
+let variable    = (letter | ('_' letter)) (letter | digit | '_') *
+let escape      = '\\' ['\\' ''' '"' 'n' 'r' 't']
+let ascii       = ([' '-'!' '#'-'[' ']'-'~'])
 
-rule token = parse
-      [' ' '\t' '\r' '\n']  { token lexbuf }      (* Whitespace *)
-    | "#:"                  { mlcomment lexbuf }  (* Comments *)
-    | "#"                   { comment lexbuf }    (* Comments *)
-    | '.'                   { DOT }
-    | '('                   { LPAREN }
-    | ')'                   { RPAREN }
-    | '['                   { LSQ_BRACE }
-    | ']'                   { RSQ_BRACE }
-    | '{'                   { LC_BRACE }
-    | '}'                   { RC_BRACE }
-    | ';'                   { SEMI }
-    | ','                   { COMMA }
-    | '+'                   { PLUS }
-    | '-'                   { MINUS }
-    | '*'                   { TIMES }
-    | '/'                   { DIVIDE }
-    | '='                   { ASSIGN }
-    | "=="                  { EQ }
-    | "!="                  { NEQ }
-    | '<'                   { LT }
-    | "<="                  { LEQ }
-    | ">"                   { GT }
-    | ">="                  { GEQ }
-    | "&&"                  { AND }
-    | "||"                  { OR }
-    | "!"                   { NOT }
-    | "if"                  { IF }
-    | "else"                { ELSE }
-    | "for"                 { FOR }
-    | "while"               { WHILE }
-    | "return"              { RETURN }
-    | "num"                 { NUM }
-    | "bool"                { BOOL }
-    | "void"                { VOID }
-    | "string"              { STRING }
-    | "true"                { TRUE }
-    | "false"               { FALSE }
-    | "Array"               { ARRAY }
-    | "Object"              { OBJECT }
-    | "this"                { THIS }
-    | "new"                 { NEW }
-    | ['0'-'9']+ as lxm     { LITERAL(int_of_string lxm) }
-    | ['a'-'z' 'A'-'Z']['a'-'z' 'A'-'Z' '0'-'9' '_']* as lxm { ID(lxm) }
-    | '"'((ascii|escape)* as s)'"'{ STRLIT(unescape s) }
-    | eof                   { EOF }
-    | _ as char             { raise (Failure("illegal character " ^ Char.escaped char)) }
-and mlcomment = parse
-      ":#" { token lexbuf }
-    | _    { mlcomment lexbuf }
-and comment = parse
-      ['\n' '\r'] { token lexbuf }
-    | _    { comment lexbuf }
+rule token = parse 
+    | [' ' '\t' '\r' '\n']                  { token lexbuf }
+    | "#:"                                  { commentMl lexbuf }
+    | "#"                                   { comment lexbuf }
+    | "+"                                   { PLUS }
+    | "-"                                   { MINUS }
+    | "*"                                   { TIMES }
+    | "/"                                   { DIVIDE }
+    | "%"                                   { MOD }
+    | ";"                                   { SEMI }
+    | ","                                   { COMMA }
+    | "="                                   { ASSIGN }
+    | ":"                                   { COLON }
+    | "."                                   { DOT }
+    | "and"                                 { AND }
+    | "&&"                                  { AND }
+    | "or"                                  { OR }
+    | "||"                                  { OR }
+    | "not"                                 { NOT }
+    | "!"                                   { NOT }
+    | "if"                                  { IF }
+    | "else"                                { ELSE }
+    | "for"                                 { FOR }
+    | "while"                               { WHILE}
+    | "break"                               { BREAK }
+    | "continue"                            { CONTINUE }
+    | "in"                                  { IN }
+    | "return"                              { RETURN }
+    | ">"                                   { GT }
+    | ">="                                  { GEQ }
+    | "<"                                   { LT }
+    | "<="                                  { LEQ }
+    | "=="                                  { EQUAL}
+    | "is"                                  { EQUAL}
+    | "!="                                  { NEQ }
+    | "isnt"                                { NEQ }
+    | "void"                                { VOID }
+    | "int"                                 { INT }
+    | "float"                               { FLOAT }
+    | "string"                              { STRING }
+    | "bool"                                { BOOL }
+    | "node"                                { NODE }
+    | "null"                                { NULL }
+    | "Array"                               { ARRAY }
+    | "Object"                              { OBJECT }
+    | "Image"                               { IMAGE }
+    | "Pixel"                               { PIXEL }
+    | "Color"                               { COLOR }
+    | "Console"                             { CONSOLE }
+
+    | digit+ as lit                         { INT_LITERAL(int_of_string lit) }
+    | digit+'.'digit* as lit                { FLOAT_LITERAL(float_of_string lit) }
+    | '"' ((ascii | escape)* as lit) '"'    { STRING_LITERAL(unescape lit) }
+    | '"'                                   { QUOTE }
+    | "true" | "false" as boolLit           { BOOL_LITERAL(bool_of_string boolLit)}
+
+    | "["                                   { LSQUARE }
+    | "]"                                   { RSQUARE }
+    | "{"                                   { LCURL }
+    | "}"                                   { RCURL }
+    | "("                                   { LPAREN }
+    | ")"                                   { RPAREN }
+    | variable as id                        { ID(id) }
+    | eof                                   { EOF }
+
+and commentMl = parse 
+    | ":#" {token lexbuf}
+    | _ {commentMl lexbuf}
+
+and comment = parse 
+    | _ {comment lexbuf}
