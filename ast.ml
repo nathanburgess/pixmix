@@ -1,75 +1,79 @@
-(* Abstract Syntax Tree and functions for printing it *)
+type binop =
 
-type op = Add | Sub | Mult | Div | Mod | Equal | Neq | Less | Leq | Greater | Geq | And | Or 
-    | BitAnd | BitOr | BitXor | BitLeft | BitLeftAssn | BitRight | BitRightAssn
+    | Add
+    | Sub
+    | Mult
+    | Div
+    | Mod
+    | Equal
+    | Neq
+    | Less
+    | Leq
+    | Greater
+    | Geq
+    | And
+    | Or
 
-and uop = Neg | Not | Incr | Decr | BitNeg
+and unop = Neg | Not
 
-(* Make sure Array of typ does not allow for array of array of array *)
-(* Object can only be of varType if we add class to typ so need to change this later *)
-and varType = 
-      Num 
-    | Array
-    | Bool 
-    | Char 
-    | Color
-    | Image 
-    | Object 
-    | Pixel 
-    | String 
-    | Void 
+and varType =
+    | NullType
+    | VoidType
+    | IntType
+    | FloatType
+    | StringType
+    | BoolType
+    | NodeType
+    | ArrayType of varType
 
-and bind = varType * string
+and formal = Formal        of varType * string
+
+and local  = Local         of varType * string * expr
 
 and expr =
-      Literal       of int
-    | BoolLit       of bool
-    | StringLit     of string
-    | Id            of string
-    | Binop         of expr * op * expr
-    | ArrayCreate   of varType * expr list
-    | ArrOp         of string * expr
-    | ObjLit        of string * string
-    | ObjCall       of string * string * expr list
-    | Unop          of uop * expr
-    | Assign        of string * expr
-    | Call          of string * expr list
     | Null
-    | This
     | Noexpr
+    | IntLit                of int
+    | FloatLit              of float
+    | StringLit             of string
+    | BoolLit               of bool
+    | Node                  of expr
+    | Binop                 of expr * binop * expr
+    | Unop                  of unop * expr
+    | Id                    of string
+    | Assign                of string * expr
+    | Call                  of string * expr list
+    | CallDefault           of expr * string * expr list
+    | ArrayCreate           of varType * expr list
+    | ArrayAccess           of expr * expr
 
-(* stmt most likely ready *)
 and stmt =
-    | Block         of stmt list
-    | DeclAssign    of varType * string * expr
-    | Expr          of expr
-    | Return        of expr
-    | If            of expr * stmt * stmt
-    | For           of expr * expr * expr * stmt
-    | While         of expr * stmt
+    | Expr                  of expr
+    | Return                of expr
+    | For                   of expr * expr * expr * stmt list
+    | If                    of expr * stmt list * stmt list
+    | While                 of expr * stmt list
+    | Variable              of local
+    | Function              of funcDecl
 
-and funDecl = {
-    fnReturnType    : varType;
-    fnName          : string;
-    fnParameters    : bind list;
-    fnLocals        : bind list;
-    fnBody          : stmt list;
+and objDecl = {
+    objName     :           string;
+    objLocals   :           local list;
+    objMethods  :           funcDecl list;
 }
 
-and objDecl  = {
-    objName         : string;
-    objLocals       : bind list;
-    objMethods      : funDecl list;
+and funcDecl = {
+    returnType  :           varType;
+    name        :           string;
+    args        :           formal list;
+    body        :           stmt list;
 }
 
-and program = {
-    variables       : bind list;
-    objects         : objDecl list;
-    statements      : stmt list;
-    functions       : funDecl list;
-}
+and program = stmt list
 
-let string_of_op = function
+(* Ugly printing functions *)
+
+let rec string_of_binop = function
     | Add           -> "+"
     | Sub           -> "-"
     | Mult          -> "*"
@@ -82,94 +86,81 @@ let string_of_op = function
     | Geq           -> ">="
     | And           -> "&&"
     | Or            -> "||"
-    | BitAnd        -> "&"
+    | Mod           -> "%"
+    (*| BitAnd        -> "&"
     | BitOr         -> "|"
     | BitXor        -> "^"
     | BitLeft       -> "<<"
     | BitLeftAssn   -> "<<="
     | BitRight      -> ">>"
-    | BitRightAssn  -> ">>="
-    | Mod           -> "%"
+    | BitRightAssn  -> ">>="*)
 
-let string_of_uop = function
-      Neg           -> "-"
+and string_of_unop = function
+    | Neg           -> "-"
     | Not           -> "!"
-    | Incr          -> "++"
+    (*| Incr          -> "++"
     | Decr          -> "--"
-    | BitNeg        -> "~"
+    | BitNeg        -> "~"*)
 
-let rec string_of_varType = function
-      Num           -> "num"
-    | Bool          -> "bool"
-    | Void          -> "void"
-    | String        -> "string"
-    | Char          -> "char"
-    | Object        -> "Object"
-    | Array         -> "Array"
-    | Image         -> "Image"
-    | Pixel         -> "Pixel"
-    | Color         -> "Color"
+and string_of_varType = function   
+    | IntType -> "int"
+    | FloatType -> "float"
+    | StringType -> "string"
+    | BoolType -> "bool" 
+    | NodeType -> "node"
+    | NullType -> "null"
+    | ArrayType(t) -> "[" ^ string_of_varType t ^ "]"
 
-let rec string_of_expr = function
-      Literal(l) -> string_of_int l
-    | BoolLit(true) -> "true"
-    | BoolLit(false) -> "false"
-    | StringLit(s) -> s
-    | Id(s) -> s
-    | Binop(e1, o, e2) ->
-        string_of_expr e1 ^ " " ^ string_of_op o ^ " " ^ string_of_expr e2
-    | ArrayCreate(varType, expressions) -> 
-        let rec string_list expressions = match expressions with
-            [] -> ""
-            | [head] -> "[" ^ (string_of_varType varType) ^ ", " ^
-            (string_of_expr head) ^ "]"
-            | head :: tail -> "[" ^ (string_list tail) ^ ", " ^ (string_of_expr head) ^ "]"
-                in
-                string_list expressions
-    | ArrOp(s, e) ->
-        s ^ "[" ^ string_of_expr e ^ "]"
-    | ObjLit(s1, s2) -> s1 ^ "." ^ s2 
-    | ObjCall(s1, s2, e) ->
-        s1 ^ "." ^ s2 ^ "(" ^ String.concat ", " (List.map string_of_expr e) ^ ")"
-    | Unop(o, e) -> string_of_uop o ^ string_of_expr e
-    | Assign(v, e) -> v ^ " = " ^ string_of_expr e
-    | Call(f, el) ->
-        f ^ "(" ^ String.concat ", " (List.map string_of_expr el) ^ ")"
-    | Noexpr -> ""
+and string_of_local = function 
+    | Local(t, s, e) -> string_of_expr e
+
+and string_of_expr = function
     | Null -> "null"
-    | This -> "this"
+    | Noexpr -> ""
+    | IntLit i -> string_of_int i
+    | FloatLit f -> string_of_float f
+    | StringLit s -> "\"" ^ s ^ "\""
+    | BoolLit b -> "BoolLit;\n"
+    | Node e -> "Node;\n"
+    | Binop(e1, op, e2) -> 
+        string_of_expr e1 ^ " " ^ string_of_binop op ^ " " ^ string_of_expr e2
+    | Unop(op, e) -> string_of_unop op ^ string_of_expr e
+    | Id s -> "Id;\n"
+    | Assign(s, e) -> s ^ " = " ^ string_of_expr e ^ ";\n"
+    | ArrayCreate(typ, exprs) -> 
+        let rec string_list exprs = match exprs with
+            | [] -> ""
+            | [head] -> "[" ^ (string_of_varType typ) ^ ", " ^ 
+              (string_of_expr head) ^ "]"
+            | head :: tail -> "[" ^ (string_list tail) ^ ", " ^
+              (string_of_expr head) ^ "]"
+        in
+        string_list exprs
+    | ArrayAccess(arrCreate, index) -> string_of_expr arrCreate ^ 
+        "[" ^ string_of_expr index ^ "]"   
+    | Call(f, e) -> f ^ "(" ^ String.concat ", " (List.map string_of_expr e) ^ ")"
+    | CallDefault(e, s, es) -> "CallDefault;\n"
 
-let rec string_of_sdecl = function
-    | Block(stmts) -> "{\n" ^ String.concat "" (List.map string_of_sdecl stmts) ^ "}\n"
-    | DeclAssign(t, v, e) -> string_of_varType t ^ " " ^ v ^ " = " ^ string_of_expr e
+and string_of_statements = function
     | Expr(expr) -> string_of_expr expr ^ ";\n";
-    | Return(expr) -> "return " ^ string_of_expr expr ^ ";\n";
-    | If(e, s, Block([])) -> "if (" ^ string_of_expr e ^ ")\n" ^ string_of_sdecl s
-    | If(e, s1, s2) ->  "if (" ^ string_of_expr e ^ ")\n" ^
-                        string_of_sdecl s1 ^ "else\n" ^ string_of_sdecl s2
-    | For(e1, e2, e3, s) ->
-        "for (" ^ string_of_expr e1  ^ " ; " ^ string_of_expr e2 ^ " ; " ^
-        string_of_expr e3  ^ ") " ^ string_of_sdecl s
-    | While(e, s) -> "while (" ^ string_of_expr e ^ ") " ^ string_of_sdecl s
+    | Return(expr) -> "return " ^ string_of_expr expr
+    | For(e1, e2, e3, s) -> "for (" ^ string_of_expr e1  ^ " ; " ^ string_of_expr e2 ^ " ; " ^ string_of_expr e3  ^ ") "
+        ^ String.concat "" (List.map string_of_statements s)
+    | If(e, s1, s2) ->  "if (" ^ string_of_expr e ^ ")\n" 
+        ^ String.concat "" (List.map string_of_statements s1) 
+        ^ "else\n" ^ String.concat "" (List.map string_of_statements s2)
+    | While(e, s) -> "while (" ^ string_of_expr e ^ ") " ^ String.concat "" (List.map string_of_statements s)
+    | Variable(v) -> "" 
+    | Function(f) -> "function;\n"
 
-let string_of_vdecl (t, id) = string_of_varType t ^ " " ^ id ^ ";\n"
+and string_of_statements2 = function
+    | Expr(expr) -> "expression;\n"
+    | Return(expr) -> "return;\n"
+    | For(e1, e2, e3, s) -> "for loop;\n"
+    | If(e, s, l) -> "if statement;\n"
+    | While(e, s) -> "while loop;\n"
+    | Variable(v) -> "variable;\n"
+    | Function(f) -> "function;\n"
 
-let string_of_fdecl fdecl =
-    string_of_varType fdecl.fnReturnType ^ " " ^
-    fdecl.fnName ^ "(" ^ String.concat ", " (List.map snd fdecl.fnParameters) ^
-    ")\n{\n" ^
-    String.concat "" (List.map string_of_vdecl fdecl.fnLocals) ^
-    String.concat "" (List.map string_of_sdecl fdecl.fnBody) ^
-    "}\n"
-
-let string_of_odecl odecl =
-    "Object " ^ odecl.objName ^ " {" ^
-    String.concat "" (List.map string_of_vdecl odecl.objLocals) ^
-    String.concat "" (List.map string_of_fdecl odecl.objMethods) ^
-    "}\n"
-
-let string_of_program globals =
-    String.concat "" (List.map string_of_vdecl globals.variables) ^ "\n" ^
-    String.concat "" (List.map string_of_odecl globals.objects) ^ "\n" ^
-    String.concat "" (List.map string_of_sdecl globals.statements) ^ "\n" ^
-    String.concat "\n" (List.map string_of_fdecl globals.functions)
+and string_of_program stmnts = 
+    String.concat "" (List.map string_of_statements stmnts) ^ "\n"

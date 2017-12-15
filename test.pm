@@ -1,10 +1,7 @@
-#:
-   Simple Test
-:#
-num main()
-{
-	num a = 2;
-    a = 5;
+int _a = 2;
 
-    print(a);
-}
+_a = 3;
+
+print(_a);
+
+print("finished");
