@@ -61,9 +61,6 @@ var_decl:
 | var_type ID                       { Local($1, $2, Noexpr) }
 | var_type ID ASSIGN expr           { Local($1, $2, $4) }
 
-arrayType : 
-| LSQUARE var_type RSQUARE			{ ArrayType($2) }
-
 var_type:
 | NULL                              { NullType }
 | VOID                              { VoidType }
@@ -72,6 +69,10 @@ var_type:
 | STRING                            { StringType }
 | BOOL                              { BoolType }
 | NODE                              { NodeType }
+| arrayType                         { $1 }
+
+arrayType : 
+| LSQUARE var_type RSQUARE			{ ArrayType($2) }
 
 formal_list:
 | /* nothing */                     { [] }
@@ -101,6 +102,14 @@ expr:
 | ID ASSIGN expr                    { Assign($1, $3) }
 | LPAREN expr RPAREN 	            { $2 }
 | ID LPAREN list RPAREN             { Call($1, List.rev $3) }
+| arrCreate                         { ArrayCreate(fst $1, snd $1) }
+| expr arrAccess                    { ArrayAccess($1, $2) }
+
+arrCreate:
+| LSQUARE var_type COMMA expr RSQUARE { ( $2, [$4]) } 
+
+arrAccess:
+| LSQUARE expr RSQUARE { $2 }
 
 list:
 | /* nothing */                     { [] }

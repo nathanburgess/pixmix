@@ -41,10 +41,10 @@ and expr =
     | Unop                  of unop * expr
     | Id                    of string
     | Assign                of string * expr
+    | ArrayCreate           of expr * list varType
+    | ArrayAccess           of expr * expr * varType
     | Call                  of string * expr list
     | CallDefault           of expr * string * expr list
-    | ArrayCreate           of varType * expr list
-    | ArrayAccess           of expr * expr
 
 and stmt =
     | Expr                  of expr

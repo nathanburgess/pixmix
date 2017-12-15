@@ -71,6 +71,8 @@ and funcDecl = {
 
 and program = stmt list
 
+(* Ugly printing functions *)
+
 let rec string_of_binop = function
     | Add           -> "+"
     | Sub           -> "-"
@@ -107,6 +109,7 @@ and string_of_varType = function
     | BoolType -> "bool" 
     | NodeType -> "node"
     | NullType -> "null"
+    | ArrayType(t) -> "[" ^ string_of_varType t ^ "]"
 
 and string_of_local = function 
     | Local(t, s, e) -> string_of_expr e
@@ -124,6 +127,17 @@ and string_of_expr = function
     | Unop(op, e) -> string_of_unop op ^ string_of_expr e
     | Id s -> "Id;\n"
     | Assign(s, e) -> s ^ " = " ^ string_of_expr e ^ ";\n"
+    | ArrayCreate(typ, exprs) -> 
+        let rec string_list exprs = match exprs with
+            | [] -> ""
+            | [head] -> "[" ^ (string_of_varType typ) ^ ", " ^ 
+              (string_of_expr head) ^ "]"
+            | head :: tail -> "[" ^ (string_list tail) ^ ", " ^
+              (string_of_expr head) ^ "]"
+        in
+        string_list exprs
+    | ArrayAccess(arrCreate, index) -> string_of_expr arrCreate ^ 
+        "[" ^ string_of_expr index ^ "]"   
     | Call(f, e) -> f ^ "(" ^ String.concat ", " (List.map string_of_expr e) ^ ")"
     | CallDefault(e, s, es) -> "CallDefault;\n"
 
