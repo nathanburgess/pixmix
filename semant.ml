@@ -1,9 +1,26 @@
 open Sast
     
 open Printf
+
+(*
+
+some things the sast should take care of:
+ - type mismatch
+ - undeclared variable
+ - reserved identifier misuse
+ - multiple declaration of variable
+ - accessing an out of scope variable
+ - actual and formal parameter mismatch
+
+*)
+
     
 module StringMap = Map.Make(String)
-    
+(*
+let get_type_from_sexpr = function
+    | 
+*)  
+  
 let string_of_type =
     function
     | IntType -> "int"

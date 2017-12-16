@@ -1,6 +1,48 @@
 module A = Ast
 module StringMap = Map.Make(String)
 
+type sexpr =
+    | SNull
+    | SNoexpr
+    | SIntLit               of int
+    | SFloatLit             of float
+    | SStringLit            of string
+    | SBoolLit              of bool
+    | SNode                 of sexpr
+    | SBinop                of sexpr * A.binop * sexpr
+    | SUnop                 of A.unop * sexpr
+    | SId                   of string
+    | SAssign               of string * sexpr
+    | SCall                 of string * sexpr list
+    | SCallDefault          of sexpr * string * sexpr list
+    | SArrayCreate          of A.varType * sexpr list
+    | SArrayAccess          of sexpr * sexpr
+
+type sstmt =
+    | SExpr                 of sexpr
+    | SReturn               of sexpr
+    | SFor                  of sexpr * sexpr * sexpr * sstmt list
+    | SIf                   of sexpr * sstmt list * sstmt list
+    | SWhile                of sexpr * sstmt list
+    | SVariable             of A.local
+    | SFunction             of A.funcDecl
+
+(*
+and formal = Formal         of varType * string
+
+and local  = Local          of varType * string * expr
+*)
+type sfuncDecl = {
+    sreturnType :           A.varType;
+    sname       :           string;
+    sargs       :           A.formal list;
+    sbody       :           sstmt list;
+    locals      :           A.formal list;
+    parent      :           string;
+}
+
+type sprogram = sstmt list 
+
 type binop =
     | Add         
     | Sub         
