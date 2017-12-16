@@ -1,2 +1,2 @@
-Array a [int];
+int a;
 print("finished");
