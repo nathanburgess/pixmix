@@ -16,7 +16,11 @@ some things the sast should take care of:
 
     
 module StringMap = Map.Make(String)
-    
+(*
+let get_type_from_sexpr = function
+    | 
+*)  
+  
 let string_of_type =
     function
     | IntType -> "int"
