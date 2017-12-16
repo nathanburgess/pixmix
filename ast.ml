@@ -123,13 +123,16 @@ and string_of_varType = function
 and string_of_local = function 
     | Local(t, s, e) -> string_of_varType t ^ " " ^ s ^ " = " ^ string_of_expr e ^ ";\n"
 
+and string_of_formal = function 
+    | Formal(t, s) -> string_of_varType t ^ " " ^ s
+
 and string_of_expr = function
     | Null -> "null"
     | Noexpr -> ""
     | IntLit i -> string_of_int i
     | FloatLit f -> string_of_float f
-    | StringLit s -> "\"" ^ s ^ "\""
-    | BoolLit b -> "BoolLit;\n"
+    | StringLit s -> "\"" ^ String.escaped s ^ "\""
+    | BoolLit b -> if b then "true" else "false"
     | Binop(e1, op, e2) -> string_of_expr e1 ^ " " ^ string_of_binop op ^ " " ^ string_of_expr e2
     | Unop(op, e) -> string_of_unop op ^ string_of_expr e
     | Id s -> s
@@ -148,6 +151,11 @@ and string_of_expr = function
     | Call(f, e) -> f ^ "(" ^ String.concat ", " (List.map string_of_expr e) ^ ")"
     | CallDefault(e, s, es) -> "CallDefault;\n"
 
+and string_of_function f =
+    string_of_varType f.returnType ^ " " ^ f.name ^ "(" ^
+    String.concat ", " (List.map string_of_formal f.args) ^ ")\n{\n" ^
+    String.concat "" (List.map string_of_statements f.body) ^ "}\n"
+
 and string_of_statements = function
     | Expr(expr) -> string_of_expr expr ^ ";\n";
     | Return(expr) -> "return " ^ string_of_expr expr
@@ -158,7 +166,7 @@ and string_of_statements = function
         ^ "else\n" ^ String.concat "" (List.map string_of_statements s2)
     | While(e, s) -> "while (" ^ string_of_expr e ^ ") " ^ String.concat "" (List.map string_of_statements s)
     | Variable(v) -> string_of_local v 
-    | Function(f) -> "function;\n"
+    | Function(f) -> string_of_function f
 
 and string_of_program stmnts = 
     String.concat "" (List.map string_of_statements stmnts) ^ "\n"

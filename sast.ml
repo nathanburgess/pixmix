@@ -267,7 +267,7 @@ and string_of_varType = function
     | ArrayType(t) -> "array [" ^ string_of_varType t ^ "]"
 
 and string_of_formal = function 
-    | Formal(t, s)      -> string_of_varType t ^ " " ^ s ^ ";\n"
+    | Formal(t, s)      -> string_of_varType t ^ " " ^ s
 
 and string_of_local = function 
     | Local(t, s, e)    -> string_of_varType t ^ " " ^ s ^ " = " ^ string_of_expr e ^ ";\n"
@@ -277,8 +277,8 @@ and string_of_expr = function
     | Noexpr -> ""
     | IntLit i -> string_of_int i
     | FloatLit f -> string_of_float f
-    | StringLit s -> "\"" ^ s ^ "\""
-    | BoolLit b -> "BoolLit;\n"
+    | StringLit s -> "\"" ^ String.escaped s ^ "\""
+    | BoolLit b -> if b then "true" else "false"
     | Binop(e1, op, e2) -> string_of_expr e1 ^ " " ^ string_of_binop op ^ " " ^ string_of_expr e2
     | Unop(op, e) -> string_of_unop op ^ string_of_expr e
     | Id s -> s
