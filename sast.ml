@@ -1,18 +1,6 @@
 module A = Ast
 module StringMap = Map.Make(String)
 
-(*
-
-Some things the sast should take care of:
- - type mismatch
- - undeclared variable
- - reserved identifier misuse
- - multiple declaration of variable
- - accessing an out of scope variable
- - actual and formal parameter mismatch
-
-*)
-
 type binop =
     | Add         
     | Sub         
