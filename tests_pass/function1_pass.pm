@@ -6,6 +6,6 @@ int add(int x, int y)
 
   int a;
   a = 5;
-  print(add(a, 3));
+  print(add(a+1, 3));
   print("finished");
   
