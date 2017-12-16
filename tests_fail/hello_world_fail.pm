@@ -1,7 +1,5 @@
 
     string hw;
-    hw = "@@@";
-    Console.log(hw);
-    Console.log("finished");
-   
-
+    hw = "ð ";
+    print(hw);
+    print("finished");

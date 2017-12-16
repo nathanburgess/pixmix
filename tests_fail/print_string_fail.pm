@@ -1,6 +1,6 @@
 
   string a;
-  a = "@@@";
-  Console.log(a);
-  Console.log("finished");
+  a = "ð ";
+  print(a);
+  print("finished");
 

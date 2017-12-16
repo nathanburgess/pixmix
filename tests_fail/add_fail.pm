@@ -2,13 +2,13 @@
 
     string a;
     string b;
-    num sum;
+    int sum;
 
     a = "hello";
     b = "world";
     sum = a + b;
 
-    Console.log(sum);
-    Console.log("finished");
+    print(sum);
+    print("finished");
     
 

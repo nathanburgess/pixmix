@@ -1,10 +1,8 @@
-#while loop test
 
-    string hw;
-    hw = "Hello World!";
-    num x = 1;
-    while (x<7) {
-    Console.log(a);
-    x = x + 1;  }
-    Console.log("finished");
-    
+string i;
+for (i = 0;  i < 7;  i = i + 1)
+{
+    print(i);
+}
+
+print("finished");
