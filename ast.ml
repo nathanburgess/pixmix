@@ -1,20 +1,31 @@
 type binop =
+    | Add         
+    | Sub         
+    | Mult        
+    | Div         
+    | Equal       
+    | Neq         
+    | Less        
+    | Leq         
+    | Greater     
+    | Geq         
+    | And         
+    | Or          
+    | Mod         
+    | BitAnd      
+    | BitOr       
+    | BitXor      
+    | BitLeft     
+    | BitLeftAssn 
+    | BitRight    
+    | BitRightAssn
 
-    | Add
-    | Sub
-    | Mult
-    | Div
-    | Mod
-    | Equal
-    | Neq
-    | Less
-    | Leq
-    | Greater
-    | Geq
-    | And
-    | Or
-
-and unop = Neg | Not
+and unop =
+    | Neg   
+    | Not   
+    | Incr  
+    | Decr  
+    | BitNeg
 
 and varType =
     | NullType
@@ -71,8 +82,6 @@ and funcDecl = {
 
 and program = stmt list
 
-(* Ugly printing functions *)
-
 let rec string_of_binop = function
     | Add           -> "+"
     | Sub           -> "-"
@@ -87,32 +96,32 @@ let rec string_of_binop = function
     | And           -> "&&"
     | Or            -> "||"
     | Mod           -> "%"
-    (*| BitAnd        -> "&"
+    | BitAnd        -> "&"
     | BitOr         -> "|"
     | BitXor        -> "^"
     | BitLeft       -> "<<"
     | BitLeftAssn   -> "<<="
     | BitRight      -> ">>"
-    | BitRightAssn  -> ">>="*)
+    | BitRightAssn  -> ">>="
 
 and string_of_unop = function
     | Neg           -> "-"
     | Not           -> "!"
-    (*| Incr          -> "++"
+    | Incr          -> "++"
     | Decr          -> "--"
-    | BitNeg        -> "~"*)
+    | BitNeg        -> "~"
 
 and string_of_varType = function   
-    | IntType -> "int"
-    | FloatType -> "float"
-    | StringType -> "string"
-    | BoolType -> "bool" 
-    | NodeType -> "node"
-    | NullType -> "null"
-    | ArrayType(t) -> "[" ^ string_of_varType t ^ "]"
+    | IntType       -> "int"
+    | FloatType     -> "float"
+    | StringType    -> "string"
+    | BoolType      -> "bool" 
+    | NodeType      -> "node"
+    | NullType      -> "null"
+    | ArrayType(t)  -> "[" ^ string_of_varType t ^ "]"
 
 and string_of_local = function 
-    | Local(t, s, e) -> string_of_expr e
+    | Local(t, s, e) -> string_of_varType t ^ " " ^ s ^ " = " ^ string_of_expr e ^ ";\n"
 
 and string_of_expr = function
     | Null -> "null"
@@ -121,12 +130,10 @@ and string_of_expr = function
     | FloatLit f -> string_of_float f
     | StringLit s -> "\"" ^ s ^ "\""
     | BoolLit b -> "BoolLit;\n"
-    | Node e -> "Node;\n"
-    | Binop(e1, op, e2) -> 
-        string_of_expr e1 ^ " " ^ string_of_binop op ^ " " ^ string_of_expr e2
+    | Binop(e1, op, e2) -> string_of_expr e1 ^ " " ^ string_of_binop op ^ " " ^ string_of_expr e2
     | Unop(op, e) -> string_of_unop op ^ string_of_expr e
-    | Id s -> "Id;\n"
-    | Assign(s, e) -> s ^ " = " ^ string_of_expr e ^ ";\n"
+    | Id s -> s
+    | Assign(s, e) -> s ^ " = " ^ string_of_expr e
     | ArrayCreate(typ, exprs) -> 
         let rec string_list exprs = match exprs with
             | [] -> ""
@@ -150,16 +157,7 @@ and string_of_statements = function
         ^ String.concat "" (List.map string_of_statements s1) 
         ^ "else\n" ^ String.concat "" (List.map string_of_statements s2)
     | While(e, s) -> "while (" ^ string_of_expr e ^ ") " ^ String.concat "" (List.map string_of_statements s)
-    | Variable(v) -> "" 
-    | Function(f) -> "function;\n"
-
-and string_of_statements2 = function
-    | Expr(expr) -> "expression;\n"
-    | Return(expr) -> "return;\n"
-    | For(e1, e2, e3, s) -> "for loop;\n"
-    | If(e, s, l) -> "if statement;\n"
-    | While(e, s) -> "while loop;\n"
-    | Variable(v) -> "variable;\n"
+    | Variable(v) -> string_of_local v 
     | Function(f) -> "function;\n"
 
 and string_of_program stmnts = 
