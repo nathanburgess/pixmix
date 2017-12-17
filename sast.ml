@@ -26,6 +26,7 @@ type sstmt =
     | SWhile                of sexpr * sstmt list
     | SVariable             of A.local
     | SFunction             of A.funcDecl
+    | SObject               of A.objDecl
 
 (*
 and formal = Formal         of varType * string
