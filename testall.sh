@@ -7,20 +7,18 @@ clrGreen='\033[1;32m'
 clrRed='\033[31;01m'
 clrYellow='\033[33;01m'
 
-result=true
-
 PASS_FILES="tests_pass/*.pm"
 FAIL_FILES="tests_fail/*.pm"
+output_file=temp.out
+exe_file=temp.exe
 
 printf "\n${clrGreen}--==[ ${clrBlue}Running test suite... ${clrGreen}]==--${clrClear}\n\n"
 
 runTest() {
-    output_file=temp.out
-    exe_file=temp.exe
 
     ./pixmix.native $1 &> temp.ll
    
-    clang -Wno-override-module lib/utils.o temp.ll -o ${exe_file} &>/dev/null
+    clang -Wno-override-module lib/utils.bc temp.ll -o ${exe_file} &>/dev/null
     
     if [ -e "$exe_file" ]; then
         ./${exe_file} > $output_file
