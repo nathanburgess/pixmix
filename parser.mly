@@ -40,9 +40,9 @@ program: stmtList EOF                           { List.rev $1 }
 
 stmtList:
     | /* nothing */                             { [] }
-    | stmtList stmnt                            { $2 :: $1 }
+    | stmtList stmt                             { $2 :: $1 }
 
-stmnt:
+stmt:
     | expr SEMI                                 { Expr($1) }
     | funcDecl                                  { Function($1) }
     | varDecl SEMI                              { Variable($1) }
@@ -55,8 +55,21 @@ stmnt:
     | IF LPAREN expr RPAREN LCURL stmtList RCURL
         { If($3,List.rev $6,[]) }
     | WHILE LPAREN expr RPAREN LCURL stmtList RCURL
-        {While($3, List.rev $6)}
-        
+        { While($3, List.rev $6) }
+
+
+
+objBody:
+    | /* nothing */   { { 
+        objLocals       = []; 
+        objMethods      = [] } }
+    | objBody varDecl { { 
+        objLocals       = $2 :: $1.objLocals;
+        objMethods      = $1.objMethods } }
+    | objBody funcDecl { { 
+        objLocals       = $1.objLocals;
+        objMethods      = $2 :: $1.objMethods } }
+
 varDecl:       
     | varType ID                                { Local($1, $2, Noexpr) }
     | varType ID ASSIGN expr                    { Local($1, $2, $4) }
@@ -70,9 +83,15 @@ varType:
     | BOOL                                      { BoolType }
     | NODE                                      { NodeType }
     | arrayType                                 { $1 }
+    | objType                                   { $1 }
 
-arrayType :
+arrayType:
     | LSQUARE varType RSQUARE                   { ArrayType($2) }
+
+objType:   
+    ID LCURL objBody RCURL { { 
+        objName         = $1;
+        objBody         = $3 } }
 
 formalexprList:
     | /* nothing */                             { [] }
@@ -83,8 +102,8 @@ formal:
     | varType ID                                { Formal($1, $2) }
 
 funcDecl:
-    | varType ID LPAREN formalexprList RPAREN LCURL stmtList RCURL 
-    { { returnType = $1;
+    | varType ID LPAREN formalexprList RPAREN LCURL stmtList RCURL { { 
+        returnType = $1;
         name = $2;
         args = List.rev $4;
         body = List.rev $7 } }
@@ -94,7 +113,7 @@ forExpr:
     | expr                                      { $1 }
 
 expr:       
-    | literals                                  {$1}
+    | literals                                  { $1 }
     | NULL                                      { Null }
     | expr PLUS         expr                    { Binop($1, Add,   $3) }
     | expr MINUS        expr                    { Binop($1, Sub,   $3) }
@@ -109,8 +128,8 @@ expr:
     | expr AND          expr                    { Binop($1, And,   $3) }
     | expr MOD          expr                    { Binop($1, Mod,   $3) }
     | expr OR           expr                    { Binop($1, Or,    $3) }
-    | NOT               expr                    { Unop (Not,   $2) }
-    | MINUS             expr                    { Unop (Neg, $2) }
+    | NOT               expr                    { Unop(Not, $2) }
+    | MINUS             expr                    { Unop(Neg, $2) }
     | ID                                        { Id($1) }
     | ID ASSIGN expr                            { Assign($1, $3) }
     | LPAREN expr RPAREN 	                    { $2 }
@@ -119,7 +138,7 @@ expr:
     | expr arrAccess                            { ArrayAccess($1, $2) }
 
 arrCreate:
-    | LSQUARE varType COMMA expr RSQUARE        { ( $2, [$4]) } 
+    | LSQUARE varType COMMA expr RSQUARE        { ($2, [$4]) } 
 
 arrAccess:
     | LSQUARE expr RSQUARE                      { $2 }

@@ -36,6 +36,7 @@ and varType =
     | BoolType
     | NodeType
     | ArrayType of varType
+    | ObjectType of objDecl
 
 and formal = Formal        of varType * string
 
@@ -68,6 +69,10 @@ and stmt =
 
 and objDecl = {
     objName     :           string;
+    objBody     :           objBodyDecl;
+}
+
+and objBodyDecl = {
     objLocals   :           local list;
     objMethods  :           funcDecl list;
 }
