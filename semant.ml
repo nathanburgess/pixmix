@@ -24,7 +24,7 @@ let get_type_from_sexpr = function
 let string_of_type =
     function
         | IntType -> "int"
-        | FloatType -> "float"
+        | NumType -> "num"
         | StringType -> "string"
         | BoolType -> "bool"
         | NodeType -> "node"
@@ -53,7 +53,7 @@ let rec string_of_expr =
         | Null -> "null"
         | Noexpr -> ""
         | IntLit l -> string_of_int l
-        | FloatLit l -> string_of_float l
+        | NumLit l -> string_of_float l
         | StringLit l -> l
         | BoolLit b -> if b then "true" else "false"
         | Node (_, e) -> "node(" ^ ((string_of_expr e) ^ ")")
@@ -134,7 +134,7 @@ let checkReturnType func typ =
     let lvaluet = func.returnType
     and rvaluet = typ in
         match lvaluet with
-            | FloatType when rvaluet = IntType -> ()
+            | NumType when rvaluet = NumType -> ()
             | StringType when rvaluet = NullType -> ()
             | NodeType when rvaluet = NullType -> ()
             | _ -> if lvaluet == rvaluet then ()
@@ -172,7 +172,7 @@ let check_function func_map func = (* check duplicate formals *)
 
               let check_assign lvaluet rvaluet ex =
                   match lvaluet with
-                      | FloatType when rvaluet = IntType -> lvaluet
+                      | NumType when rvaluet = NumType -> lvaluet
                       | StringType when rvaluet = NullType -> lvaluet
                       | NodeType when rvaluet = NullType -> lvaluet
                       | _ -> if lvaluet == rvaluet
@@ -182,7 +182,7 @@ let check_function func_map func = (* check duplicate formals *)
               let rec expr =
                   function
                       | IntLit _      -> IntType
-                      | FloatLit _    -> FloatType
+                      | NumLit _      -> NumType
                       | Null          -> NullType
                       | StringLit _   -> StringType
                       | BoolLit _     -> BoolType
@@ -190,18 +190,18 @@ let check_function func_map func = (* check duplicate formals *)
                       | (Binop (e1, op, e2) as e) -> let t1 = expr e1 and t2 = expr e2
                           in (match op with
                               | Add | Sub | Mult | Div when (t1 = IntType) && (t2 = IntType) -> IntType
-                              | Add | Sub | Mult | Div when (t1 = FloatType) && (t2 = FloatType) -> FloatType
-                              | Add | Sub | Mult | Div when (t1 = IntType) && (t2 = FloatType) -> FloatType
-                              | Add | Sub | Mult | Div when (t1 = FloatType) && (t2 = IntType) -> FloatType
+                              | Add | Sub | Mult | Div when (t1 = NumType) && (t2 = NumType) -> NumType
+                              | Add | Sub | Mult | Div when (t1 = IntType) && (t2 = NumType) -> NumType
+                              | Add | Sub | Mult | Div when (t1 = NumType) && (t2 = IntType) -> NumType
                               | Equal | Neq when t1 = t2 -> BoolType
                               | LThan | Leq | GThan | Geq 
-                                  when ((t1 = IntType) || (t1 = FloatType)) && ((t2 = IntType) || (t2 = FloatType)) -> BoolType
+                                  when ((t1 = IntType) || (t1 = NumType)) && ((t2 = IntType) || (t2 = NumType)) -> BoolType
                               | And | Or when (t1 = BoolType) && (t2 = BoolType) -> BoolType
                               | Mod when (t1 = IntType) && (t2 = IntType) -> IntType
                               | _ -> illegal_binary_operation_error (string_of_type t1) (string_of_type t2) (string_of_op op) (string_of_expr e))
                       | (Unop (op, e) as ex) -> let t = expr e in (match op with
                           | Neg when t = IntType -> IntType
-                          | Neg when t = FloatType -> FloatType
+                          | Neg when t = NumType -> NumType
                           | Not when t = BoolType -> BoolType
                           | _ -> illegal_unary_operation_error (string_of_type t) (string_of_uop op) (string_of_expr ex))
                       | Id s -> type_of_identifier func s

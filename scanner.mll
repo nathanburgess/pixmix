@@ -47,10 +47,6 @@ rule token = parse
     | "isnt"                                { NEQ }
     | "void"                                { VOID }
     | "num"                                 { NUM }
-    
-    (*| "int"                                 { INT }
-    | "float"                               { FLOAT }*)
-
     | "string"                              { STRING }
     | "bool"                                { BOOL }
     | "node"                                { NODE }
