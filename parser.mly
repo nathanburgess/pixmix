@@ -36,102 +36,98 @@
 
 %%
 
-program: stmntList EOF              { List.rev $1 }
+program: stmtList EOF                           { List.rev $1 }
 
-stmntList:
-| /* nothing */                      { [] }
-| stmntList stmnt                    { $2 :: $1 }
+stmtList:
+    | /* nothing */                             { [] }
+    | stmtList stmnt                            { $2 :: $1 }
 
 stmnt:
-| expr SEMI                         { Expr($1) }
-| func_decl                         { Function($1) }
-| RETURN SEMI                       { Return(Noexpr) }
-| RETURN expr SEMI                  { Return($2) }
-| FOR LPAREN forEx SEMI expr SEMI forEx RPAREN LCURL stmntList RCURL
-  { For($3, $5, $7, List.rev $10) }
-| IF LPAREN expr RPAREN LCURL stmntList RCURL ELSE LCURL stmntList RCURL
-  { If($3,List.rev $6,List.rev $10) }
-| IF LPAREN expr RPAREN LCURL stmntList RCURL
-  { If($3,List.rev $6,[]) }
-| WHILE LPAREN expr RPAREN LCURL stmntList RCURL
-  {While($3, List.rev $6)}
-| var_decl SEMI                     { Variable($1) }
+    | expr SEMI                                 { Expr($1) }
+    | funcDecl                                  { Function($1) }
+    | varDecl SEMI                              { Variable($1) }
+    | RETURN SEMI                               { Return(Noexpr) }
+    | RETURN expr SEMI                          { Return($2) }
+    | FOR LPAREN forExpr SEMI expr SEMI forExpr RPAREN LCURL stmtList RCURL
+        { For($3, $5, $7, List.rev $10) }
+    | IF LPAREN expr RPAREN LCURL stmtList RCURL ELSE LCURL stmtList RCURL
+        { If($3,List.rev $6,List.rev $10) }
+    | IF LPAREN expr RPAREN LCURL stmtList RCURL
+        { If($3,List.rev $6,[]) }
+    | WHILE LPAREN expr RPAREN LCURL stmtList RCURL
+        {While($3, List.rev $6)}
+        
+varDecl:       
+    | varType ID                                { Local($1, $2, Noexpr) }
+    | varType ID ASSIGN expr                    { Local($1, $2, $4) }
+        
+varType:       
+    | NULL                                      { NullType }
+    | VOID                                      { VoidType }
+    | INT                                       { IntType }
+    | FLOAT                                     { FloatType }
+    | STRING                                    { StringType }
+    | BOOL                                      { BoolType }
+    | NODE                                      { NodeType }
+    | arrayType                                 { $1 }
 
-var_decl:
-| var_type ID                       { Local($1, $2, Noexpr) }
-| var_type ID ASSIGN expr           { Local($1, $2, $4) }
+arrayType :
+    | LSQUARE varType RSQUARE                   { ArrayType($2) }
 
-var_type:
-| NULL                              { NullType }
-| VOID                              { VoidType }
-| INT                               { IntType }
-| FLOAT                             { FloatType }
-| STRING                            { StringType }
-| BOOL                              { BoolType }
-| NODE                              { NodeType }
-| arrayType                         { $1 }
-
-arrayType : 
-| LSQUARE var_type RSQUARE			{ ArrayType($2) }
-
-formal_list:
-| /* nothing */                     { [] }
-| formal                            { [$1] }
-| formal_list COMMA formal          { $3 :: $1 }
+formalexprList:
+    | /* nothing */                             { [] }
+    | formal                                    { [$1] }
+    | formalexprList COMMA formal               { $3 :: $1 }
 
 formal:
-| var_type ID                       { Formal($1, $2) }
+    | varType ID                                { Formal($1, $2) }
 
-func_decl:
-| var_type ID LPAREN formal_list RPAREN LCURL stmntList RCURL 
-{ { returnType = $1;
-    name = $2;
-    args = List.rev $4;
-    body = List.rev $7 } }
+funcDecl:
+    | varType ID LPAREN formalexprList RPAREN LCURL stmtList RCURL 
+    { { returnType = $1;
+        name = $2;
+        args = List.rev $4;
+        body = List.rev $7 } }
 
-forEx:
-| /* nothing */                     { Noexpr }
-| expr                              { $1 }
+forExpr:
+    | /* nothing */                             { Noexpr }
+    | expr                                      { $1 }
 
-expr:
-| literals                          {$1}
-| NULL                              { Null }
-| arith_ops                         { $1 }
-| NODE LPAREN expr RPAREN           { Node($3) }
-| ID                                { Id($1) }
-| ID ASSIGN expr                    { Assign($1, $3) }
-| LPAREN expr RPAREN 	            { $2 }
-| ID LPAREN list RPAREN             { Call($1, List.rev $3) }
-| arrCreate                         { ArrayCreate(fst $1, snd $1) }
-| expr arrAccess                    { ArrayAccess($1, $2) }
+expr:       
+    | literals                                  {$1}
+    | NULL                                      { Null }
+    | expr PLUS         expr                    { Binop($1, Add,   $3) }
+    | expr MINUS        expr                    { Binop($1, Sub,   $3) }
+    | expr TIMES        expr                    { Binop($1, Mult,  $3) }
+    | expr DIVIDE       expr                    { Binop($1, Div,   $3) }
+    | expr EQUAL        expr                    { Binop($1, Equal, $3) }
+    | expr NEQ          expr                    { Binop($1, Neq,   $3) }
+    | expr LEQ          expr                    { Binop($1, Leq,   $3) }
+    | expr LT           expr                    { Binop($1, LThan, $3) }
+    | expr GT           expr                    { Binop($1, GThan, $3) }
+    | expr GEQ          expr                    { Binop($1, Geq,   $3) }
+    | expr AND          expr                    { Binop($1, And,   $3) }
+    | expr MOD          expr                    { Binop($1, Mod,   $3) }
+    | expr OR           expr                    { Binop($1, Or,    $3) }
+    | NOT               expr                    { Unop (Not,   $2) }
+    | MINUS             expr                    { Unop (Neg, $2) }
+    | ID                                        { Id($1) }
+    | ID ASSIGN expr                            { Assign($1, $3) }
+    | LPAREN expr RPAREN 	                    { $2 }
+    | ID LPAREN exprList RPAREN                 { Call($1, List.rev $3) }
+    | arrCreate                                 { ArrayCreate(fst $1, snd $1) }
+    | expr arrAccess                            { ArrayAccess($1, $2) }
 
 arrCreate:
-| LSQUARE var_type COMMA expr RSQUARE { ( $2, [$4]) } 
+    | LSQUARE varType COMMA expr RSQUARE        { ( $2, [$4]) } 
 
 arrAccess:
-| LSQUARE expr RSQUARE { $2 }
+    | LSQUARE expr RSQUARE                      { $2 }
 
-list:
-| /* nothing */                     { [] }
-| expr                              { [$1] }
-| list COMMA expr                   { $3 :: $1 }
-
-arith_ops:
-| expr PLUS         expr            { Binop($1, Add,   $3) }
-| expr MINUS        expr            { Binop($1, Sub,   $3) }
-| expr TIMES        expr            { Binop($1, Mult,  $3) }
-| expr DIVIDE       expr            { Binop($1, Div,   $3) }
-| expr EQUAL        expr            { Binop($1, Equal, $3) }
-| expr NEQ          expr            { Binop($1, Neq,   $3) }
-| expr LT           expr            { Binop($1, Less,  $3) }
-| expr LEQ          expr            { Binop($1, Leq,   $3) }
-| expr GT           expr            { Binop($1, Greater,  $3) }
-| expr GEQ          expr            { Binop($1, Geq,   $3) }
-| expr AND          expr            { Binop($1, And,   $3) }
-| expr MOD          expr            { Binop($1, Mod,   $3) }
-| expr OR           expr            { Binop($1, Or,    $3) }
-| NOT               expr            { Unop (Not,   $2) }
-| MINUS             expr            { Unop (Neg, $2) }
+exprList:
+    | /* nothing */                             { [] }
+    | expr                                      { [$1] }
+    | exprList COMMA expr                       { $3 :: $1 }
 
 literals:
 | NUM_LITERAL                       { NumLit($1) }

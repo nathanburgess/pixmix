@@ -3,7 +3,6 @@ pixmix.native
 test.pm
 *.ll
 */*.ll
-*.out
-*.output
 *.sublime*
-*.bc
+*/*.o*
+*/*.bc
