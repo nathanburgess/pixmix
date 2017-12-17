@@ -5,7 +5,7 @@ default: pixmix.native
 .PHONY : pixmix.native
 
 pixmix.native :
-	@rm lib/utils.bc | true
+	@rm lib/utils.bc parser.ml parser.mli | true
 	ocamlbuild -use-ocamlfind -pkgs llvm,llvm.analysis,llvm.linker,llvm.bitreader,llvm.irreader -cflags -w,+a-4 pixmix.native
 	clang -emit-llvm -o lib/utils.bc -c lib/utils.c -Wno-varargs
 
