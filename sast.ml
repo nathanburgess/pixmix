@@ -50,9 +50,9 @@ type binop =
     | Div         
     | Equal       
     | Neq         
-    | Less        
     | Leq         
-    | Greater     
+    | LThan
+    | GThan     
     | Geq         
     | And         
     | Or          
@@ -129,9 +129,9 @@ let convertBinOp = function
     | A.Mod     -> Mod
     | A.Equal   -> Equal
     | A.Neq     -> Neq
-    | A.Less    -> Less
+    | A.LThan   -> LThan
     | A.Leq     -> Leq
-    | A.Greater -> Greater
+    | A.GThan   -> GThan
     | A.Geq     -> Geq
     | A.And     -> And
     | A.Or      -> Or
@@ -277,9 +277,9 @@ let rec string_of_binop = function
     | Div           -> "/"
     | Equal         -> "=="
     | Neq           -> "!="
-    | Less          -> "<"
+    | LThan         -> "<"
     | Leq           -> "<="
-    | Greater       -> ">"
+    | GThan         -> ">"
     | Geq           -> ">="
     | And           -> "&&"
     | Or            -> "||"

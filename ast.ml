@@ -4,10 +4,10 @@ type binop =
     | Mult        
     | Div         
     | Equal       
-    | Neq         
-    | Less        
-    | Leq         
-    | Greater     
+    | Neq        
+    | Leq        
+    | LThan
+    | GThan  
     | Geq         
     | And         
     | Or          
@@ -89,9 +89,9 @@ let rec string_of_binop = function
     | Div           -> "/"
     | Equal         -> "=="
     | Neq           -> "!="
-    | Less          -> "<"
+    | LThan         -> "<"
     | Leq           -> "<="
-    | Greater       -> ">"
+    | GThan         -> ">"
     | Geq           -> ">="
     | And           -> "&&"
     | Or            -> "||"
