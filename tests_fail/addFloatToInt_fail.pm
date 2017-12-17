@@ -1,6 +1,6 @@
 int a = 2;
 float b = 2;
-float sum;
+int sum;
 
 sum = a + b;
 
