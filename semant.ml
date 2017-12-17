@@ -16,11 +16,9 @@ some things the sast should take care of:
 
     
 module StringMap = Map.Make(String)
-(*
-let get_type_from_sexpr = function
-    | 
-*)  
-  
+
+
+ 
 let string_of_type =
     function
     | IntType -> "int"
@@ -124,11 +122,13 @@ let wrong_func_return_type_error typ1 typ2 =
     let msg = sprintf "wrong function return type: %s, expect %s" typ1 typ2
     in raise (SemanticError msg)
     
+
 (*
     Check if something is of type Array
 *)
 let rec isArrayType t = match t with | ArrayType _ -> true | _ -> false
 and getArrayNesting t = match t with | ArrayType inner -> 1 + (getArrayNesting inner) | _ -> 1
+
     
 let checkReturnType func typ =
     let lvaluet = func.returnType
@@ -207,6 +207,30 @@ let check_function func_map func = (* check duplicate formals *)
         | Id s -> type_of_identifier func s
         | (Assign (var, e) as ex) -> let lt = type_of_identifier func var and rt = expr e in
             check_assign lt rt ex
+        (* ArrayStuff *)
+        (*| ArrayCreate(typ, expressions) -> 
+            let rec checkElementType expressions = match expressions with
+              [] -> ()
+            | head :: tail ->
+                let typ1 = expr head in
+                if typ1 <> IntType then
+                    (raise(Failure("Array dimensione must be int")))
+                else
+                    checkElementType (tail)
+            in checkElementType expressions;
+            
+            *** Figure out how to check nesting level ***
+
+            let rec nestedArrayType exprs = match exprs with
+                  [] -> typ
+                | _ :: tail -> ArrayType(nestedArrayType tail)
+            in SArrayCreate(expressions, getArrayNesting expressions)*)
+        | ArrayAccess(expr1, expr2) -> let e_type = expr expr1 and e_num = expr expr2 in 
+      if (e_type != IntType && e_type != StringType) 
+        then raise (Failure ("Can only access Int and string types, not " ^ string_of_type e_type))
+      else 
+        if (e_num != IntType) then raise (Failure ("Expecting Integer for access index, got " ^ string_of_type e_num))
+        else IntType 
         | Noexpr -> VoidType
         | Call (n, args) -> let func_obj = getFunctionObject n func_map in
             let checkFunctionCall func args =
@@ -247,7 +271,8 @@ let check_function func_map func = (* check duplicate formals *)
         | s :: ss -> (stmt s; stmt_list ss)
         | [] -> ()
     in stmt_list func.body))
-    
+
+
 let check program =
     let end_with s1 s2 =
         let len1 = String.length s1

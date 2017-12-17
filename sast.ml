@@ -1,6 +1,6 @@
 module A = Ast
 module StringMap = Map.Make(String)
-
+(*
 type sexpr =
     | SNull
     | SNoexpr
@@ -15,7 +15,7 @@ type sexpr =
     | SAssign               of string * sexpr
     | SCall                 of string * sexpr list
     | SCallDefault          of sexpr * string * sexpr list
-    | SArrayCreate          of A.varType * sexpr list
+    | SArrayCreate          of A.varType * sexpr list * A.varType
     | SArrayAccess          of sexpr * sexpr
 
 type sstmt =
@@ -42,7 +42,7 @@ type sfuncDecl = {
 }
 
 type sprogram = sstmt list 
-
+*)
 type binop =
     | Add         
     | Sub         
