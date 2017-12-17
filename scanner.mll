@@ -46,8 +46,11 @@ rule token = parse
     | "!="                                  { NEQ }
     | "isnt"                                { NEQ }
     | "void"                                { VOID }
-    | "int"                                 { INT }
-    | "float"                               { FLOAT }
+    | "num"                                 { NUM }
+    
+    (*| "int"                                 { INT }
+    | "float"                               { FLOAT }*)
+
     | "string"                              { STRING }
     | "bool"                                { BOOL }
     | "node"                                { NODE }
@@ -59,8 +62,7 @@ rule token = parse
     | "Color"                               { COLOR }
     | "Console"                             { CONSOLE }
 
-    | digit+ as lit                         { INT_LITERAL(int_of_string lit) }
-    | digit+'.'digit* as lit                { FLOAT_LITERAL(float_of_string lit) }
+    | digit+'.'?digit* as lit               { NUM_LITERAL(float_of_string lit) }
     | '"' ((ascii | escape)* as lit) '"'    { STRING_LITERAL(unescape lit) }
     | '"'                                   { QUOTE }
     | "true" | "false" as boolLit           { BOOL_LITERAL(bool_of_string boolLit)}

@@ -134,7 +134,6 @@ arith_ops:
 | MINUS             expr            { Unop (Neg, $2) }
 
 literals:
-| INT_LITERAL                       { IntLit($1) }
-| FLOAT_LITERAL                     { FloatLit($1) }
+| NUM_LITERAL                       { NumLit($1) }
 | STRING_LITERAL                    { StringLit($1) }
 | BOOL_LITERAL                      { BoolLit($1) }
