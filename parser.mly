@@ -4,7 +4,7 @@
 %token PLUS MINUS TIMES DIVIDE MOD SEMI COMMA ASSIGN COLON DOT
 %token GT GEQ LT LEQ EQUAL NEQ AND OR NOT IF ELSE FOR WHILE BREAK 
 %token CONTINUE IN RETURN QUOTE LSQUARE RSQUARE LCURL RCURL LPAREN 
-%token RPAREN VOID NULL INT FLOAT STRING BOOL NODE ARRAY OBJECT IMAGE 
+%token RPAREN VOID NULL INT NUM STRING BOOL NODE ARRAY OBJECT IMAGE 
 %token PIXEL COLOR CONSOLE EOF
 
 /* Identifiers */
@@ -12,8 +12,8 @@
 
 /* Literals */
 %token <int> INT_LITERAL
+%token <float> NUM_LITERAL
 %token <string> STRING_LITERAL
-%token <float> FLOAT_LITERAL
 %token <bool> BOOL_LITERAL
 
 /* Order */
@@ -78,7 +78,7 @@ varType:
     | NULL                                      { NullType }
     | VOID                                      { VoidType }
     | INT                                       { IntType }
-    | FLOAT                                     { FloatType }
+    | NUM                                       { NumType }
     | STRING                                    { StringType }
     | BOOL                                      { BoolType }
     | NODE                                      { NodeType }
@@ -149,7 +149,6 @@ exprList:
     | exprList COMMA expr                       { $3 :: $1 }
 
 literals:
-    | INT_LITERAL                               { IntLit($1) }
-    | FLOAT_LITERAL                             { FloatLit($1) }
-    | STRING_LITERAL                            { StringLit($1) }
-    | BOOL_LITERAL                              { BoolLit($1) }
+	| NUM_LITERAL                       { NumLit($1) }
+	| STRING_LITERAL                    { StringLit($1) }
+	| BOOL_LITERAL                      { BoolLit($1) }
