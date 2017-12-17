@@ -89,6 +89,7 @@ and expr =
     | Null
     | Noexpr
     | NumLit                of float
+    | IntLit                of int
     | StringLit             of string
     | BoolLit               of bool
     | Node                  of int * expr
@@ -139,10 +140,10 @@ let convertUnOp = function | A.Neg -> Neg | A.Not -> Not
 let convertVarType = function
     | A.NullType    -> NullType
     | A.VoidType    -> VoidType
+    | A.IntType     -> IntType
     | A.NumType     -> NumType
     | A.StringType  -> StringType
     | A.BoolType    -> BoolType
-    | A.NodeType    -> NodeType
     
 let rec getName map aux curName =
     if StringMap.mem curName map

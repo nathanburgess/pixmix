@@ -28,7 +28,7 @@ let ltype_of_typ =
     function
         | S.VoidType -> void_t
         | S.IntType -> i32_t
-        | S.FloatType -> f_t
+        | S.NumType -> f_t
         | S.BoolType -> i1_t
         | S.StringType -> str_t
         | S.NodeType -> node_t
@@ -37,7 +37,7 @@ let ltype_of_typ =
 let lconst_of_typ =
     function
         | S.IntType -> L.const_int i32_t 0
-        | S.FloatType -> L.const_int i32_t 1
+        | S.NumType -> L.const_int i32_t 1
         | S.BoolType -> L.const_int i32_t 2
         | S.StringType -> L.const_int i32_t 3
         | S.NodeType -> L.const_int i32_t 4
@@ -61,7 +61,7 @@ let get_default_value_of_type =
     function
         | (S.IntType as t) -> L.const_int (ltype_of_typ t) 0
         | (S.BoolType as t) -> L.const_int (ltype_of_typ t) 0
-        | (S.FloatType as t) -> L.const_float (ltype_of_typ t) 0.
+        | (S.NumType as t) -> L.const_float (ltype_of_typ t) 0.
         | t -> L.const_null (ltype_of_typ t)
 
 (*
@@ -114,7 +114,7 @@ let void_to_node void_ptr llbuilder =
 let void_start_to_tpy value_void_ptr llbuilder =
     function
         | S.IntType -> void_to_int value_void_ptr llbuilder
-        | S.FloatType -> void_to_float value_void_ptr llbuilder
+        | S.NumType -> void_to_float value_void_ptr llbuilder
         | S.BoolType -> void_to_bool value_void_ptr llbuilder
         | S.StringType -> void_to_string value_void_ptr llbuilder
         | S.NodeType -> void_to_node value_void_ptr llbuilder
@@ -159,7 +159,7 @@ let node_get_value node typ llbuilder =
     in
         match typ with
             | S.IntType -> void_to_int ret llbuilder
-            | S.FloatType -> void_to_float ret llbuilder
+            | S.NumType -> void_to_float ret llbuilder
             | S.BoolType -> void_to_bool ret llbuilder
             | S.StringType -> void_to_string ret llbuilder
             | _ -> raise (Failure "[Error] Unsupported node value type.")
@@ -285,7 +285,7 @@ let translate program =
                     | _ -> raise (Failure "[Error] Unrecognized int binop opreation.") in
             let type_handler d =
                 match d with
-                    | S.FloatType -> float_ops op e1 e2
+                    | S.NumType -> float_ops op e1 e2
                     | S.BoolType | S.IntType -> int_ops op e1 e2
                     | _ -> raise (Failure "[Error] Unrecognized binop data type.")
             in
@@ -296,7 +296,7 @@ let translate program =
         let rec expr builder =
             function
                 | S.IntLit i -> ((L.const_int i32_t i), S.IntType)
-                | S.FloatLit f -> ((L.const_float f_t f), S.FloatType)
+                | S.NumLit f -> ((L.const_float f_t f), S.NumType)
                 | S.BoolLit b -> ((L.const_int i1_t (if b then 1 else 0)), S.BoolType)
                 | S.StringLit s -> ((codegen_string_lit s builder), S.StringType)
                 | S.Noexpr -> ((L.const_int i32_t 0), S.VoidType)
@@ -335,11 +335,11 @@ let translate program =
                                         raise
                                             (Failure "[Error] Unsupported Null Type Operation."))
                             | (t1, t2) when t1 = t2 -> handle_binop e1' op e2' t1 builder
-                            | (S.IntType, S.FloatType) ->
-                                handle_binop (int_to_float builder e1') op e2' S.FloatType
+                            | (S.IntType, S.NumType) ->
+                                handle_binop (int_to_float builder e1') op e2' S.NumType
                                     builder
-                            | (S.FloatType, S.IntType) ->
-                                handle_binop e1' op (int_to_float builder e2') S.FloatType
+                            | (S.NumType, S.IntType) ->
+                                handle_binop e1' op (int_to_float builder e2') S.NumType
                                     builder
                             | _ -> raise (Failure "[Error] Unsuported Binop Type."))
                 | S.Unop (op, e) ->
@@ -361,7 +361,7 @@ let translate program =
                                  (ignore
                                       (L.build_store (get_null_value_of_type typ) var builder);
                                   get_null_value_of_type typ)
-                             | (S.IntType, S.FloatType) ->
+                             | (S.IntType, S.NumType) ->
                                  let e' = int_to_float builder e'
                                  in (ignore (L.build_store e' var builder); e')
                              | _ -> raise (Failure "[Error] Assign Type inconsist.")),
@@ -380,7 +380,7 @@ let translate program =
                                         (codegen_print builder
                                              [ codegen_string_lit "null\n" builder ])
                                 | S.BoolType -> ignore (print_bool eval builder)
-                                | S.FloatType ->
+                                | S.NumType ->
                                     ignore
                                         (codegen_print builder
                                              [ codegen_string_lit "%f\n" builder; eval ])
@@ -407,10 +407,10 @@ let translate program =
                         let (eval, etyp) = expr builder (List.hd el) in
                         ((  match etyp with
                             | S.IntType -> int_to_float builder eval
-                            | S.FloatType -> eval
-                            | S.NodeType -> node_get_value eval S.FloatType builder
+                            | S.NumType -> eval
+                            | S.NodeType -> node_get_value eval S.NumType builder
                             | _ -> raise (Failure("[Error] Can't convert to float."))
-                            ), S.FloatType)
+                            ), S.NumType)
             | S.Call ("bool", el) ->
                         let (eval, etyp) = expr builder (List.hd el) in
                         ((  match etyp with
@@ -457,7 +457,7 @@ let translate program =
                               match ((fdecl.S.returnType), et) with
                                   | (S.VoidType, _) -> L.build_ret_void builder
                                   | (t1, t2) when t1 = t2 -> L.build_ret ev builder
-                                  | (S.FloatType, S.IntType) ->
+                                  | (S.NumType, S.IntType) ->
                                       L.build_ret (int_to_float builder ev) builder
                                   | (t1, S.NullType) ->
                                       L.build_ret (get_default_value_of_type t1) builder
@@ -509,7 +509,7 @@ let translate program =
                     | S.VoidType -> L.build_ret_void
                     | (S.IntType as t) -> L.build_ret (L.const_int (ltype_of_typ t) 0)
                     | (S.BoolType as t) -> L.build_ret (L.const_int (ltype_of_typ t) 0)
-                    | (S.FloatType as t) ->
+                    | (S.NumType as t) ->
                         L.build_ret (L.const_float (ltype_of_typ t) 0.)
                     | t -> L.build_ret (L.const_null (ltype_of_typ t)))
     in (List.iter build_function_body (List.rev program); the_module)
