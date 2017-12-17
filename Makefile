@@ -5,8 +5,9 @@ default: pixmix.native
 .PHONY : pixmix.native
 
 pixmix.native :
+	@rm lib/utils.bc | true
 	ocamlbuild -use-ocamlfind -pkgs llvm,llvm.analysis,llvm.linker,llvm.bitreader,llvm.irreader -cflags -w,+a-4 pixmix.native
-	clang -emit-llvm -o lib/utils.o -c lib/utils.c -Wno-varargs
+	clang -emit-llvm -o lib/utils.bc -c lib/utils.c -Wno-varargs
 
 OBJS = ast.cmx codegen.cmx parser.cmx pixmix.cmx sast.cmx scanner.cmx semant.cmx
 
@@ -32,7 +33,7 @@ parser.ml parser.mli : parser.mly
 clean :
 	ocamlbuild -clean | true
 	rm -f pixmix.native
-	rm -f lib/utils.o
+	rm -f lib/utils.bc
 	rm -f *.cmx *.cmi *.cmo *.cmx *.o*
 	rm -f pixmix parser.ml parser.mli scanner.ml *.cmo *.cmi
 
@@ -49,9 +50,9 @@ tests :
 .PHONY : test
 test :
 	@make
-	@clang -emit-llvm -o lib/utils.o -c lib/utils.c -Wno-everything
+	@clang -emit-llvm -o lib/utils.bc -c lib/utils.c -Wno-everything
 	@./pixmix.native test.pm > test.ll
-	@clang -Wno-override-module lib/utils.o test.ll -o test.exe
+	@clang -Wno-override-module lib/utils.bc test.ll -o test.exe
 	@./test.exe
 	@rm test.ll
 	@rm test.exe
