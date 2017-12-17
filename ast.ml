@@ -31,7 +31,7 @@ and varType =
     | NullType
     | VoidType
     | IntType
-    | FloatType
+    | NumType
     | StringType
     | BoolType
     | NodeType
@@ -44,8 +44,7 @@ and local  = Local         of varType * string * expr
 and expr =
     | Null
     | Noexpr
-    | IntLit                of int
-    | FloatLit              of float
+    | NumLit                of float
     | StringLit             of string
     | BoolLit               of bool
     | Node                  of expr
@@ -112,8 +111,7 @@ and string_of_unop = function
     | BitNeg        -> "~"
 
 and string_of_varType = function   
-    | IntType       -> "int"
-    | FloatType     -> "float"
+    | NumType       -> "num"
     | StringType    -> "string"
     | BoolType      -> "bool" 
     | NodeType      -> "node"
@@ -129,8 +127,7 @@ and string_of_formal = function
 and string_of_expr = function
     | Null -> "null"
     | Noexpr -> ""
-    | IntLit i -> string_of_int i
-    | FloatLit f -> string_of_float f
+    | NumLit i -> string_of_float i
     | StringLit s -> "\"" ^ String.escaped s ^ "\""
     | BoolLit b -> if b then "true" else "false"
     | Binop(e1, op, e2) -> string_of_expr e1 ^ " " ^ string_of_binop op ^ " " ^ string_of_expr e2

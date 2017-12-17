@@ -130,7 +130,6 @@ exprList:
     | exprList COMMA expr                       { $3 :: $1 }
 
 literals:
-    | INT_LITERAL                               { IntLit($1) }
-    | FLOAT_LITERAL                             { FloatLit($1) }
-    | STRING_LITERAL                            { StringLit($1) }
-    | BOOL_LITERAL                              { BoolLit($1) }
+| NUM_LITERAL                       { NumLit($1) }
+| STRING_LITERAL                    { StringLit($1) }
+| BOOL_LITERAL                      { BoolLit($1) }
