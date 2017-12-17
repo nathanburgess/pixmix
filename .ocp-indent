@@ -21,17 +21,17 @@ base = 4
 # Indent for type definitions:
 #    type t =
 #    ^^int
-# type = 4
+type = 4
 
 # Indent after `let in` (unless followed by another `let`):
 #    let foo = () in
 #    ^^bar
-in = 0
+in = 4
 
 # Indent after `match/try with` or `function`:
 #    match foo with
 #    ^^| _ -> bar
-# with = 0
+with = 4
 
 # Indent for clauses inside a pattern-match (after the arrow):
 #    match foo with
@@ -60,14 +60,14 @@ ppx_stritem_ext = 2
 #          x)                      #        x)
 #        )                         #      )
 #      )                           #    )
-max_indent = 4
+max_indent = 2
 
 
 #
 #    INDENTATION TOGGLES
 #
 
-# Wether the `with` parameter should be applied even when in a sub-block.
+# Whether the `with` parameter should be applied even when in a sub-block.
 # Can be `always`, `never` or `auto`.
 # if `always`, there are no exceptions
 # if `auto`, the `with` parameter is superseded when seen fit (most of the time,
@@ -77,7 +77,7 @@ max_indent = 4
 # For example, the following is not indented if set to `always`:
 #    let f = function
 #    ^^| Foo -> bar
-strict_with = never
+strict_with = auto
 
 # Controls indentation after the `else` keyword. `always` indents after the
 # `else` keyword normally, like after `then`.
@@ -106,7 +106,7 @@ strict_comments = false
 # for example (left: `false'; right: `true')
 #    let f x = x            #    let f x = x
 #      + y                  #              + y
-align_ops = true
+align_ops = false
 
 # Function parameters are normally indented one level from the line containing
 # the function. This option can be used to have them align relative to the
