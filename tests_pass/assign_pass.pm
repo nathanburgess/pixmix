@@ -1,11 +1,11 @@
 
 
-    int a;
-    int b;
+    string a;
+    string b;
     
 
-    a = 1;
-    b = 2; 
+    a = "one";
+    b = "two"; 
 
     print(a);
     print(b);
