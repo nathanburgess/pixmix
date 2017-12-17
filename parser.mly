@@ -57,19 +57,6 @@ stmt:
     | WHILE LPAREN expr RPAREN LCURL stmtList RCURL
         { While($3, List.rev $6) }
 
-
-
-objBody:
-    | /* nothing */   { { 
-        objLocals       = []; 
-        objMethods      = [] } }
-    | objBody varDecl { { 
-        objLocals       = $2 :: $1.objLocals;
-        objMethods      = $1.objMethods } }
-    | objBody funcDecl { { 
-        objLocals       = $1.objLocals;
-        objMethods      = $2 :: $1.objMethods } }
-
 varDecl:       
     | varType ID                                { Local($1, $2, Noexpr) }
     | varType ID ASSIGN expr                    { Local($1, $2, $4) }
@@ -82,16 +69,11 @@ varType:
     | STRING                                    { StringType }
     | BOOL                                      { BoolType }
     | NODE                                      { NodeType }
+    | OBJECT                                    { ObjectType }
     | arrayType                                 { $1 }
-    | objType                                   { $1 }
 
 arrayType:
     | LSQUARE varType RSQUARE                   { ArrayType($2) }
-
-objType:   
-    ID LCURL objBody RCURL { { 
-        objName         = $1;
-        objBody         = $3 } }
 
 formalexprList:
     | /* nothing */                             { [] }
@@ -136,6 +118,18 @@ expr:
     | ID LPAREN exprList RPAREN                 { Call($1, List.rev $3) }
     | arrCreate                                 { ArrayCreate(fst $1, snd $1) }
     | expr arrAccess                            { ArrayAccess($1, $2) }
+    | objBody                                   { ObjectAssign($1) }
+
+objBody:
+    | /* nothing */   { { 
+        objLocals       = []; 
+        objMethods      = [] } }
+    | objBody varDecl { { 
+        objLocals       = $2 :: $1.objLocals;
+        objMethods      = $1.objMethods } }
+    | objBody funcDecl { { 
+        objLocals       = $1.objLocals;
+        objMethods      = $2 :: $1.objMethods } }
 
 arrCreate:
     | LSQUARE varType COMMA expr RSQUARE        { ($2, [$4]) } 
@@ -149,6 +143,6 @@ exprList:
     | exprList COMMA expr                       { $3 :: $1 }
 
 literals:
-	| NUM_LITERAL                       { NumLit($1) }
-	| STRING_LITERAL                    { StringLit($1) }
-	| BOOL_LITERAL                      { BoolLit($1) }
+	| NUM_LITERAL                              { NumLit($1) }
+	| STRING_LITERAL                           { StringLit($1) }
+	| BOOL_LITERAL                             { BoolLit($1) }
