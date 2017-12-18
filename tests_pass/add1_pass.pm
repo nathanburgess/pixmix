@@ -1,15 +1,10 @@
+num a;
+num b;
+num sum;
 
-    
-    num a;
-    num b;
-    num sum;
+a = 2;
+b = 3;
+sum = a + b;
 
-    a = 2;
-    b = 3;
-    sum = a + b;
-
-    print(sum);
-    print("finished");
-
-    
-
+print(sum);
+print("finished");
