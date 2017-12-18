@@ -54,7 +54,7 @@ and expr =
     | Id                    of string
     | Assign                of string * expr
     | Call                  of string * expr list
-    | CallDefault           of expr * string * expr list
+    | CallObject            of string * string * expr list
     | ArrayCreate           of varType * expr list
     | ArrayAccess           of expr * expr
 
@@ -66,9 +66,9 @@ and stmt =
     | While                 of expr * stmt list
     | Variable              of local
     | Function              of funcDecl
-    | Object                of objDecl
+    | Object                of string * objBody
 
-and objDecl = {
+and objBody = {
     objLocals   :           local list;
     objMethods  :           funcDecl list;
 }
@@ -147,16 +147,19 @@ and string_of_expr = function
     | ArrayAccess(arrCreate, index) -> string_of_expr arrCreate ^ 
         "[" ^ string_of_expr index ^ "]"   
     | Call(f, e) -> f ^ "(" ^ String.concat ", " (List.map string_of_expr e) ^ ")"
-    | CallDefault(e, s, es) -> "CallDefault;\n"
 
 and string_of_function f =
     string_of_varType f.returnType ^ " " ^ f.name ^ "(" ^
     String.concat ", " (List.map string_of_formal f.args) ^ ")\n{\n" ^
     String.concat "" (List.map string_of_statements f.body) ^ "}\n"
 
+and string_of_objBody b =
+    String.concat "" (List.map string_of_local b.objLocals) ^ "\n" ^
+    String.concat "" (List.map string_of_function b.objMethods)
+
 and string_of_statements = function
     | Expr(expr) -> string_of_expr expr ^ ";\n";
-    | Return(expr) -> "return " ^ string_of_expr expr
+    | Return(expr) -> "return " ^ string_of_expr expr ^ ";\n"
     | For(e1, e2, e3, s) -> "for (" ^ string_of_expr e1  ^ " ; " ^ string_of_expr e2 ^ " ; " ^ string_of_expr e3  ^ ") "
         ^ String.concat "" (List.map string_of_statements s)
     | If(e, s1, s2) ->  "if (" ^ string_of_expr e ^ ")\n" 
@@ -165,6 +168,7 @@ and string_of_statements = function
     | While(e, s) -> "while (" ^ string_of_expr e ^ ") " ^ String.concat "" (List.map string_of_statements s)
     | Variable(v) -> string_of_local v 
     | Function(f) -> string_of_function f
+    | Object(n, b) -> "Object " ^ n ^ " = {\n" ^ string_of_objBody b ^ "\n};\n"
 
 and string_of_program stmnts = 
     String.concat "" (List.map string_of_statements stmnts) ^ "\n"
