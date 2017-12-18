@@ -11,10 +11,18 @@ PASS_FILES="tests_pass/*.pm"
 FAIL_FILES="tests_fail/*.pm"
 output_file=temp.out
 exe_file=temp.exe
+count=0
 
 printf "\n${clrGreen}--==[ ${clrBlue}Running test suite... ${clrGreen}]==--${clrClear}\n\n"
 
 runTest() {
+    count=$((count + 1))
+    name=$1
+    if [ $2 == "pass" ]; then 
+        testName=${name/tests_pass\//}
+    else
+        testName=${name/tests_fail\//}
+    fi
 
     ./pixmix.native $1 &> temp.ll
    
@@ -24,18 +32,30 @@ runTest() {
         ./${exe_file} > $output_file
 
         if [ "$(tail -1 $output_file)" == "finished" ] && [ $2 == "pass" ]; then
-            printf "  %-40s ${clrGreen}PASS\n${clrClear}" "$1" 1>&2
+            printf "  %-30s ${clrGreen}PASS${clrClear}" ${testName} 1>&2
+            if [ $((count % 2)) = 0 ]; then 
+                printf "\n" 
+            fi
         else
-            printf "  %-40s ${clrRed}FAIL\n${clrClear}" "$1" 1>&2
+            printf "  %-30s ${clrRed}FAIL${clrClear}" ${testName} 1>&2
+            if [ $((count % 2)) = 0 ]; then 
+                printf "\n" 
+            fi
         fi
 
         rm ${exe_file} &>/dev/null
         rm ${output_file} &>/dev/null
     else
         if [ $2 == "fail" ]; then
-            printf "  %-40s ${clrGreen}PASS\n${clrClear}" "$1" 1>&2
+            printf "  %-30s ${clrGreen}PASS${clrClear}" ${testName} 1>&2
+            if [ $((count % 2)) = 0 ]; then 
+                printf "\n" 
+            fi
         else
-            printf "  %-40s ${clrRed}FAIL\n${clrClear}" "$1" 1>&2
+            printf "  %-30s ${clrRed}FAIL${clrClear}" ${testName} 1>&2
+            if [ $((count % 2)) = 0 ]; then 
+                printf "\n" 
+            fi
         fi
     fi
 
@@ -46,6 +66,7 @@ for input_file in $PASS_FILES; do
     runTest $input_file "pass"
 done
 
+count=0 
 printf "\n"
 for input_file in $FAIL_FILES; do
     runTest $input_file "fail"
