@@ -229,13 +229,10 @@ let check_function func_map func = (* check duplicate formals *)
                   [] -> typ
                 | _ :: tail -> ArrayType(nestedArrayType tail)
             in SArrayCreate(expressions, getArrayNesting expressions)*)
-                      | ArrayCreate(typ, expressions) -> let e_type = typ and exprs = expressions and
-                          (*let exprs = List.map expr unchecked_exprs in*)
-                          checkElementType elem = 
-                                  let currType = expr elem in
-                                  if currType <> IntType then
+                      | ArrayCreate(expr1) -> let e_type = expr expr1 in
+                                  if e_type != IntType then
                                       (raise(Failure("Array dimensions must be type int")))
-                          in List.iter checkElementType exprs
+                                  else IntType
                            
                       | (ArrayAccess(expr1, expr2) as ex) -> let e_type = expr expr1 and e_num = expr expr2 in
                           if (e_num != IntType) 

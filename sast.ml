@@ -1,53 +1,6 @@
 module A = Ast
 module StringMap = Map.Make(String)
-(*
-type sexpr =
-    | SNull
-    | SNoexpr
-    | SNumLit               of float
-    | SStringLit            of string
-    | SBoolLit              of bool
-    | SNode                 of sexpr
-    | SBinop                of sexpr * A.binop * sexpr
-    | SUnop                 of A.unop * sexpr
-    | SId                   of string
-    | SAssign               of string * sexpr
-    | SCall                 of string * sexpr list
-<<<<<<< HEAD
-    | SCallDefault          of sexpr * string * sexpr list
-    | SArrayCreate          of A.varType * sexpr list * A.varType
-=======
-    | SCallObject           of string * string * sexpr list
-    | SArrayCreate          of A.varType * sexpr list
->>>>>>> 5d7f6624e51014c5dc8445003c4fa2d76115893c
-    | SArrayAccess          of sexpr * sexpr
 
-type sstmt =
-    | SExpr                 of sexpr
-    | SReturn               of sexpr
-    | SFor                  of sexpr * sexpr * sexpr * sstmt list
-    | SIf                   of sexpr * sstmt list * sstmt list
-    | SWhile                of sexpr * sstmt list
-    | SVariable             of A.local
-    | SFunction             of A.funcDecl
-    | SObject               of A.local list * A.funcDecl list
-
-(*
-and formal = Formal         of varType * string
-
-and local  = Local          of varType * string * expr
-*)
-type sfuncDecl = {
-    sreturnType :           A.varType;
-    sname       :           string;
-    sargs       :           A.formal list;
-    sbody       :           sstmt list;
-    locals      :           A.formal list;
-    parent      :           string;
-}
-
-type sprogram = sstmt list 
-*)
 type binop =
     | Add         
     | Sub         
@@ -104,7 +57,8 @@ and expr =
     | Unop                  of unop * expr
     | Id                    of string
     | Assign                of string * expr
-    | ArrayCreate           of varType * expr list
+    | ArrayCreate           of expr
+    (* ArrayCreate2 *)
     | ArrayAccess           of expr * expr
     | Call                  of string * expr list
     | CallObject            of string * string * expr list
@@ -354,7 +308,7 @@ and string_of_expr = function
     | Unop(op, e) -> string_of_unop op ^ string_of_expr e
     | Id s -> s
     | Assign(s, e) -> s ^ " = " ^ string_of_expr e
-    | ArrayCreate(typ, exprs) -> 
+    (*| ArrayCreate(typ, expressions) ->  
         let rec string_list exprs = match exprs with
             | [] -> ""
             | [head] -> "[" ^ (string_of_varType typ) ^ ", " ^ 
@@ -362,7 +316,8 @@ and string_of_expr = function
             | head :: tail -> "[" ^ (string_list tail) ^ ", " ^
               (string_of_expr head) ^ "]"
         in
-        string_list exprs
+        string_list exprs*)
+    | ArrayCreate(e) -> "[" ^ string_of_expr e ^ "]" 
     | ArrayAccess(arrCreate, index) -> string_of_expr arrCreate ^ 
         "[" ^ string_of_expr index ^ "]"   
     | Call(f, e) -> f ^ "(" ^ String.concat ", " (List.map string_of_expr e) ^ ")"
