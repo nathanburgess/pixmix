@@ -1,9 +1,10 @@
 _build
 pixmix.native
 test.pm
+*.sublime*
+*.o*
+*/*.o*
+*.bc
+*/*.bc
 *.ll
 */*.ll
-*.out
-*.output
-*.sublime*
-*.bc

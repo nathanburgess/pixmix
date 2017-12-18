@@ -4,8 +4,7 @@ module StringMap = Map.Make(String)
 type sexpr =
     | SNull
     | SNoexpr
-    | SIntLit               of int
-    | SFloatLit             of float
+    | SNumLit               of float
     | SStringLit            of string
     | SBoolLit              of bool
     | SNode                 of sexpr
@@ -26,6 +25,7 @@ type sstmt =
     | SWhile                of sexpr * sstmt list
     | SVariable             of A.local
     | SFunction             of A.funcDecl
+    | SObject               of A.objDecl
 
 (*
 and formal = Formal         of varType * string
@@ -50,9 +50,9 @@ type binop =
     | Div         
     | Equal       
     | Neq         
-    | Less        
     | Leq         
-    | Greater     
+    | LThan
+    | GThan     
     | Geq         
     | And         
     | Or          
@@ -76,7 +76,7 @@ and varType =
     | NullType
     | VoidType
     | IntType
-    | FloatType
+    | NumType
     | StringType
     | BoolType
     | NodeType
@@ -89,8 +89,8 @@ and local  = Local          of varType * string * expr
 and expr =
     | Null
     | Noexpr
+    | NumLit                of float
     | IntLit                of int
-    | FloatLit              of float
     | StringLit             of string
     | BoolLit               of bool
     | Node                  of int * expr
@@ -129,9 +129,9 @@ let convertBinOp = function
     | A.Mod     -> Mod
     | A.Equal   -> Equal
     | A.Neq     -> Neq
-    | A.Less    -> Less
+    | A.LThan   -> LThan
     | A.Leq     -> Leq
-    | A.Greater -> Greater
+    | A.GThan   -> GThan
     | A.Geq     -> Geq
     | A.And     -> And
     | A.Or      -> Or
@@ -142,10 +142,9 @@ let convertVarType = function
     | A.NullType    -> NullType
     | A.VoidType    -> VoidType
     | A.IntType     -> IntType
-    | A.FloatType   -> FloatType
+    | A.NumType     -> NumType
     | A.StringType  -> StringType
     | A.BoolType    -> BoolType
-    | A.NodeType    -> NodeType
     
 let rec getName map aux curName =
     if StringMap.mem curName map
@@ -156,8 +155,7 @@ let rec getName map aux curName =
 let rec convertExpr map = function
     | A.Null                    -> Null
     | A.Noexpr                  -> Noexpr
-    | A.IntLit a                -> IntLit a
-    | A.FloatLit a              -> FloatLit a
+    | A.NumLit a                -> NumLit a
     | A.StringLit a             -> StringLit a
     | A.BoolLit a               -> BoolLit a
     | A.Binop (a, b, c)         -> Binop ((convertExpr map a), (convertBinOp b), (convertExpr map c))
@@ -277,9 +275,9 @@ let rec string_of_binop = function
     | Div           -> "/"
     | Equal         -> "=="
     | Neq           -> "!="
-    | Less          -> "<"
+    | LThan         -> "<"
     | Leq           -> "<="
-    | Greater       -> ">"
+    | GThan         -> ">"
     | Geq           -> ">="
     | And           -> "&&"
     | Or            -> "||"
@@ -300,8 +298,8 @@ and string_of_unop = function
     | BitNeg        -> "~"
 
 and string_of_varType = function   
+    | NumType -> "num"
     | IntType -> "int"
-    | FloatType -> "float"
     | StringType -> "string"
     | BoolType -> "bool" 
     | NodeType -> "node"
@@ -317,8 +315,7 @@ and string_of_local = function
 and string_of_expr = function
     | Null -> "null"
     | Noexpr -> ""
-    | IntLit i -> string_of_int i
-    | FloatLit f -> string_of_float f
+    | NumLit f -> string_of_float f
     | StringLit s -> "\"" ^ String.escaped s ^ "\""
     | BoolLit b -> if b then "true" else "false"
     | Binop(e1, op, e2) -> string_of_expr e1 ^ " " ^ string_of_binop op ^ " " ^ string_of_expr e2
