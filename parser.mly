@@ -45,7 +45,7 @@ stmtList:
 stmt:
     | expr SEMI                                 { Expr($1) }
     | varDecl SEMI                              { Variable($1) }
-    | varType ID objDecl SEMI                   { Object($2, $3) }
+    | OBJECT ID objDecl SEMI                   { Object($2, $3) }
     | funcDecl                                  { Function($1) }
     | RETURN SEMI                               { Return(Noexpr) }
     | RETURN expr SEMI                          { Return($2) }
@@ -85,7 +85,6 @@ varType:
     | STRING                                    { StringType }
     | BOOL                                      { BoolType }
     | NODE                                      { NodeType }
-    | OBJECT                                    { ObjectType }
     | arrayType                                 { $1 }
 
 arrayType:
