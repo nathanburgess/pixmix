@@ -1,5 +1,4 @@
-int main {
-[int];
+
+Array myArray[int];
 print("finished");
-}
-return 0;
+
