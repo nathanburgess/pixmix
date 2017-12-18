@@ -1,7 +1,7 @@
 
 
-    int _a;
-    int _b;
+    num _a;
+    num _b;
     
 
     _a = 1;

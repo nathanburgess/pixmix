@@ -1,6 +1,6 @@
-int a = 0;
+num a = 0;
 
-int d = 10;
+num d = 10;
 
 
   if ( a < 5) 

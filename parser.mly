@@ -44,8 +44,9 @@ stmtList:
 
 stmt:
     | expr SEMI                                 { Expr($1) }
-    | funcDecl                                  { Function($1) }
     | varDecl SEMI                              { Variable($1) }
+    | funcDecl                                  { Function($1) }
+    | objDecl                                   { Object($1) }
     | RETURN SEMI                               { Return(Noexpr) }
     | RETURN expr SEMI                          { Return($2) }
     | FOR LPAREN forExpr SEMI expr SEMI forExpr RPAREN LCURL stmtList RCURL
@@ -56,6 +57,20 @@ stmt:
         { If($3,List.rev $6,[]) }
     | WHILE LPAREN expr RPAREN LCURL stmtList RCURL
         { While($3, List.rev $6) }
+
+objDecl:
+    | OBJECT ID ASSIGN LCURL objBody RCURL      { $5 }
+
+objBody:
+    | /* nothing */   { { 
+        objLocals       = []; 
+        objMethods      = [] } }
+    | objBody varDecl { { 
+        objLocals       = $2 :: $1.objLocals;
+        objMethods      = $1.objMethods } }
+    | objBody funcDecl { { 
+        objLocals       = $1.objLocals;
+        objMethods      = $2 :: $1.objMethods } }
 
 varDecl:       
     | varType ID                                { Local($1, $2, Noexpr) }
@@ -118,18 +133,6 @@ expr:
     | ID LPAREN exprList RPAREN                 { Call($1, List.rev $3) }
     | arrCreate                                 { ArrayCreate(fst $1, snd $1) }
     | expr arrAccess                            { ArrayAccess($1, $2) }
-    | objBody                                   { ObjectAssign($1) }
-
-objBody:
-    | /* nothing */   { { 
-        objLocals       = []; 
-        objMethods      = [] } }
-    | objBody varDecl { { 
-        objLocals       = $2 :: $1.objLocals;
-        objMethods      = $1.objMethods } }
-    | objBody funcDecl { { 
-        objLocals       = $1.objLocals;
-        objMethods      = $2 :: $1.objMethods } }
 
 arrCreate:
     | LSQUARE varType COMMA expr RSQUARE        { ($2, [$4]) } 

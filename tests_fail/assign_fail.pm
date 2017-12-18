@@ -1,7 +1,7 @@
 
 
-   int a;
-   int b;
+   num a;
+   num b;
     
 
     a = true;

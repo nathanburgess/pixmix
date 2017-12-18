@@ -35,8 +35,8 @@ and varType =
     | StringType
     | BoolType
     | NodeType
+    | ObjectType
     | ArrayType of varType
-    | ObjectType of objDecl
 
 and formal = Formal        of varType * string
 
@@ -66,13 +66,9 @@ and stmt =
     | While                 of expr * stmt list
     | Variable              of local
     | Function              of funcDecl
+    | Object                of objDecl
 
 and objDecl = {
-    objName     :           string;
-    objBody     :           objBodyDecl;
-}
-
-and objBodyDecl = {
     objLocals   :           local list;
     objMethods  :           funcDecl list;
 }
