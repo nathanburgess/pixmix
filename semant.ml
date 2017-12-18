@@ -87,6 +87,10 @@ let illegal_binary_operation_error typ1 typ2 op ex =
     let msg = sprintf "illegal binary operator %s %s %s in %s" typ1 op typ2 ex
     in raise (SemanticError msg)
 
+let illegal_array_access_error typ1 typ2 ex =
+    let msg = sprintf "illegal array access %s %s in %s" typ1 typ2 ex
+    in raise (SemanticError msg)
+
 let illegal_unary_operation_error typ op ex =
     let msg = sprintf "illegal unary operator %s %s in %s" op typ ex
     in raise (SemanticError msg)
@@ -157,24 +161,6 @@ let check_function func_map func = (* check duplicate formals *)
          let locals = List.map (function | Formal (_, n) -> n) func.locals in
              (reportDuplicateVar (duplicate_local_decl_error func) locals;
 
-        (* ArrayStuff *)
-        (*| ArrayCreate(typ, expressions) -> 
-            let rec checkElementType expressions = match expressions with
-              [] -> ()
-            | head :: tail ->
-                let typ1 = expr head in
-                if typ1 <> IntType then
-                    (raise(Failure("Array dimensione must be int")))
-                else
-                    checkElementType (tail)
-            in checkElementType expressions;
-            
-            *** Figure out how to check nesting level ***
-
-            let rec nestedArrayType exprs = match exprs with
-                  [] -> typ
-                | _ :: tail -> ArrayType(nestedArrayType tail)
-            in SArrayCreate(expressions, getArrayNesting expressions)*)
               
               let rec type_of_identifier func s =
                   let symbols = List.fold_left (fun m -> function | Formal (t, n) -> StringMap.add n t m)
@@ -223,12 +209,45 @@ let check_function func_map func = (* check duplicate formals *)
                       | Id s -> type_of_identifier func s
                       | (Assign (var, e) as ex) -> let lt = type_of_identifier func var and rt = expr e in
                               check_assign lt rt ex
-                      | ArrayAccess(expr1, expr2) -> let e_type = expr expr1 and e_num = expr expr2 in 
-                          if (e_type != IntType && e_type != StringType) 
-                              then raise (Failure ("Can only access Int and string types, not " ^ string_of_type e_type))
-                          else 
-                              if (e_num != IntType) then raise (Failure ("Expecting Integer for access index, got " ^ string_of_type e_num))
-                              else IntType 
+                      (* Array semantic check *)
+                        
+        (* ArrayStuff *)
+        (*| ArrayCreate(typ, expressions) -> 
+            let rec checkElementType expressions = match expressions with
+              [] -> ()
+            | head :: tail ->
+                let typ1 = expr head in
+                if typ1 <> IntType then
+                    (raise(Failure("Array dimensione must be int")))
+                else
+                    checkElementType (tail)
+            in checkElementType expressions;
+            
+            *** Figure out how to check nesting level ***
+
+            let rec nestedArrayType exprs = match exprs with
+                  [] -> typ
+                | _ :: tail -> ArrayType(nestedArrayType tail)
+            in SArrayCreate(expressions, getArrayNesting expressions)*)
+                      | ArrayCreate(typ, expressions) -> let e_type = typ and exprs = expressions and
+                          (*let exprs = List.map expr unchecked_exprs in*)
+                          checkElementType elem = 
+                                  let currType = expr elem in
+                                  if currType <> IntType then
+                                      (raise(Failure("Array dimensions must be type int")))
+                          in List.iter checkElementType exprs
+                           
+                      | (ArrayAccess(expr1, expr2) as ex) -> let e_type = expr expr1 and e_num = expr expr2 in
+                          if (e_num != IntType) 
+                              then illegal_array_access_error (string_of_type e_type) (string_of_type e_num) (string_of_expr ex)
+                          else
+                              (match e_type with (* add object to this when ready *)
+                                  | IntType
+                                  | NumType
+                                  | StringType
+                                  | BoolType
+                                  | NodeType
+                                  | _ -> illegal_array_access_error (string_of_type e_type) (string_of_type e_num) (string_of_expr ex))
                       | Noexpr -> VoidType
                       | Call (n, args) -> let func_obj = getFunctionObject n func_map in
                           let checkFunctionCall func args =
