@@ -1,2 +1,2 @@
-int a;
+num a;
 print("finished");
