@@ -334,7 +334,7 @@ and string_of_varType = function
     | ArrayType(t) -> "array [" ^ string_of_varType t ^ "]"
 
 and string_of_formal = function 
-    | Formal(t, s)      -> string_of_varType t ^ " " ^ s
+    | Formal(t, s)      -> string_of_varType t ^ " " ^ s ^ ";\n"
 
 and string_of_local = function 
     | Local(t, s, e)    -> string_of_varType t ^ " " ^ s ^ " = " ^ string_of_expr e ^ ";\n"
