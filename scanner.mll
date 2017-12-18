@@ -58,9 +58,8 @@ rule token = parse
     | "Color"                               { COLOR }
     | "Console"                             { CONSOLE }
 
-    | digit+'.'?digit* as lit               { NUM_LITERAL(float_of_string lit) }
     | '"' ((ascii | escape)* as lit) '"'    { STRING_LITERAL(unescape lit) }
-    | '"'                                   { QUOTE }
+    | digit+'.'?digit* as lit               { NUM_LITERAL(float_of_string lit) }
     | "true" | "false" as boolLit           { BOOL_LITERAL(bool_of_string boolLit)}
 
     | "["                                   { LSQUARE }
@@ -73,8 +72,9 @@ rule token = parse
     | eof                                   { EOF }
 
 and commentMl = parse 
-    | ":#" {token lexbuf}
-    | _ {commentMl lexbuf}
+    | ":#"                                  {token lexbuf}
+    | _                                     {commentMl lexbuf}
 
 and comment = parse 
-    | _ {comment lexbuf}
+    | '\n'                                  {token lexbuf}
+    | _                                     {comment lexbuf}

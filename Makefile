@@ -34,7 +34,7 @@ clean :
 	ocamlbuild -clean | true
 	rm -f pixmix.native
 	rm -f lib/utils.bc
-	rm -f *.cmx *.cmi *.cmo *.cmx *.o*
+	rm -f *.cmx *.cmi *.cmo *.cmx *.o* *.ll *.exe
 	rm -f pixmix parser.ml parser.mli scanner.ml *.cmo *.cmi
 
 .PHONY : debug

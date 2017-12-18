@@ -3,7 +3,7 @@
 
 %token PLUS MINUS TIMES DIVIDE MOD SEMI COMMA ASSIGN COLON DOT
 %token GT GEQ LT LEQ EQUAL NEQ AND OR NOT IF ELSE FOR WHILE BREAK 
-%token CONTINUE IN RETURN QUOTE LSQUARE RSQUARE LCURL RCURL LPAREN 
+%token CONTINUE IN RETURN LSQUARE RSQUARE LCURL RCURL LPAREN 
 %token RPAREN VOID NULL INT NUM STRING BOOL NODE ARRAY OBJECT IMAGE 
 %token PIXEL COLOR CONSOLE EOF
 
@@ -45,8 +45,8 @@ stmtList:
 stmt:
     | expr SEMI                                 { Expr($1) }
     | varDecl SEMI                              { Variable($1) }
+    | OBJECT ID objDecl SEMI                   { Object($2, $3) }
     | funcDecl                                  { Function($1) }
-    | objDecl                                   { Object($1) }
     | RETURN SEMI                               { Return(Noexpr) }
     | RETURN expr SEMI                          { Return($2) }
     | FOR LPAREN forExpr SEMI expr SEMI forExpr RPAREN LCURL stmtList RCURL
@@ -59,13 +59,14 @@ stmt:
         { While($3, List.rev $6) }
 
 objDecl:
-    | OBJECT ID ASSIGN LCURL objBody RCURL      { $5 }
+    | objBody                                   { $1 }
+    | ASSIGN LCURL objBody RCURL                { $3 }
 
 objBody:
     | /* nothing */   { { 
         objLocals       = []; 
         objMethods      = [] } }
-    | objBody varDecl { { 
+    | objBody varDecl SEMI { { 
         objLocals       = $2 :: $1.objLocals;
         objMethods      = $1.objMethods } }
     | objBody funcDecl { { 
@@ -84,7 +85,6 @@ varType:
     | STRING                                    { StringType }
     | BOOL                                      { BoolType }
     | NODE                                      { NodeType }
-    | OBJECT                                    { ObjectType }
     | arrayType                                 { $1 }
 
 arrayType:
@@ -131,6 +131,7 @@ expr:
     | ID ASSIGN expr                            { Assign($1, $3) }
     | LPAREN expr RPAREN 	                    { $2 }
     | ID LPAREN exprList RPAREN                 { Call($1, List.rev $3) }
+    | ID DOT ID LPAREN exprList RPAREN          { CallObject($1, $3, List.rev $5) }
     | arrCreate                                 { ArrayCreate(fst $1, snd $1) }
     | expr arrAccess                            { ArrayAccess($1, $2) }
 

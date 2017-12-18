@@ -1,0 +1,3 @@
+Object myObj;
+
+print("finished");

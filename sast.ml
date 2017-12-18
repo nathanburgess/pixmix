@@ -13,8 +13,13 @@ type sexpr =
     | SId                   of string
     | SAssign               of string * sexpr
     | SCall                 of string * sexpr list
+<<<<<<< HEAD
     | SCallDefault          of sexpr * string * sexpr list
     | SArrayCreate          of A.varType * sexpr list * A.varType
+=======
+    | SCallObject           of string * string * sexpr list
+    | SArrayCreate          of A.varType * sexpr list
+>>>>>>> 5d7f6624e51014c5dc8445003c4fa2d76115893c
     | SArrayAccess          of sexpr * sexpr
 
 type sstmt =
@@ -25,7 +30,7 @@ type sstmt =
     | SWhile                of sexpr * sstmt list
     | SVariable             of A.local
     | SFunction             of A.funcDecl
-    | SObject               of A.objDecl
+    | SObject               of A.local list * A.funcDecl list
 
 (*
 and formal = Formal         of varType * string
@@ -80,6 +85,7 @@ and varType =
     | StringType
     | BoolType
     | NodeType
+    | ObjectType
     | ArrayType             of varType
 
 and formal = Formal         of varType * string
@@ -101,7 +107,8 @@ and expr =
     | ArrayCreate           of varType * expr list
     | ArrayAccess           of expr * expr
     | Call                  of string * expr list
-    | CallDefault           of expr * string * expr list
+    | CallObject            of string * string * expr list
+    | ObjectAssign          of objBody
 
 and stmt =
     | Expr                  of expr
@@ -109,6 +116,12 @@ and stmt =
     | For                   of expr * expr * expr * stmt list
     | If                    of expr * stmt list * stmt list
     | While                 of expr * stmt list
+    | Object                of string * objBody
+
+and objBody = {
+    objLocals   :           local list;
+    objMethods  :           funcDecl list;
+}
 
 and funcDecl = {
     returnType  :           varType;
@@ -121,49 +134,56 @@ and funcDecl = {
 
 and program = funcDecl list
     
-let convertBinOp = function
-    | A.Add     -> Add
-    | A.Sub     -> Sub
-    | A.Mult    -> Mult
-    | A.Div     -> Div
-    | A.Mod     -> Mod
-    | A.Equal   -> Equal
-    | A.Neq     -> Neq
-    | A.LThan   -> LThan
-    | A.Leq     -> Leq
-    | A.GThan   -> GThan
-    | A.Geq     -> Geq
-    | A.And     -> And
-    | A.Or      -> Or
+let convertBinOp = 
+    function
+        | A.Add                 -> Add
+        | A.Sub                 -> Sub
+        | A.Mult                -> Mult
+        | A.Div                 -> Div
+        | A.Mod                 -> Mod
+        | A.Equal               -> Equal
+        | A.Neq                 -> Neq
+        | A.LThan               -> LThan
+        | A.Leq                 -> Leq
+        | A.GThan               -> GThan
+        | A.Geq                 -> Geq
+        | A.And                 -> And
+        | A.Or                  -> Or
     
-let convertUnOp = function | A.Neg -> Neg | A.Not -> Not
-    
-let convertVarType = function
-    | A.NullType    -> NullType
-    | A.VoidType    -> VoidType
-    | A.IntType     -> IntType
-    | A.NumType     -> NumType
-    | A.StringType  -> StringType
-    | A.BoolType    -> BoolType
+let convertUnOp = 
+    function 
+        | A.Neg -> Neg 
+        | A.Not -> Not
+        
+let convertVarType = 
+    function
+        | A.NullType            -> NullType
+        | A.VoidType            -> VoidType
+        | A.IntType             -> IntType
+        | A.NumType             -> NumType
+        | A.StringType          -> StringType
+        | A.BoolType            -> BoolType
+        | A.ObjectType          -> ObjectType
     
 let rec getName map aux curName =
     if StringMap.mem curName map
-    then (let aux = (StringMap.find curName map) ^ ("." ^ aux) in 
+    then (let aux = (StringMap.find curName map) ^ "." ^ aux in 
         getName map aux (StringMap.find curName map))
     else aux
     
-let rec convertExpr map = function
-    | A.Null                    -> Null
-    | A.Noexpr                  -> Noexpr
-    | A.NumLit a                -> NumLit a
-    | A.StringLit a             -> StringLit a
-    | A.BoolLit a               -> BoolLit a
-    | A.Binop (a, b, c)         -> Binop ((convertExpr map a), (convertBinOp b), (convertExpr map c))
-    | A.Unop (a, b)             -> Unop ((convertUnOp a), (convertExpr map b))
-    | A.Id a                    -> Id a
-    | A.Assign (a, b)           -> Assign (a, (convertExpr map b))
-    | A.Call (a, b)             -> Call ((getName map a a), (convertExprs map b))
-    | A.CallDefault (a, b, c)   -> CallDefault ((convertExpr map a), b, (convertExprs map c))
+let rec convertExpr map = 
+    function
+        | A.Null                    -> Null
+        | A.Noexpr                  -> Noexpr
+        | A.NumLit a                -> NumLit a
+        | A.StringLit a             -> StringLit a
+        | A.BoolLit a               -> BoolLit a
+        | A.Binop (a, b, c)         -> Binop ((convertExpr map a), (convertBinOp b), (convertExpr map c))
+        | A.Unop (a, b)             -> Unop ((convertUnOp a), (convertExpr map b))
+        | A.Id a                    -> Id a
+        | A.Assign (a, b)           -> Assign (a, (convertExpr map b))
+        | A.Call (a, b)             -> Call ((getName map a a), (convertExprs map b))
+        | A.CallObject (a, b, c)    -> CallObject ((getName map a a), (getName map b b), (convertExprs map c))
 
 and convertExprs map = function
     | [] -> []
@@ -191,10 +211,6 @@ let rec getFunctionsA = function
     | ((A.Function _ as x)) :: tl -> x :: (getFunctionsA tl)
     | _ :: tl -> getFunctionsA tl
     
-let rec getFunctionBodyA = function
-    | [] -> []
-    | A.Function _ :: tl -> getFunctionBodyA tl
-    | ((_ as x)) :: tl -> x :: (getFunctionBodyA tl)
     
 let rec mapper parent map = function
     | [] -> map
@@ -206,13 +222,18 @@ let buildFunctionBody map = function
         let curr = getFunctionsA b in
         let map = mapper n map curr in (curr, map)
     | _ -> ([], map)
+
+let rec getFunctionBodyA = function
+    | [] -> []
+    | A.Function _ :: tl -> getFunctionBodyA tl
+    | ((_ as x)) :: tl -> x :: (getFunctionBodyA tl)
     
 let rec buildFunction map result = function
     | [] -> ((List.rev result), map)
     | ((A.Function { A.returnType = r; A.name = n; A.args = args; A.body = b } as a)) :: tl ->
         let result1 = buildFunctionBody map a in
         let latterlist = tl @ (fst result1) in
-        let map = snd result1 in
+        let map = snd result1 in 
         let addedFunc = A.Function 
             {
                 A.returnType = r;
@@ -232,7 +253,8 @@ let rec convertStatement map = function
     | A.If (e, stls1, stls2) ->
         If ((convertExpr map e), (List.map (convertStatement map) stls1), (List.map (convertStatement map) stls2))
     | A.While (e, stls) -> While ((convertExpr map e), (List.map (convertStatement map) stls))
-    | _ -> Expr Noexpr
+    (*| A.Object o -> Object (convertObj map o)*)
+    | _ -> Expr Noexpr    
     
 let rec getFunctionBodyS map = function
     | [] -> []
@@ -247,6 +269,16 @@ let rec getFunctionLocals = function
         (Formal ((convertVarType typ), name)) :: (getFunctionLocals tl)
     | _ :: tl -> getFunctionLocals tl
     
+(*let convertObjs map = function
+    | [] -> []
+    | A.Object { A.objName = n; A.objLocals = ls; A.objMethods = ms } :: tl -> 
+        {
+            objName = getName map n n;
+            objLocals = getFunctionLocals ls;
+            objMethods = convertFunctionList (snd ms) (fst ms)
+        } :: 
+    | _ :: tl -> convertObjs tl*)
+
 let rec convertFunctionList map = function
     | [] -> []
     | A.Function { A.returnType = r; A.name = n; A.args = a; A.body = b } :: tl -> 
@@ -263,8 +295,8 @@ let rec convertFunctionList map = function
     
 (* entry point *)
 let convert stmts =
-    let funcs = createMain stmts in
-        let funcList = buildFunction StringMap.empty [] [ funcs ] in
+    let main = createMain stmts in
+        let funcList = buildFunction StringMap.empty [] [ main ] in
             convertFunctionList (snd funcList) (fst funcList)
 
 (* SAST Printing Functions *)
@@ -307,7 +339,7 @@ and string_of_varType = function
     | ArrayType(t) -> "array [" ^ string_of_varType t ^ "]"
 
 and string_of_formal = function 
-    | Formal(t, s)      -> string_of_varType t ^ " " ^ s
+    | Formal(t, s)      -> string_of_varType t ^ " " ^ s ^ ";\n"
 
 and string_of_local = function 
     | Local(t, s, e)    -> string_of_varType t ^ " " ^ s ^ " = " ^ string_of_expr e ^ ";\n"
@@ -334,7 +366,10 @@ and string_of_expr = function
     | ArrayAccess(arrCreate, index) -> string_of_expr arrCreate ^ 
         "[" ^ string_of_expr index ^ "]"   
     | Call(f, e) -> f ^ "(" ^ String.concat ", " (List.map string_of_expr e) ^ ")"
-    | CallDefault(e, s, es) -> "CallDefault;\n"
+
+and string_of_objBody b =
+    String.concat "" (List.map string_of_local b.objLocals) ^ "\n" ^
+    String.concat "" (List.map string_of_function b.objMethods)
 
 and string_of_statements = function
     | Expr(expr) -> string_of_expr expr ^ ";\n";
@@ -345,6 +380,7 @@ and string_of_statements = function
         ^ String.concat "" (List.map string_of_statements s1) 
         ^ "else\n" ^ String.concat "" (List.map string_of_statements s2)
     | While(e, s) -> "while (" ^ string_of_expr e ^ ") " ^ String.concat "" (List.map string_of_statements s)
+    | Object(n, b) -> "Object " ^ n ^ " = {\n" ^ string_of_objBody b ^ "\n};\n"
 
 and string_of_function f =
     string_of_varType f.returnType ^ " " ^ f.name ^ "(" ^
