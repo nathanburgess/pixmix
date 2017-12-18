@@ -1,8 +1,8 @@
 
-  int a;
-  int b;
-  int c;
-  int x;
+  num a;
+  num b;
+  num c;
+  num x;
   x = 0;
 
   if (x < 1){

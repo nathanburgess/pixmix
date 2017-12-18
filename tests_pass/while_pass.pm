@@ -1,6 +1,6 @@
     string hw;
     hw = "Hello World!";
-    int x = 1;
+    num x = 1;
     while (x<7)
     {
         print(hw);

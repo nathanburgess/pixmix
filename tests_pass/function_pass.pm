@@ -1,10 +1,10 @@
-int add(int x, int y)
+num add(num x, num y)
 {
   return x + y;
 }
 
 
-  int a;
+  num a;
   a = 5;
   print(add(a, 3));
   print("finished");

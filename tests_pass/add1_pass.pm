@@ -1,8 +1,8 @@
 
     
-    float a;
-    float b;
-    float sum;
+    num a;
+    num b;
+    num sum;
 
     a = 2;
     b = 3;

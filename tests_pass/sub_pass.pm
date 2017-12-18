@@ -1,8 +1,8 @@
 
 
-    int a;
-    int b;
-    int sum;
+    num a;
+    num b;
+    num sum;
 
     a = 2;
     b = 3;

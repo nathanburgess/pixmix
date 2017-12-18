@@ -1,4 +1,4 @@
-int a = 0;
+num a = 0;
 
 string d = "ten";
 
