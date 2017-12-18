@@ -15,6 +15,7 @@ and f_t         = L.double_type     context
 and i8_t        = L.i8_type         context
 and i1_t        = L.i1_type         context
 and str_t       = L.pointer_type    (L.i8_type context)
+and obj_t       = L.pointer_type    (L.i8_type context)
 and void_t      = L.void_type       context
 and void_ptr_t  = L.pointer_type    (L.i8_type context)
 
@@ -32,6 +33,7 @@ let ltype_of_typ =
         | S.BoolType -> i1_t
         | S.StringType -> str_t
         | S.NodeType -> node_t
+        | S.ObjectType -> obj_t
         | _ -> raise (Failure "[Error] Type Not Found for ltype_of_typ.")
 
 let lconst_of_typ =
@@ -41,6 +43,7 @@ let lconst_of_typ =
         | S.BoolType -> L.const_int i32_t 2
         | S.StringType -> L.const_int i32_t 3
         | S.NodeType -> L.const_int i32_t 4
+        | S.ObjectType -> L.const_int i32_t 5
         | _ -> raise (Failure "[Error] Type Not Found for lconst_of_typ.")
 
 let int_zero = L.const_int i32_t 0
@@ -50,11 +53,13 @@ and bool_true = L.const_int i1_t 1
 and const_null = L.const_int i32_t 0
 and str_null = L.const_null str_t
 and node_null = L.const_null node_t
+and object_null = L.const_null obj_t
 
 let get_null_value_of_type =
     function
         | S.StringType -> str_null
         | S.NodeType -> node_null
+        | S.ObjectType -> object_null
         | _ -> raise (Failure "[Error] Type Not Found for get_null_value_of_type.")
 
 let get_default_value_of_type =
@@ -180,30 +185,24 @@ let print_hashtbl tb =
  * "Main" function of codegen, translates the program into it's LLVM IR equivalent
  *)
 let translate program =
-    (* Define each function (arguments and return type) so we can call it *)
     let function_decls =
         let function_decl m fdecl =
             let name = fdecl.S.name
             and formal_types =
-                Array.of_list
-                    (List.map (function | S.Formal (t, _) -> ltype_of_typ t)
-                         fdecl.S.args) in
+                Array.of_list (List.map (function | S.Formal (t, _) -> ltype_of_typ t) fdecl.S.args) in
             let ftype =
-                L.var_arg_function_type (ltype_of_typ fdecl.S.returnType)
-                    formal_types
+                L.var_arg_function_type (ltype_of_typ fdecl.S.returnType) formal_types
             in
-                StringMap.add name ((L.define_function name ftype the_module), fdecl)
-                    m
+            StringMap.add name ((L.define_function name ftype the_module), fdecl) m
+            (*StringMap.add (fdecl.S.parent ^ "." ^ name) ((L.define_function name ftype the_module), fdecl) m*)
         in List.fold_left function_decl StringMap.empty program in
+    
     (* Fill in the body of the given function *)
     let build_function_body fdecl =
         let get_var_name fname n = fname ^ ("." ^ n) in
         let (the_function, _) = StringMap.find fdecl.S.name function_decls in
-        (* let bb = L.append_block context "entry" the_function in *)
         let builder = L.builder_at_end context (L.entry_block the_function) in
-        (* Construct the function's "locals": formal arguments and locally
-             declared variables.  Allocate each on the stack, initialize their
-             value, if appropriate, and remember their values in the "locals" map *)
+
         let _ =
             let add_to_context locals =
                 (ignore (Hashtbl.add context_funcs_vars fdecl.S.name locals);
@@ -232,9 +231,9 @@ let translate program =
                 List.fold_left2 add_formal StringMap.empty fdecl.S.args
                     (Array.to_list (L.params the_function))
             in add_to_context (List.fold_left add_local formals fdecl.S.locals) in
+
         (* Return the value for a variable or formal argument *)
-        (* let lookup n = StringMap.find n local_vars
-           in *)
+        (* let lookup n = StringMap.find n local_vars in *)
         let lookup n =
             let get_parent_func_name fname =
                 let (_, fdecl) = StringMap.find fname function_decls
@@ -249,6 +248,7 @@ let translate program =
                         then raise (Failure "[Error] Local Variable not found.")
                         else aux n (get_parent_func_name fname)
             in aux n fdecl.S.name in
+
         (* Construct code for an expression; return its value *)
         let handle_binop e1 op e2 dtype llbuilder =
             (* Generate llvalues from e1 and e2 *)
@@ -366,6 +366,7 @@ let translate program =
                                  in (ignore (L.build_store e' var builder); e')
                              | _ -> raise (Failure "[Error] Assign Type inconsist.")),
                          typ)
+                (* | S.CallObject (o, f, e) -> *)
                 | S.Call ("print", el) ->
                     let print_expr e =
                         let (eval, etyp) = expr builder e
@@ -395,38 +396,7 @@ let translate program =
                     ((codegen_print builder
                             (List.map (fun e -> let (eval, _) = expr builder e in eval) el)),
                      S.VoidType)
-                | (*
-            | S.Call ("int", el) ->
-                        let (eval, etyp) = expr builder (List.hd el) in
-                        ((  match etyp with
-                            | S.IntType -> eval
-                            | S.NodeType -> node_get_value eval S.IntType builder
-                            | _ -> raise (Failure("[Error] Can't convert to int."))
-                            ), S.IntType)
-            | S.Call ("float", el) ->
-                        let (eval, etyp) = expr builder (List.hd el) in
-                        ((  match etyp with
-                            | S.IntType -> int_to_float builder eval
-                            | S.NumType -> eval
-                            | S.NodeType -> node_get_value eval S.NumType builder
-                            | _ -> raise (Failure("[Error] Can't convert to float."))
-                            ), S.NumType)
-            | S.Call ("bool", el) ->
-                        let (eval, etyp) = expr builder (List.hd el) in
-                        ((  match etyp with
-                            | S.BoolType -> eval
-                            | S.NodeType -> node_get_value eval S.BoolType builder
-                            | _ -> raise (Failure("[Error] Can't convert to bool."))
-                            ), S.BoolType)
-            | S.Call ("string", el) ->
-                        let (eval, etyp) = expr builder (List.hd el) in
-                        ((  match etyp with
-                            | S.StringType -> eval
-                            | S.NodeType -> node_get_value eval S.StringType builder
-                            | _ -> raise (Failure("[Error] Can't convert to string."))
-                            ), S.StringType)
-                    *)
-                    S.Call (f, act) ->
+                | S.Call (f, act) ->
                     let (fdef, fdecl) = StringMap.find f function_decls in
                     let actuals =
                         List.rev
