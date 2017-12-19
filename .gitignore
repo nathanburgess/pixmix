@@ -1,6 +1,5 @@
 _build
 pixmix.native
-test.pm
 *.sublime*
 *.o*
 */*.o*
