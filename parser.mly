@@ -4,7 +4,7 @@
 %token PLUS MINUS TIMES DIVIDE MOD SEMI COMMA ASSIGN COLON DOT
 %token GT GEQ LT LEQ EQUAL NEQ AND OR NOT IF ELSE FOR WHILE BREAK 
 %token CONTINUE IN RETURN LSQUARE RSQUARE LCURL RCURL LPAREN 
-%token RPAREN VOID NULL INT NUM STRING BOOL NODE ARRAY OBJECT IMAGE 
+%token RPAREN VOID NULL INT NUM STRING BOOL ARRAY OBJECT IMAGE 
 %token PIXEL COLOR CONSOLE EOF
 
 /* Identifiers */
@@ -77,7 +77,6 @@ varType:
     | NUM                                       { NumType }
     | STRING                                    { StringType }
     | BOOL                                      { BoolType }
-    | NODE                                      { NodeType }
     | arrayType                                 { $1 }
 
 arrayType:

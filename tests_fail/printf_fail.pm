@@ -1,4 +1,4 @@
 num a;
 a = 5;
-printf(a);
+printf("a");
 print("finished");
