@@ -1,3 +1,8 @@
-int a;
-#comment
+num a; # Single line comment
+
+#:
+    Multi-line comment
+    num a;
+:#
+
 print("finished");
