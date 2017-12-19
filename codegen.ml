@@ -185,6 +185,12 @@ let print_hashtbl tb =
  * "Main" function of codegen, translates the program into it's LLVM IR equivalent
  *)
 let translate program =
+    (*let object_decls = 
+        let object_decl m odecl =
+            let name = odecl.S.objName
+            and stmts = odecl.S.objStmts in
+            let 
+    in*)
     let function_decls =
         let function_decl m fdecl =
             let name = fdecl.S.name
@@ -199,7 +205,7 @@ let translate program =
     
     (* Fill in the body of the given function *)
     let build_function_body fdecl =
-        let get_var_name fname n = fname ^ ("." ^ n) in
+        let get_var_name fname n = fname ^ "." ^ n in
         let (the_function, _) = StringMap.find fdecl.S.name function_decls in
         let builder = L.builder_at_end context (L.entry_block the_function) in
 
@@ -469,7 +475,9 @@ let translate program =
                                    L.builder_at_end context merge_bb)))
                 | S.For (e1, e2, e3, body) ->
                     List.fold_left stmt builder
-                        [ S.Expr e1; S.While (e2, (body @ [ S.Expr e3 ])) ] in
+                        [ S.Expr e1; S.While (e2, (body @ [ S.Expr e3 ])) ] 
+                | S.Object o -> builder
+            in
         (* Build the code for each statement in the function *)
         let builder = List.fold_left stmt builder fdecl.S.body
         in
