@@ -25,7 +25,7 @@ and node_t =
             | None -> raise (Failure "struct.Node doesn't defined.")
             | Some x -> x)
 
-let ltype_of_typ =
+let rec ltype_of_typ =
     function
         | S.VoidType -> void_t
         | S.IntType -> i32_t
@@ -33,6 +33,7 @@ let ltype_of_typ =
         | S.BoolType -> i1_t
         | S.StringType -> str_t
         | S.NodeType -> node_t
+        | S.ArrayType(typ) -> L.pointer_type (ltype_of_typ typ)
         | S.ObjectType -> obj_t
         | _ -> raise (Failure "[Error] Type Not Found for ltype_of_typ.")
 
@@ -43,7 +44,8 @@ let lconst_of_typ =
         | S.BoolType -> L.const_int i32_t 2
         | S.StringType -> L.const_int i32_t 3
         | S.NodeType -> L.const_int i32_t 4
-        | S.ObjectType -> L.const_int i32_t 5
+        | S.ArrayType -> L.const_int i32_t 5
+        | S.ObjectType -> L.const_int i32_t 6
         | _ -> raise (Failure "[Error] Type Not Found for lconst_of_typ.")
 
 let int_zero = L.const_int i32_t 0
@@ -366,6 +368,8 @@ let translate program =
                                  in (ignore (L.build_store e' var builder); e')
                              | _ -> raise (Failure "[Error] Assign Type inconsist.")),
                          typ)
+                (* | S.ArraCreate(e) -> *)
+                 
                 (* | S.CallObject (o, f, e) -> *)
                 | S.Call ("print", el) ->
                     let print_expr e =
