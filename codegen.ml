@@ -27,7 +27,7 @@ let rec ltype_of_typ =
         | S.NumType -> f_t
         | S.BoolType -> i1_t
         | S.StringType -> str_t
-        (*| S.ArrayType(typ) -> L.pointer_type (ltype_of_typ typ) *)
+        | S.ArrayType(typ) -> L.pointer_type (ltype_of_typ typ)
         | S.ObjectType -> obj_t
         | _ -> raise (Failure "[Error] Type Not Found for ltype_of_typ.")
 
@@ -37,7 +37,7 @@ let lconst_of_typ =
         | S.NumType -> L.const_int i32_t 1
         | S.BoolType -> L.const_int i32_t 2
         | S.StringType -> L.const_int i32_t 3
-        (* | S.ArrayType -> L.const_int i32_t 5 *)
+        | S.ArrayType(typ) -> L.const_int i32_t 5
         | S.ObjectType -> L.const_int i32_t 6
         | _ -> raise (Failure "[Error] Type Not Found for lconst_of_typ.")
 
