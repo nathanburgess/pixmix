@@ -45,7 +45,7 @@ stmtList:
 stmt:
     | expr SEMI                                 { Expr($1) }
     | varDecl SEMI                              { Variable($1) }
-    | OBJECT ID objDecl SEMI                   { Object($2, $3) }
+    | OBJECT objDecl SEMI                       { Object($2) }
     | funcDecl                                  { Function($1) }
     | RETURN SEMI                               { Return(Noexpr) }
     | RETURN expr SEMI                          { Return($2) }
@@ -59,19 +59,12 @@ stmt:
         { While($3, List.rev $6) }
 
 objDecl:
-    | objBody                                   { $1 }
-    | ASSIGN LCURL objBody RCURL                { $3 }
-
-objBody:
-    | /* nothing */   { { 
-        objLocals       = []; 
-        objMethods      = [] } }
-    | objBody varDecl SEMI { { 
-        objLocals       = $2 :: $1.objLocals;
-        objMethods      = $1.objMethods } }
-    | objBody funcDecl { { 
-        objLocals       = $1.objLocals;
-        objMethods      = $2 :: $1.objMethods } }
+    | ID stmtList                               { { 
+        objName         = $1;
+        objStmts        = [] } }
+    | ID ASSIGN LCURL stmtList RCURL            { { 
+        objName         = $1;
+        objStmts        = List.rev $4 } }
 
 varDecl:       
     | varType ID                                { Local($1, $2, Noexpr) }

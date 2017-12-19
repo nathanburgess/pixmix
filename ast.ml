@@ -66,11 +66,11 @@ and stmt =
     | While                 of expr * stmt list
     | Variable              of local
     | Function              of funcDecl
-    | Object                of string * objBody
+    | Object                of objBody
 
 and objBody = {
-    objLocals   :           local list;
-    objMethods  :           funcDecl list;
+    objName     :           string;
+    objStmts    :           stmt list;
 }
 
 and funcDecl = {
@@ -127,7 +127,7 @@ and string_of_formal = function
 
 and string_of_expr = function
     | Null -> "null"
-    | Noexpr -> ""
+    | Noexpr -> "undefined"
     | NumLit i -> string_of_float i
     | StringLit s -> "\"" ^ String.escaped s ^ "\""
     | BoolLit b -> if b then "true" else "false"
@@ -153,10 +153,6 @@ and string_of_function f =
     String.concat ", " (List.map string_of_formal f.args) ^ ")\n{\n" ^
     String.concat "" (List.map string_of_statements f.body) ^ "}\n"
 
-and string_of_objBody b =
-    String.concat "" (List.map string_of_local b.objLocals) ^ "\n" ^
-    String.concat "" (List.map string_of_function b.objMethods)
-
 and string_of_statements = function
     | Expr(expr) -> string_of_expr expr ^ ";\n";
     | Return(expr) -> "return " ^ string_of_expr expr ^ ";\n"
@@ -168,7 +164,8 @@ and string_of_statements = function
     | While(e, s) -> "while (" ^ string_of_expr e ^ ") " ^ String.concat "" (List.map string_of_statements s)
     | Variable(v) -> string_of_local v 
     | Function(f) -> string_of_function f
-    | Object(n, b) -> "Object " ^ n ^ " = {\n" ^ string_of_objBody b ^ "\n};\n"
+    | Object o -> "Object " ^ o.objName ^ " = {\n"
+        ^ String.concat "" (List.map string_of_statements o.objStmts)
 
 and string_of_program stmnts = 
     String.concat "" (List.map string_of_statements stmnts) ^ "\n"

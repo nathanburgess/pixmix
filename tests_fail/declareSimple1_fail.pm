@@ -1,3 +1,2 @@
-int a;
-#comment
+float a;
 print("finished");
