@@ -57,6 +57,24 @@ test :
 	@rm test.ll
 	@rm test.exe
 
+.PHONY : testast
+testast :
+	@make
+	@clang -emit-llvm -o lib/utils.bc -c lib/utils.c -Wno-everything
+	@./pixmix.native test.pm -a
+
+.PHONY : testsast
+testsast :
+	@make
+	@clang -emit-llvm -o lib/utils.bc -c lib/utils.c -Wno-everything
+	@./pixmix.native test.pm -s
+
+.PHONY : testlli
+testlli :
+	@make
+	@clang -emit-llvm -o lib/utils.bc -c lib/utils.c -Wno-everything
+	@./pixmix.native test.pm
+
 .PHONY : debugtest
 debugtest :
 	@make
