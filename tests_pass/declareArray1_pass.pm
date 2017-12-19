@@ -1,2 +1,2 @@
-Arrray myArray [1,2,3,4];
+Arrray myArray num[];
 print("finished");

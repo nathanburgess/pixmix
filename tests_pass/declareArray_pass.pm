@@ -1,4 +1,4 @@
 
-Array myArray[int];
+Array myArray = num [2];
 print("finished");
 
