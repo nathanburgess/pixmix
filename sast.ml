@@ -313,6 +313,11 @@ let rec buildFunction map result = function
         let result = result @ [ addedFunc ] in buildFunction map result latterlist
     | _ -> ([], map)
 
+let rec convertObjects map result = function
+    | [] -> (List.rev result, map)
+    | _ -> ([], map)
+    
+
 let createMain stmts = A.Function 
     { 
         A.returnType = A.IntType; 
@@ -324,6 +329,6 @@ let createMain stmts = A.Function
 let convert stmts =
     let main = createMain stmts in
         let funcMap = StringMap.empty and resultMap = [] in
-        let objList = buildObjects StringMap.empty [] [ main ] in
+        let objList = convertObjects StringMap.empty [] [ main ] in
         let funcList = buildFunction funcMap resultMap [ main ] in
             convertFunctionList (snd funcList) (fst funcList)
