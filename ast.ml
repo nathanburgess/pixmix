@@ -34,7 +34,6 @@ and varType =
     | NumType
     | StringType
     | BoolType
-    | NodeType
     | ObjectType
     | ArrayType of varType
 
@@ -48,7 +47,6 @@ and expr =
     | NumLit                of float
     | StringLit             of string
     | BoolLit               of bool
-    | Node                  of expr
     | Binop                 of expr * binop * expr
     | Unop                  of unop * expr
     | Id                    of string
@@ -113,9 +111,9 @@ and string_of_unop = function
 
 and string_of_varType = function   
     | NumType       -> "num"
+    | IntType       -> "int"
     | StringType    -> "string"
     | BoolType      -> "bool" 
-    | NodeType      -> "node"
     | NullType      -> "null"
     | ArrayType(t)  -> "[" ^ string_of_varType t ^ "]"
 
@@ -151,21 +149,21 @@ and string_of_expr = function
 and string_of_function f =
     string_of_varType f.returnType ^ " " ^ f.name ^ "(" ^
     String.concat ", " (List.map string_of_formal f.args) ^ ")\n{\n" ^
-    String.concat "" (List.map string_of_statements f.body) ^ "}\n"
+    String.concat "" (List.map string_of_statement f.body) ^ "}\n"
 
-and string_of_statements = function
+and string_of_statement = function
     | Expr(expr) -> string_of_expr expr ^ ";\n";
     | Return(expr) -> "return " ^ string_of_expr expr ^ ";\n"
     | For(e1, e2, e3, s) -> "for (" ^ string_of_expr e1  ^ " ; " ^ string_of_expr e2 ^ " ; " ^ string_of_expr e3  ^ ") "
-        ^ String.concat "" (List.map string_of_statements s)
+        ^ String.concat "" (List.map string_of_statement s)
     | If(e, s1, s2) ->  "if (" ^ string_of_expr e ^ ")\n" 
-        ^ String.concat "" (List.map string_of_statements s1) 
-        ^ "else\n" ^ String.concat "" (List.map string_of_statements s2)
-    | While(e, s) -> "while (" ^ string_of_expr e ^ ") " ^ String.concat "" (List.map string_of_statements s)
+        ^ String.concat "" (List.map string_of_statement s1) 
+        ^ "else\n" ^ String.concat "" (List.map string_of_statement s2)
+    | While(e, s) -> "while (" ^ string_of_expr e ^ ") " ^ String.concat "" (List.map string_of_statement s)
     | Variable(v) -> string_of_local v 
     | Function(f) -> string_of_function f
     | Object o -> "Object " ^ o.objName ^ " = {\n"
-        ^ String.concat "" (List.map string_of_statements o.objStmts)
+        ^ String.concat "" (List.map string_of_statement o.objStmts) ^ "};\n"
 
 and string_of_program stmnts = 
-    String.concat "" (List.map string_of_statements stmnts) ^ "\n"
+    String.concat "" (List.map string_of_statement stmnts) ^ "\n"

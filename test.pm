@@ -1,8 +1,17 @@
 Object one = {
-    num oneA = 1;
-    num oneZ;
-    num oneB = 2;
-    num oneC = 9;
+    string oneA = "first string in object one";
+    num oneB = 32.5;
+    num oneC;
 };
 
-print("finished");
+
+num rawr() {
+    num rawrA = 5;
+    num rawrB = 7;
+    num inner() {
+        num innerA = 87;
+    }
+}
+
+
+num global = 5;

@@ -49,7 +49,6 @@ rule token = parse
     | "num"                                 { NUM }
     | "string"                              { STRING }
     | "bool"                                { BOOL }
-    | "node"                                { NODE }
     | "null"                                { NULL }
     | "Array"                               { ARRAY }
     | "Object"                              { OBJECT }

@@ -23,7 +23,6 @@ let string_of_type =
         | NumType -> "num"
         | StringType -> "string"
         | BoolType -> "bool"
-        | NodeType -> "node"
         | NullType -> "null"
 
 let string_of_op =
@@ -52,7 +51,6 @@ let rec string_of_expr =
         | NumLit l -> string_of_float l
         | StringLit l -> l
         | BoolLit b -> if b then "true" else "false"
-        | Node (_, e) -> "node(" ^ ((string_of_expr e) ^ ")")
         | Binop (e1, o, e2) -> (string_of_expr e1) ^
             (" " ^ ((string_of_op o) ^ (" " ^ (string_of_expr e2))))
         | Unop (o, e) -> (string_of_uop o) ^ (" " ^ (string_of_expr e))
@@ -137,7 +135,6 @@ let checkReturnType func typ =
         match lvaluet with
             | NumType when rvaluet = NumType -> ()
             | StringType when rvaluet = NullType -> ()
-            | NodeType when rvaluet = NullType -> ()
             | _ -> if lvaluet == rvaluet then ()
                 else wrong_func_return_type_error (string_of_type rvaluet) (string_of_type lvaluet)
 
