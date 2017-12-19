@@ -1,6 +1,6 @@
 
 
-Array myArray = num [2];
+Array myArray = num [];
 print("finished");
 
 
