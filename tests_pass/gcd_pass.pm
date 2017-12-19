@@ -1,18 +1,21 @@
 num gcd (num x, num y)
 {
-  while ( x != y) {
-  if ( x > y) { x = x - y;}
-  else {
-  y = y - x; }
-  
-  return x;
+    if(x == 0) {
+        return y;
+    }
+
+    while (y != 0) {
+        if ( x > y) { 
+            x = x - y;
+        }
+        else {
+            y = y - x; 
+        }
+    }
+      
+    return x;
 }
-
-}
-
-
-  
  
-  print(gcd(2, 3));
-  print("finished");
-  
+print("GCD Result: ", gcd(240, 150));
+
+print("finished");
