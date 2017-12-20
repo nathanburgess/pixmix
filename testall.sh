@@ -26,7 +26,7 @@ runTest() {
 
     ./pixmix.native $1 &> temp.ll
    
-    clang -Wno-override-module lib/utils.bc temp.ll -o ${exe_file} &>/dev/null
+    clang -Wno-override-module lib/utils.bc temp.ll -o ${exe_file} -lm &>/dev/null
     
     if [ -e "$exe_file" ]; then
         ./${exe_file} > $output_file
