@@ -1,1 +1,0 @@
-Object Rect a;
