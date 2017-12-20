@@ -1,5 +1,5 @@
 
-Arrray myArray num[];
+Array num myArray = [];
 
 
 

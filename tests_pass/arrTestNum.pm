@@ -1,2 +1,2 @@
- num a =  [5];
+ Array num a = [5];
  print("finished");

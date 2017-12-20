@@ -136,15 +136,7 @@ and string_of_expr = function
     | Unop(op, e) -> string_of_unop e op
     | Id s -> s
     | Assign(s, e) -> s ^ " = " ^ string_of_expr e
-    (*| ArrayCreate(typ, exprs) -> 
-        let rec string_list exprs = match exprs with
-            | [] -> ""
-            | [head] -> "[" ^ (string_of_varType typ) ^ ", " ^ 
-              (string_of_expr head) ^ "]"
-            | head :: tail -> "[" ^ (string_list tail) ^ ", " ^
-              (string_of_expr head) ^ "]"
-        in
-        string_list exprs*)
+    | ArrayCreate(t, n, e) -> "Array " ^ string_of_varType t ^ " " ^ n ^ " = " ^ " [" ^ string_of_expr e ^ "]"
     | ArrayAccess(arrCreate, index) -> string_of_expr arrCreate ^ "[" ^ string_of_expr index ^ "]"   
     | Call(f, e) -> f ^ "(" ^ String.concat ", " (List.map string_of_expr e) ^ ")"
     | CallObject(o, f, e) -> o ^ "." ^ f ^ "(" ^ String.concat ", " (List.map string_of_expr e) ^ ")"
