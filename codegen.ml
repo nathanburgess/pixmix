@@ -361,6 +361,14 @@ let translate program =
                         | S.VoidType -> ""
                         | _ -> f ^ "_result")
                     in
+                    ((L.build_call fdef (Array.of_list actuals) result builder), (fdecl.S.returnType))
+                | S.CallObject (o, f, act) ->
+                    let (fdef, fdecl) = StringMap.find f function_decls in
+                    let actuals = List.rev (List.map (fun e -> let (eval, _) = expr builder e in eval) (List.rev act)) in
+                    let result = (match fdecl.S.returnType with
+                        | S.VoidType -> ""
+                        | _ -> f ^ "_result")
+                    in
                     ((L.build_call fdef (Array.of_list actuals) result builder), (fdecl.S.returnType)) in
 
         let add_terminal builder f =
