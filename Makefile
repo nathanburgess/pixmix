@@ -1,5 +1,5 @@
 OBJS = ast.cmx codegen.cmx parser.cmx pixmix.cmx sast.cmx scanner.cmx semant.cmx
-UTILS_FILE = utils.bc
+UTILS_FILE = lib/utils.bc
 
 # Color Definitions
 clrClear = \033[0m

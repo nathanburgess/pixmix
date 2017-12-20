@@ -6,7 +6,7 @@ module StringMap = Map.Make(String)
 let context     = L.global_context ()
 let llctx       = L.global_context ()
 
-let utilsBuffer = L.MemoryBuffer.of_file "utils.bc"
+let utilsBuffer = L.MemoryBuffer.of_file "lib/utils.bc"
 let llm         = Llvm_bitreader.parse_bitcode llctx utilsBuffer
 let the_module  = L.create_module   context "PixMix"
 
@@ -14,10 +14,10 @@ let i32_t       = L.i32_type        context
 and f_t         = L.double_type     context
 and i8_t        = L.i8_type         context
 and i1_t        = L.i1_type         context
-and str_t       = L.pointer_type    (L.i8_type context)
-and obj_t       = L.pointer_type    (L.i8_type context)
 and void_t      = L.void_type       context
 and void_ptr_t  = L.pointer_type    (L.i8_type context)
+and str_t       = L.pointer_type    (L.i8_type context)
+and obj_t       = L.pointer_type    (L.i8_type context)
 
 (*
 let image_t = L.pointer_type (match L.type_by_name llm "struct.Image" with
