@@ -61,6 +61,36 @@ runtest :
 	@rm test.ll
 	@rm test.exe
 
+.PHONY : rungcd
+rungcd :
+	@cat gcd.pm
+	@echo "\nOutput: "
+	@./pixmix.native gcd.pm > test.ll
+	@clang -Wno-override-module ${UTILS_FILE} test.ll -o test.exe -lm
+	@./test.exe
+	@rm test.ll
+	@rm test.exe
+
+.PHONY : runfib
+runfib :
+	@cat fib.pm
+	@echo "\nOutput: "
+	@./pixmix.native fib.pm > test.ll
+	@clang -Wno-override-module ${UTILS_FILE} test.ll -o test.exe -lm
+	@./test.exe
+	@rm test.ll
+	@rm test.exe
+
+.PHONY : runmath
+runmath :
+	@cat math.pm
+	@echo "\nOutput: "
+	@./pixmix.native math.pm > test.ll
+	@clang -Wno-override-module ${UTILS_FILE} test.ll -o test.exe -lm
+	@./test.exe
+	@rm test.ll
+	@rm test.exe
+
 # Run the same test as the test rule, but print out the AST
 .PHONY : testast
 testast :
