@@ -274,7 +274,6 @@ let translate program =
                         in (ignore (L.build_store e' var builder); e')
                     | _ -> raise (Failure "[Error] Assign Type inconsist.")
                 ), typ)
-
             | S.ArrayAccess(e, i) ->
                 let (arr, _) = expr builder e in
                 let (index, _) = expr builder i in
@@ -283,21 +282,18 @@ let translate program =
                     (L.build_load _val "array_access_val" builder, S.IntType)
             | S.ArrayCreate(typ, _, e) -> 
                 let t = ltype_of_typ typ in
-                let (s, _) = expr builder e in
+                let (e', _) = expr builder e in
+                let size = float_to_int builder e' in
+
                 let size_t = L.build_intcast (L.size_of t) i32_t "tmp" builder in
-                let size = 
-                    L.build_mul 
-                    size_t 
-                    (floor s) 
-                    "tmp" 
-                    builder in
+                let size = L.build_mul size_t size "tmp" builder in
                 let size_real = L.build_add size (L.const_int i32_t 1) "tmp" builder in
                 
                 let arr = L.build_array_malloc t size_real "tmp" builder in
-                let arr = L.build_pointercast arr t "tmp" builder in
-                let arr_len_ptr = L.build_pointercast arr (L.pointer_type i32_t) "tmp" builder in
+                let arr = L.build_pointercast arr (L.pointer_type t) "tmp" builder in
+                let arr_len_ptr = L.build_pointercast arr (L.pointer_type i32_t) "6tmp" builder in
                     ignore(L.build_store size_real arr_len_ptr builder);
-                (arr, typ)  
+                (arr, typ) 
             | S.Call ("print", el) -> let print_expr e = 
                 let (eval, etyp) = expr builder e in (match etyp with
                     | S.IntType -> ignore (codegen_print builder [ codegen_string_lit "%d\n" builder; eval ])
