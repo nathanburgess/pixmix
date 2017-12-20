@@ -109,12 +109,14 @@ and string_of_unop = function
     | Decr          -> "--"
     | BitNeg        -> "~"
 
-and string_of_varType = function   
-    | NumType       -> "num"
+and string_of_varType = function  
+    | NullType      -> "null" 
+    | VoidType      -> "void" 
     | IntType       -> "int"
+    | NumType       -> "num"
     | StringType    -> "string"
     | BoolType      -> "bool" 
-    | NullType      -> "null"
+    | ObjectType    -> "Object"
     | ArrayType(t)  -> "[" ^ string_of_varType t ^ "]"
 
 and string_of_local = function 
@@ -145,6 +147,11 @@ and string_of_expr = function
     | ArrayAccess(arrCreate, index) -> string_of_expr arrCreate ^ 
         "[" ^ string_of_expr index ^ "]"   
     | Call(f, e) -> f ^ "(" ^ String.concat ", " (List.map string_of_expr e) ^ ")"
+    | CallObject(o, f, e) -> o ^ "." ^ f ^ "(" ^ String.concat ", " (List.map string_of_expr e) ^ ")"
+
+and string_of_object o =
+    "Object " ^ o.objName ^ " = {\n"
+        ^ String.concat "" (List.map string_of_statement o.objStmts) ^ "};\n"
 
 and string_of_function f =
     string_of_varType f.returnType ^ " " ^ f.name ^ "(" ^
@@ -162,8 +169,7 @@ and string_of_statement = function
     | While(e, s) -> "while (" ^ string_of_expr e ^ ") " ^ String.concat "" (List.map string_of_statement s)
     | Variable(v) -> string_of_local v 
     | Function(f) -> string_of_function f
-    | Object o -> "Object " ^ o.objName ^ " = {\n"
-        ^ String.concat "" (List.map string_of_statement o.objStmts) ^ "};\n"
+    | Object o -> string_of_object o
 
 and string_of_program stmnts = 
     String.concat "" (List.map string_of_statement stmnts) ^ "\n"

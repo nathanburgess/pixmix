@@ -152,6 +152,7 @@ and string_of_expr = function
     | ArrayAccess(arrCreate, index) -> string_of_expr arrCreate 
         ^ "[" ^ string_of_expr index ^ "]"   
     | Call(f, e) -> f ^ "(" ^ String.concat ", " (List.map string_of_expr e) ^ ")"
+    | CallObject(o, f, e) -> o ^ "." ^ f ^ "(" ^ String.concat ", " (List.map string_of_expr e) ^ ")"
 
 and string_of_statement = function
     | Expr(expr) -> string_of_expr expr ^ ";\n";
@@ -301,6 +302,7 @@ let rec convertFunctionList map = function
 let rec buildFunction map result = function
     | [] -> (List.rev result, map)
     | (A.Function { A.returnType = r; A.name = n; A.args = args; A.body = b } as a) :: tl ->
+        Printf.printf "; buildFunction for: %s\n" n;
         let result1 = buildFunctionBody map a in
         let latterlist = tl @ (fst result1) in
         let map = snd result1 in 
@@ -313,22 +315,33 @@ let rec buildFunction map result = function
         let result = result @ [ addedFunc ] in buildFunction map result latterlist
     | _ -> ([], map)
 
-let rec convertObjects map result = function
-    | [] -> (List.rev result, map)
-    | _ -> ([], map)
-    
+(*
+ * Convert all objects to functions instead
+ *)
+let rec convertObjects = function
+    | [] -> []
+    | A.Object o :: tl -> 
+        Printf.printf "; convertObjects caught an object: %s\n" o.objName;
+        let func = A.Function {
+            A.returnType = A.NumType; 
+            A.name = o.objName; 
+            A.args = [];
+            A.body = o.objStmts;
+        } in 
+        func :: (convertObjects tl)
+    | ((_ as x)) :: tl -> x :: (convertObjects tl)
 
 let createMain stmts = A.Function 
     { 
         A.returnType = A.IntType; 
         A.name = "main"; 
         A.args = [];
-        A.body = stmts;
+        A.body = convertObjects stmts;
     }
 
 let convert stmts =
-    let main = createMain stmts in
-        let funcMap = StringMap.empty and resultMap = [] in
-        let objList = convertObjects StringMap.empty [] [ main ] in
-        let funcList = buildFunction funcMap resultMap [ main ] in
-            convertFunctionList (snd funcList) (fst funcList)
+    let main = createMain stmts 
+    and funcMap = StringMap.empty 
+    and resultMap = [] in
+        let finalList = buildFunction funcMap [] [ main ] in
+            convertFunctionList (snd finalList) (fst finalList)

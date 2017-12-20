@@ -60,6 +60,10 @@ tests :
 .PHONY : test
 test :
 	@make
+	@make runtest
+
+.PHONY : runtest
+runtest :
 	@clang -emit-llvm -o lib/utils.bc -c lib/utils.c -Wno-everything
 	@./pixmix.native test.pm > test.ll
 	@clang -Wno-override-module lib/utils.bc test.ll -o test.exe -lm
@@ -99,6 +103,8 @@ testasl :
 	@./pixmix.native test.pm -s
 	@echo "\n$(clrGreen)--==[ $(clrBlue)Printing the $(clrPurple)LLVM IR$(clrBlue)... $(clrGreen)]==--$(clrClear)"
 	@./pixmix.native test.pm
+	@echo "\n$(clrGreen)--==[ $(clrBlue)Printing $(clrPurple)output$(clrBlue) from running the program... $(clrGreen)]==--$(clrClear)"
+	@make runtest
 
 # Run the same test as the test rule and print out the state transition table along with it
 .PHONY : debugtest
