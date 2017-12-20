@@ -1,7 +1,3 @@
-Object one = {
-    num val = 32.5;
-};
+Array num a = [5];
 
-num gA = 3;
-
-printf("Value of one.val is %f\n", one.val);
+printf("Hello");

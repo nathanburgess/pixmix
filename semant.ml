@@ -197,7 +197,7 @@ let check_function func_map func =
                     | _ -> illegal_unary_operation_error (string_of_type t) (string_of_uop op) (string_of_expr ex))
                 | Id s -> type_of_identifier func s
                 | (Assign (var, e) as ex) -> let lt = type_of_identifier func var and rt = expr e in check_assign lt rt ex
-                | ArrayCreate(expr1) -> let e_type = expr expr1 in
+                | ArrayCreate(_, _, expr1) -> let e_type = expr expr1 in
                     if e_type != IntType
                     then (raise(Failure("Array dimensions must be type int")))
                     else IntType

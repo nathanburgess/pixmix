@@ -1,2 +1,2 @@
- num a =  [ ] ;
+ num a =  [5];
  print("finished");

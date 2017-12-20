@@ -54,7 +54,7 @@ and expr =
     | Call                  of string * expr list
     | CallObject            of string * string * expr list
     | ObjectAccess          of string * string
-    | ArrayCreate           of expr
+    | ArrayCreate           of varType * string * expr
     | ArrayAccess           of expr * expr
 
 and stmt =

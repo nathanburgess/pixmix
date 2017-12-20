@@ -55,7 +55,7 @@ and expr =
     | Unop                  of unop * expr
     | Id                    of string
     | Assign                of string * expr
-    | ArrayCreate           of expr
+    | ArrayCreate           of varType * string * expr
     | ArrayAccess           of expr * expr
     | Call                  of string * expr list
     | CallObject            of string * string * expr list
@@ -149,7 +149,7 @@ and string_of_expr = function
               (string_of_expr head) ^ "]"
         in
         string_list exprs*)
-    | ArrayCreate(e) -> "[" ^ string_of_expr e ^ "]" 
+    | ArrayCreate(t, n, e) -> "Array " ^ string_of_varType t ^ " " ^ n ^ " = " ^ " [" ^ string_of_expr e ^ "]" 
     | ArrayAccess(arrCreate, index) -> string_of_expr arrCreate 
         ^ "[" ^ string_of_expr index ^ "]"   
     | Call(f, e) -> f ^ "(" ^ String.concat ", " (List.map string_of_expr e) ^ ")"
