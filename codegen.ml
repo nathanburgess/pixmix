@@ -284,8 +284,6 @@ let translate program =
                 | S.Null -> (const_null, S.NullType)
                 | S.Id s ->
                     let (var, typ) = lookup s in ((L.build_load var s builder), typ)
-                (*| S.Node (id, e) -> let (nval, typ) = expr builder e in
-                    ((create_node ((L.const_int i32_t id), typ, nval) builder), S.NodeType)*)
                 | S.Binop (e1, op, e2) ->
                     let (e1', t1) = expr builder e1
                     and (e2', t2) = expr builder e2
@@ -374,7 +372,13 @@ let translate program =
                         | S.VoidType -> ""
                         | _ -> f ^ "_result")
                     in
-                    ((L.build_call fdef (Array.of_list actuals) result builder), (fdecl.S.returnType)) in
+                    ((L.build_call fdef (Array.of_list actuals) result builder), (fdecl.S.returnType)) 
+                | S.ObjectAccess(o, s) ->
+                    Printf.printf ";Looking for variable %s from obj %s\n" s o;
+                    (*let (var, typ) = lookup s in *)
+                    (const_null, S.NullType)
+                    (*((L.build_load var s builder), typ)*)
+                in
 
         let add_terminal builder f =
             match L.block_terminator (L.insertion_block builder) with

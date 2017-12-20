@@ -59,6 +59,7 @@ and expr =
     | ArrayAccess           of expr * expr
     | Call                  of string * expr list
     | CallObject            of string * string * expr list
+    | ObjectAccess          of string * string
 
 and stmt =
     | Expr                  of expr
@@ -220,6 +221,7 @@ let rec convertExpr map = function
     | A.Assign (a, b)           -> Assign (a, (convertExpr map b))
     | A.Call (a, b)             -> Call ((getName map a a), (convertExprs map b))
     | A.CallObject (a, b, c)    -> CallObject ((getName map a a), (getName map b b), (convertExprs map c))
+    | A.ObjectAccess(a, b)      -> ObjectAccess ((getName map a a), (getName map b b))
 
 and convertExprs map = function
     | [] -> []
@@ -323,7 +325,7 @@ let rec convertObjects = function
             A.returnType = A.NumType; 
             A.name = o.objName; 
             A.args = [];
-            A.body = o.objStmts;
+            A.body = convertObjects o.objStmts;
         } in 
         func :: (convertObjects tl)
     | ((_ as x)) :: tl -> x :: (convertObjects tl)

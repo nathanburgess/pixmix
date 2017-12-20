@@ -66,6 +66,10 @@ for input_file in $PASS_FILES; do
     runTest $input_file "pass"
 done
 
+if [ $((count % 2)) != 0 ]; then 
+    printf "\n" 
+fi
+
 count=0 
 printf "\n"
 for input_file in $FAIL_FILES; do
