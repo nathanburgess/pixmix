@@ -184,14 +184,14 @@ let translate program =
                 function
                     | S.Formal (t, n) ->
                         (fun p ->
-                             let n' = get_var_name fdecl.S.name n in
-                             let local =
-                                 L.define_global n' (get_default_value_of_type t) the_module
-                             in
-                                 (if L.is_null p
-                                  then ()
-                                  else ignore (L.build_store p local builder);
-                                  StringMap.add n' (local, t) m)) in
+                            let n' = get_var_name fdecl.S.name n in
+                            let local = L.define_global n' (get_default_value_of_type t) the_module in 
+                            (if L.is_null p
+                                then ()
+                                else ignore (L.build_store p local builder);
+                                StringMap.add n' (local, t) 
+                            m)
+                        ) in
             let add_local m =
                 function
                     | S.Formal (t, n) ->

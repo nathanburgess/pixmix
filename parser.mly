@@ -129,6 +129,7 @@ expr:
     | expr arrAccess                            { ArrayAccess($1, $2) }
 
 arrCreate:
+    
     | LSQUARE expr RSQUARE                      { $2 } /* Add other arrCreate with exprlist */
 
 arrAccess:
