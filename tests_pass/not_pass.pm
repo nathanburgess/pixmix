@@ -1,9 +1,9 @@
 bool t = true;
 
 if (not t){
-    print("false");
+    print(false);
 }
 else {
-    print("true");
+    print(true);
 }
 print("finished");
