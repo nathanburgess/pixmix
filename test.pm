@@ -13,4 +13,3 @@ num global = 5;
 print(global);
 
 one.oneFunc();
-num a = one.oneA;
