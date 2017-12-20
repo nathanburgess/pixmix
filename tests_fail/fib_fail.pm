@@ -1,15 +1,15 @@
-num num0 = 0;
-num num1 = 1;
-bool num2;
-num i;
+num a = 0;
+num b = 1;
+num c;
+bool i;
 num fib;
 
 fib = 5;
-print(num0, num1);
+print(a, b);
 for(i = 2; i< fib; i = i +1)
 {
-    num2 = num0 + num1;
-    print(num2);
-    num0 = num1;
+    c = a + b;
+    print(c);
+    a = b;
 }
 print("finished");
