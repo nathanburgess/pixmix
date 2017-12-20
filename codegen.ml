@@ -6,7 +6,7 @@ module StringMap = Map.Make(String)
 let context     = L.global_context ()
 let llctx       = L.global_context ()
 
-let utilsBuffer = L.MemoryBuffer.of_file "utils.bc"
+let utilsBuffer = L.MemoryBuffer.of_file "lib/utils.bc"
 let llm         = Llvm_bitreader.parse_bitcode llctx utilsBuffer
 let the_module  = L.create_module   context "PixMix"
 
@@ -14,10 +14,10 @@ let i32_t       = L.i32_type        context
 and f_t         = L.double_type     context
 and i8_t        = L.i8_type         context
 and i1_t        = L.i1_type         context
-and str_t       = L.pointer_type    (L.i8_type context)
-and obj_t       = L.pointer_type    (L.i8_type context)
 and void_t      = L.void_type       context
 and void_ptr_t  = L.pointer_type    (L.i8_type context)
+and str_t       = L.pointer_type    (L.i8_type context)
+and obj_t       = L.pointer_type    (L.i8_type context)
 
 (*
 let image_t = L.pointer_type (match L.type_by_name llm "struct.Image" with
@@ -43,7 +43,7 @@ let rec ltype_of_typ = function
     | S.ObjectType -> obj_t
     | _ as t -> raise (Failure ("[Error] Could not find type \"" ^ S.string_of_varType t ^ "\"."))
 
-let lconst_of_typ = function
+and lconst_of_typ = function
     | S.IntType -> L.const_int i32_t 0
     | S.NumType -> L.const_int i32_t 1
     | S.BoolType -> L.const_int i32_t 2
@@ -51,7 +51,7 @@ let lconst_of_typ = function
     | S.ImageType -> L.const_int i32_t 4
     | S.ArrayType(typ) -> L.const_int i32_t 5
     | S.ObjectType -> L.const_int i32_t 6
-    | _ -> raise (Failure "[Error] Type Not Found for lconst_of_typ.")
+    | _ as t -> raise (Failure ("[Error] Could not find type \"" ^ S.string_of_varType t ^ "\"."))
 
 let int_zero = L.const_int i32_t 0
 and num_zero = L.const_float f_t 0.
@@ -219,7 +219,7 @@ let translate program =
             | S.Geq -> L.build_icmp L.Icmp.Sge e1 e2 "sgetmp" llbuilder
             | S.And -> L.build_and e1 e2 "andtmp" llbuilder
             | S.Or -> L.build_or e1 e2 "ortmp" llbuilder
-            | _ -> raise (Failure "[Error] Unrecognized int binop opreation.") 
+            | _ -> raise (Failure "[Error] Invalid binary operation.") 
         in
         let types t = match t with
             | S.NumType -> floatBinops op e1 e2
@@ -368,9 +368,8 @@ let translate program =
             [ S.Expr e1; S.While (e2, (body @ [ S.Expr e3 ])) ] 
         | S.Object o -> builder
     in
-    (* Build the code for each statement in the function *)
+
     let builder = List.fold_left stmt builder fdecl.S.body in
-    (* Add a return if the last block falls off the end *)
     add_terminal builder (match fdecl.S.returnType with
         | S.VoidType -> L.build_ret_void
         | (S.IntType as t) -> L.build_ret (L.const_int (ltype_of_typ t) 0)
@@ -378,5 +377,6 @@ let translate program =
         | (S.NumType as t) -> L.build_ret (L.const_float (ltype_of_typ t) 0.)
         | t -> L.build_ret (L.const_null (ltype_of_typ t)))
     in 
-List.iter buildFunctionBody (List.rev program); 
+    List.iter buildFunctionBody (List.rev program); 
+
 the_module
