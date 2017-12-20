@@ -37,6 +37,7 @@ and varType =
     | NumType
     | StringType
     | BoolType
+    | ImageType
     | ObjectType
     | ArrayType             of varType
 

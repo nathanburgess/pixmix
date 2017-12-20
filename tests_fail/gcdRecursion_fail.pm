@@ -8,8 +8,8 @@ num gcd (num x, num y)
         
      }
       
-    return gcd(y, (x%y));
-    
+    return gcd(y, x%y);
+    print("gcd");
     
 }
 
