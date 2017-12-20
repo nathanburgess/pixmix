@@ -346,11 +346,11 @@ let translate program =
                          typ)
                 (* | S.ArraCreate(e) -> *)
                 | S.ArrayAccess(e, i) ->
-                    let arr = expr builder e in
-                    (* let index = expr builder i in *)
-                    let index = L.build_add index (L.const_int i32_t 1) "array_index" builder in
-                    let _val = L.build_gep arr [| index |] "array_access" builder in
-                        L.build_load _val "array_access_val" builder
+                    let (arr, _) = expr builder e in
+                    let (index, _) = expr builder i in
+                    let ind = L.build_add index (L.const_int i32_t 1) "array_index" builder in
+                    let _val = L.build_gep arr [| ind |] "array_access" builder in
+                        (L.build_load _val "array_access_val" builder, S.IntType)
                     
 (*
 
