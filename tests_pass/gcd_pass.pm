@@ -16,6 +16,6 @@ num gcd (num x, num y)
     return x;
 }
  
-print("GCD Result: ", gcd(240, 150));
+print("GCD Result: ", gcd(48, 18));
 
 print("finished");
