@@ -1,5 +1,9 @@
-Array num a = [5];
+Object a = {
+    num b = 34.54;
+};
 
-a[0] = 3;
+num globalA = a.b;
+
+printf("globlaA = %f (12)\n", globalA);
 
 print("finished");
