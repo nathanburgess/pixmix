@@ -102,12 +102,12 @@ let rec string_of_binop = function
     | BitRight      -> ">>"
     | BitRightAssn  -> ">>="
 
-and string_of_unop = function
-    | Neg           -> "-"
-    | Not           -> "!"
-    | Incr          -> "++"
-    | Decr          -> "--"
-    | BitNeg        -> "~"
+and string_of_unop e = function
+    | Neg           -> "-" ^ string_of_expr e
+    | Not           -> "!" ^ string_of_expr e
+    | Incr          -> "++" ^ string_of_expr e
+    | Decr          -> "--" ^ string_of_expr e
+    | BitNeg        -> "~" ^ string_of_expr e
 
 and string_of_varType = function  
     | NullType      -> "null" 
@@ -132,7 +132,7 @@ and string_of_expr = function
     | StringLit s -> "\"" ^ String.escaped s ^ "\""
     | BoolLit b -> if b then "true" else "false"
     | Binop(e1, op, e2) -> string_of_expr e1 ^ " " ^ string_of_binop op ^ " " ^ string_of_expr e2
-    | Unop(op, e) -> string_of_unop op ^ string_of_expr e
+    | Unop(op, e) -> string_of_unop e op
     | Id s -> s
     | Assign(s, e) -> s ^ " = " ^ string_of_expr e
     (*| ArrayCreate(typ, exprs) -> 
