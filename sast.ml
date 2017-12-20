@@ -220,6 +220,7 @@ let rec convertExpr map = function
     | A.Unop (a, b)             -> Unop ((convertUnOp a), (convertExpr map b))
     | A.Id a                    -> Id a
     | A.Assign (a, b)           -> Assign (a, (convertExpr map b))
+    | A.ArrayCreate(a, b, c)    -> ArrayCreate((convertVarType a), (getName map b b), (convertExpr map c))
     | A.Call (a, b)             -> Call ((getName map a a), (convertExprs map b))
     | A.CallObject (a, b, c)    -> CallObject ((getName map a a), (getName map b b), (convertExprs map c))
     | A.ObjectAccess(a, b)      -> ObjectAccess ((getName map a a), (getName map b b))
