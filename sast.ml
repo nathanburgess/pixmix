@@ -295,14 +295,12 @@ let rec convertFunctionList map = function
             parent = if n = "main" then "main" else getName map (StringMap.find n map) (StringMap.find n map);
         } :: (convertFunctionList map tl)
     | A.Object o :: tl ->
-        Printf.printf ";converting but with object\n";
         convertFunctionList map tl
     | _ :: tl -> convertFunctionList map tl
 
 let rec buildFunction map result = function
     | [] -> (List.rev result, map)
     | (A.Function { A.returnType = r; A.name = n; A.args = args; A.body = b } as a) :: tl ->
-        Printf.printf "; buildFunction for: %s\n" n;
         let result1 = buildFunctionBody map a in
         let latterlist = tl @ (fst result1) in
         let map = snd result1 in 
@@ -321,7 +319,6 @@ let rec buildFunction map result = function
 let rec convertObjects = function
     | [] -> []
     | A.Object o :: tl -> 
-        Printf.printf "; convertObjects caught an object: %s\n" o.objName;
         let func = A.Function {
             A.returnType = A.NumType; 
             A.name = o.objName; 
