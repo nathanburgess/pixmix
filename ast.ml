@@ -45,6 +45,7 @@ and expr =
     | Null
     | Noexpr
     | NumLit                of float
+    | IntLit                of int
     | StringLit             of string
     | BoolLit               of bool
     | Binop                 of expr * binop * expr

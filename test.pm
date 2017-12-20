@@ -1,12 +1,5 @@
-num gcd (num x, num y)
-{
-    if(y == 0) {
-        return x;
-    }
+Array num a = [5];
 
-    return gcd(y, (x % y));
-}
 
-print("GCD Result: ", gcd(240, 150));
 
 print("finished");

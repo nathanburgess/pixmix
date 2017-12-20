@@ -201,10 +201,11 @@ let rec getName map aux curName =
     then (let aux = (StringMap.find curName map) ^ "." ^ aux in 
         getName map aux (StringMap.find curName map))
     else aux
-    
+
 let rec convertExpr map = function
     | A.Null                    -> Null
     | A.Noexpr                  -> Noexpr
+    | A.IntLit a                -> IntLit a
     | A.NumLit a                -> NumLit a
     | A.StringLit a             -> StringLit a
     | A.BoolLit a               -> BoolLit a

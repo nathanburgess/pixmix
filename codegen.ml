@@ -205,168 +205,6 @@ let translate program =
                 | S.Geq -> L.build_fcmp L.Fcmp.Oge e1 e2 "flt_sgetmp" llbuilder
                 | _ -> raise (Failure "[Error] Unrecognized float binop opreation.") 
             in
-<<<<<<< HEAD
-                ((type_handler dtype),
-                 (match op with
-                     | S.Add | S.Sub | S.Mult | S.Div | S.Mod -> dtype
-                     | _ -> S.BoolType)) in
-        let rec expr builder =
-            function
-                | S.IntLit i -> ((L.const_int i32_t i), S.IntType)
-                | S.NumLit f -> ((L.const_float f_t f), S.NumType)
-                | S.BoolLit b -> ((L.const_int i1_t (if b then 1 else 0)), S.BoolType)
-                | S.StringLit s -> ((codegen_string_lit s builder), S.StringType)
-                | S.Noexpr -> ((L.const_int i32_t 0), S.VoidType)
-                | S.Null -> (const_null, S.NullType)
-                | S.Id s ->
-                    let (var, typ) = lookup s in ((L.build_load var s builder), typ)
-                | S.Binop (e1, op, e2) ->
-                    let (e1', t1) = expr builder e1
-                    and (e2', t2) = expr builder e2
-                    in
-                        (* Handle Automatic Binop Type Converstion *)
-                        (match (t1, t2) with
-                            | (_, S.NullType) ->
-                                (match op with
-                                    | S.Equal ->
-                                        ((L.build_is_null e1' "isNull" builder), S.BoolType)
-                                    | S.Neq ->
-                                        ((L.build_is_not_null e1' "isNull" builder), S.
-                                             BoolType)
-                                    | _ ->
-                                        raise
-                                            (Failure "[Error] Unsupported Null Type Operation."))
-                            | (S.NullType, _) ->
-                                (match op with
-                                    | S.Equal ->
-                                        ((L.build_is_null e2' "isNotNull" builder), S.BoolType)
-                                    | S.Neq ->
-                                        ((L.build_is_not_null e2' "isNotNull" builder), S.
-                                             BoolType)
-                                    | _ ->
-                                        raise
-                                            (Failure "[Error] Unsupported Null Type Operation."))
-                            | (t1, t2) when t1 = t2 -> handle_binop e1' op e2' t1 builder
-                            | (S.IntType, S.NumType) ->
-                                handle_binop (int_to_float builder e1') op e2' S.NumType
-                                    builder
-                            | (S.NumType, S.IntType) ->
-                                handle_binop e1' op (int_to_float builder e2') S.NumType
-                                    builder
-                            | _ -> raise (Failure "[Error] Unsuported Binop Type."))
-                | S.Unop (op, e) ->
-                    let (e', typ) = expr builder e
-                    in
-                        (((match op with
-                             | S.Neg ->
-                                 if typ = S.IntType then L.build_neg else L.build_fneg
-                             | S.Not -> L.build_not) e' "tmp" builder),
-                         typ)
-                | S.Assign (s, e) ->
-                    let (e', etyp) = expr builder e in
-                    let (var, typ) = lookup s
-                    in
-                        ((match (etyp, typ) with
-                             | (t1, t2) when t1 = t2 ->
-                                 (ignore (L.build_store e' var builder); e')
-                             | (S.NullType, _) ->
-                                 (ignore
-                                      (L.build_store (get_null_value_of_type typ) var builder);
-                                  get_null_value_of_type typ)
-                             | (S.IntType, S.NumType) ->
-                                 let e' = int_to_float builder e'
-                                 in (ignore (L.build_store e' var builder); e')
-                             | _ -> raise (Failure "[Error] Assign Type inconsist.")),
-                         typ)
-                | S.ArrayCreate(typ, _, e) -> 
-                    let t = ltype_of_typ typ in
-		    let (s, _) = expr builder e in
-                    let size_t = L.build_intcast (L.size_of t) i32_t "tmp" builder in
-                    let size = L.build_mul size_t s "tmp" builder in
-                    let size_real = L.build_add size (L.const_int i32_t 1) "tmp" builder in
-                    
-                    let arr = L.build_array_malloc t size_real "tmp" builder in
-                    let arr = L.build_pointercast arr t "tmp" builder in
-                    let arr_len_ptr = L.build_pointercast arr (L.pointer_type i32_t) "tmp" builder in
-                        ignore(L.build_store size_real arr_len_ptr builder);
-                        (arr, typ)
-
-(*
-
-let e = List.hd sexprl in
-	let t = get_llvm_type typ in
-	let size = sexpr_gen llbuilder e in
-	let size_t = L.build_intcast (L.size_of t) i32_t "tmp" llbuilder in
-	let size = L.build_mul size_t size "tmp" llbuilder in
-	let size_real = L.build_add size (L.const_int i32_t 1) "tmp" llbuilder
-	in
-	let arr = L.build_array_malloc t size_real "tmp" llbuilder in
-	let arr = L.build_pointercast arr t "tmp"
-	st.hd sexprl in
-	let t = get_llvm_type typ in
-	let size = sexpr_gen llbuilder e in
-	let size_t = L.build_intcast (L.size_of t) i32_t "tmp" llbuilder in
-	let size = L.build_mul size_t size "tmp" llbuilder in
-	let size_real = L.build_add size (L.const_int i32_t 1) "tmp" llbuilder
-	in
-	let arr = L.build_array_malloc t size_real "tmp" llbuilder in
-	let arr = L.build_pointercast arr t "tmp"
-	llbuilder in
-	(* store this dimension *)
-	let arr_len_ptr = L.build_pointercast arr (L.pointer_type i32_t) "tmp"
-		llbuilder in
-		ignore(L.build_store size_real arr_len_ptr llbuilder);
-		arrllbuilder in
-	(* store this dimension *)
-	let arr_len_ptr = L.build_pointercast arr (L.pointer_type i32_t) "tmp"
-		llbuilder in
-		ignore(L.build_store size_real arr_len_ptr llbuilder);
-		arr
-
-*)
-
-
-	| S.ArrayAccess(e, i) ->
-                    let (arr, _) = expr builder e in
-                    let (index, _) = expr builder i in
-                    let ind = L.build_add index (L.const_int i32_t 1) "array_index" builder in
-                    let _val = L.build_gep arr [| ind |] "array_access" builder in
-                        (L.build_load _val "array_access_val" builder, S.IntType)
-                    
-                | S.Call ("print", el) ->
-                    let print_expr e =
-                        let (eval, etyp) = expr builder e in (match etyp with
-                            | S.IntType -> ignore (codegen_print builder [ codegen_string_lit "%d\n" builder; eval ])
-                            | S.NullType -> ignore (codegen_print builder [ codegen_string_lit "null\n" builder ])
-                            | S.BoolType -> ignore (print_bool eval builder)
-                            | S.NumType -> ignore (codegen_print builder [ codegen_string_lit "%f\n" builder; eval ])
-                            | S.StringType -> ignore (codegen_print builder [ codegen_string_lit "%s\n" builder; eval ])
-                            | _ -> raise (Failure "[Error] Unsupported type for print."))
-                    in (List.iter print_expr el; ((L.const_int i32_t 0), S.VoidType))
-                | S.Call ("printf", el) ->
-                    ((codegen_print builder (List.map (fun e -> let (eval, _) = expr builder e in eval) el)), S.VoidType)
-                | S.Call (f, act) ->
-                    let (fdef, fdecl) = StringMap.find f function_decls in
-                    let actuals = List.rev (List.map (fun e -> let (eval, _) = expr builder e in eval) (List.rev act)) in
-                    let result = (match fdecl.S.returnType with
-                        | S.VoidType -> ""
-                        | _ -> f ^ "_result")
-                    in
-                    ((L.build_call fdef (Array.of_list actuals) result builder), (fdecl.S.returnType))
-                | S.CallObject (o, f, act) ->
-                    let (fdef, fdecl) = StringMap.find f function_decls in
-                    let actuals = List.rev (List.map (fun e -> let (eval, _) = expr builder e in eval) (List.rev act)) in
-                    let result = (match fdecl.S.returnType with
-                        | S.VoidType -> ""
-                        | _ -> f ^ "_result")
-                    in
-                    ((L.build_call fdef (Array.of_list actuals) result builder), (fdecl.S.returnType)) 
-                | S.ObjectAccess(o, s) ->
-                    Printf.printf ";Looking for variable %s from obj %s\n" s o;
-                    (*let (var, typ) = lookup s in *)
-                    (const_null, S.NullType)
-                    (*((L.build_load var s builder), typ)*)
-=======
             let intBinops op e1 e2 = match op with
                 | S.Add -> L.build_add e1 e2 "addtmp" llbuilder
                 | S.Sub -> L.build_sub e1 e2 "subtmp" llbuilder
@@ -436,14 +274,30 @@ let e = List.hd sexprl in
                         in (ignore (L.build_store e' var builder); e')
                     | _ -> raise (Failure "[Error] Assign Type inconsist.")
                 ), typ)
+
             | S.ArrayAccess(e, i) ->
                 let (arr, _) = expr builder e in
                 let (index, _) = expr builder i in
                 let ind = L.build_add index (L.const_int i32_t 1) "array_index" builder in
                 let _val = L.build_gep arr [| ind |] "array_access" builder in
                     (L.build_load _val "array_access_val" builder, S.IntType)
-            | S.ArrayCreate(a, b, c) ->
-                (const_null, S.NullType)
+            | S.ArrayCreate(typ, _, e) -> 
+                let t = ltype_of_typ typ in
+                let (s, _) = expr builder e in
+                let size_t = L.build_intcast (L.size_of t) i32_t "tmp" builder in
+                let size = 
+                    L.build_mul 
+                    size_t 
+                    (floor s) 
+                    "tmp" 
+                    builder in
+                let size_real = L.build_add size (L.const_int i32_t 1) "tmp" builder in
+                
+                let arr = L.build_array_malloc t size_real "tmp" builder in
+                let arr = L.build_pointercast arr t "tmp" builder in
+                let arr_len_ptr = L.build_pointercast arr (L.pointer_type i32_t) "tmp" builder in
+                    ignore(L.build_store size_real arr_len_ptr builder);
+                (arr, typ)  
             | S.Call ("print", el) -> let print_expr e = 
                 let (eval, etyp) = expr builder e in (match etyp with
                     | S.IntType -> ignore (codegen_print builder [ codegen_string_lit "%d\n" builder; eval ])
@@ -461,7 +315,6 @@ let e = List.hd sexprl in
                 let result = (match fdecl.S.returnType with
                     | S.VoidType -> ""
                     | _ -> f ^ "_result")
->>>>>>> 5ac71533b190f7d56bc61d39a3fe1a5618174bbb
                 in
                 ((L.build_call fdef (Array.of_list actuals) result builder), (fdecl.S.returnType))
             | S.CallObject (o, f, act) ->
