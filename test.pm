@@ -2,4 +2,8 @@ Object one = {
     num val = 32.5;
 };
 
-printf("Value of one.oneB is %f\n", one.val);
+num two() {
+    num val = 99;
+}
+
+printf("Value of one.val is %f\n", one.val);

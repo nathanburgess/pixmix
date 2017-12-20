@@ -160,12 +160,6 @@ let print_hashtbl tb =
  * "Main" function of codegen, translates the program into it's LLVM IR equivalent
  *)
 let translate program =
-    (*let object_decls = 
-        let object_decl m odecl =
-            let name = odecl.S.objName
-            and stmts = odecl.S.objStmts in
-            let 
-    in*)
     let function_decls =
         let function_decl m fdecl =
             let name = fdecl.S.name
@@ -175,7 +169,6 @@ let translate program =
                 L.var_arg_function_type (ltype_of_typ fdecl.S.returnType) formal_types
             in
             StringMap.add name ((L.define_function name ftype the_module), fdecl) m
-            (*StringMap.add (fdecl.S.parent ^ "." ^ name) ((L.define_function name ftype the_module), fdecl) m*)
         in List.fold_left function_decl StringMap.empty program in
     
     (* Fill in the body of the given function *)
@@ -186,9 +179,7 @@ let translate program =
 
         let _ =
             let add_to_context locals =
-                (ignore (Hashtbl.add context_funcs_vars fdecl.S.name locals);
-                 (* ignore(print_hashtbl context_funcs_vars); *)
-                 locals) in
+                (ignore (Hashtbl.add context_funcs_vars fdecl.S.name locals); locals) in
             let add_formal m =
                 function
                     | S.Formal (t, n) ->

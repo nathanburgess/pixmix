@@ -154,6 +154,7 @@ and string_of_expr = function
         ^ "[" ^ string_of_expr index ^ "]"   
     | Call(f, e) -> f ^ "(" ^ String.concat ", " (List.map string_of_expr e) ^ ")"
     | CallObject(o, f, e) -> o ^ "." ^ f ^ "(" ^ String.concat ", " (List.map string_of_expr e) ^ ")"
+    | ObjectAccess(o, v) -> o ^ "." ^ v
 
 and string_of_statement = function
     | Expr(expr) -> string_of_expr expr ^ ";\n";
