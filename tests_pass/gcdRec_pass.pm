@@ -4,7 +4,7 @@ num gcd (num x, num y)
         return x;
     }
 
-    return gcd(y, x % y);
+    return gcd(y,( x % y));
 }
 
 print("GCD Result: ", gcd(a, b));
