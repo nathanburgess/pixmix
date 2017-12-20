@@ -59,6 +59,7 @@ and expr =
     | ArrayAccess           of expr * expr
     | Call                  of string * expr list
     | CallObject            of string * string * expr list
+    | ObjectAccess          of string * string
 
 and stmt =
     | Expr                  of expr
@@ -153,6 +154,7 @@ and string_of_expr = function
         ^ "[" ^ string_of_expr index ^ "]"   
     | Call(f, e) -> f ^ "(" ^ String.concat ", " (List.map string_of_expr e) ^ ")"
     | CallObject(o, f, e) -> o ^ "." ^ f ^ "(" ^ String.concat ", " (List.map string_of_expr e) ^ ")"
+    | ObjectAccess(o, v) -> o ^ "." ^ v
 
 and string_of_statement = function
     | Expr(expr) -> string_of_expr expr ^ ";\n";
@@ -220,6 +222,7 @@ let rec convertExpr map = function
     | A.Assign (a, b)           -> Assign (a, (convertExpr map b))
     | A.Call (a, b)             -> Call ((getName map a a), (convertExprs map b))
     | A.CallObject (a, b, c)    -> CallObject ((getName map a a), (getName map b b), (convertExprs map c))
+    | A.ObjectAccess(a, b)      -> ObjectAccess ((getName map a a), (getName map b b))
 
 and convertExprs map = function
     | [] -> []
@@ -294,8 +297,6 @@ let rec convertFunctionList map = function
             locals = getFunctionLocals b;
             parent = if n = "main" then "main" else getName map (StringMap.find n map) (StringMap.find n map);
         } :: (convertFunctionList map tl)
-    | A.Object o :: tl ->
-        convertFunctionList map tl
     | _ :: tl -> convertFunctionList map tl
 
 let rec buildFunction map result = function
@@ -323,7 +324,7 @@ let rec convertObjects = function
             A.returnType = A.NumType; 
             A.name = o.objName; 
             A.args = [];
-            A.body = o.objStmts;
+            A.body = convertObjects o.objStmts;
         } in 
         func :: (convertObjects tl)
     | ((_ as x)) :: tl -> x :: (convertObjects tl)

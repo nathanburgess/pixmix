@@ -1,15 +1,7 @@
 Object one = {
-    string oneA = "first string in object one";
-    num oneB = 32.5;
-    num oneC;
-
-    num oneFunc() {
-        print("printing from one.oneFunc()");
-    }
+    num val = 32.5;
 };
 
-num global = 5;
+num gA = 3;
 
-print(global);
-
-one.oneFunc();
+printf("Value of one.val is %f\n", one.val);

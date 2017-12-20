@@ -53,6 +53,7 @@ and expr =
     | Assign                of string * expr
     | Call                  of string * expr list
     | CallObject            of string * string * expr list
+    | ObjectAccess          of string * string
     | ArrayCreate           of expr
     | ArrayAccess           of expr * expr
 
@@ -144,10 +145,10 @@ and string_of_expr = function
               (string_of_expr head) ^ "]"
         in
         string_list exprs*)
-    | ArrayAccess(arrCreate, index) -> string_of_expr arrCreate ^ 
-        "[" ^ string_of_expr index ^ "]"   
+    | ArrayAccess(arrCreate, index) -> string_of_expr arrCreate ^ "[" ^ string_of_expr index ^ "]"   
     | Call(f, e) -> f ^ "(" ^ String.concat ", " (List.map string_of_expr e) ^ ")"
     | CallObject(o, f, e) -> o ^ "." ^ f ^ "(" ^ String.concat ", " (List.map string_of_expr e) ^ ")"
+    | ObjectAccess(o, v) -> o ^ "." ^ v
 
 and string_of_object o =
     "Object " ^ o.objName ^ " = {\n"
