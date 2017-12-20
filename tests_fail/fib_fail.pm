@@ -1,15 +1,17 @@
-num a = 0;
-num b = 1;
-num c;
-bool i;
-num fib;
+num fib(num n){
+    num a = true;
+    num b = 0;
+    num temp;
 
-fib = 5;
-print(a, b);
-for(i = 2; i< fib; i = i +1)
-{
-    c = a + b;
-    print(c);
-    a = b;
+    while (n >= 0) {
+        temp = a;
+        a = a + b;
+        b = temp;
+        n = n - 1;
+    }
+
+    return b;
 }
+
+print(fib(7));
 print("finished");

@@ -1,18 +1,23 @@
-num a = 1 + 1;
-a = 2 - 1;
-a = 2 * 3;
-a = 9 / 4;
-a = 8 / 4;
+Object Math = {
+	num add(num a, num b) {
+		return a + b;
+	}
 
+	string mod(num a, num b) {
+		return a % b;
+	}
 
-num b = true +1;
-b = 1.2 - 1;
-b = 1 - 1.2;
-b = 2 * 0.4;
-b = 9. / 4;
-b = -8;
-b = -2.1;
-b = -1;
-b = -2.1;
+	num pow(num a, num b) {
+		num base = a;
+		while(b > 1) {
+			a = a * base;
+			b = b - 1;
+		}
+		return 0;
+	}
+};
 
+printf("4 + 1 = %f\n", Math.add(4, 1));
+printf("10 % 6 = %f\n", Math.mod(10, 6));
+printf("2^5 = %f\n", Math.pow(2, 5));
 print("finished");
