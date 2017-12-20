@@ -142,6 +142,6 @@ exprList:
 
 literals:
 	| NUM_LITERAL                              { NumLit($1) }
-        | INT_LITERAL                              { IntLit($1) }
+    | INT_LITERAL                              { IntLit($1) }
 	| STRING_LITERAL                           { StringLit($1) }
 	| BOOL_LITERAL                             { BoolLit($1) }
