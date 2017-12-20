@@ -124,10 +124,11 @@ expr:
     | LPAREN expr RPAREN 	                { $2 }
     | ID LPAREN exprList RPAREN                 { Call($1, List.rev $3) }
     | ID DOT ID LPAREN exprList RPAREN          { CallObject($1, $3, List.rev $5) }
-    | ARRAY ID ASSIGN arrCreate                 { ArrayCreate($4) }
+    | arrCreate                                 { ArrayCreate($1) }
     | expr arrAccess                            { ArrayAccess($1, $2) }
 
 arrCreate:
+    
     | LSQUARE expr RSQUARE                      { $2 } /* Add other arrCreate with exprlist */
 
 
