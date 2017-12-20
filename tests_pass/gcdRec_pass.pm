@@ -4,9 +4,9 @@ num gcd (num x, num y)
         return x;
     }
 
-    return gcd(y,( x % y));
+    return gcd(y, (x % y));
 }
 
-print("GCD Result: ", gcd(a, b));
+print("GCD Result: ", gcd(240, 150));
 
 print("finished");
