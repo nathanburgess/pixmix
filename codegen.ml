@@ -285,12 +285,7 @@ let translate program =
                 let t = ltype_of_typ typ in
                 let (s, _) = expr builder e in
                 let size_t = L.build_intcast (L.size_of t) i32_t "tmp" builder in
-                let size = 
-                    L.build_mul 
-                    size_t 
-                    (floor s) 
-                    "tmp" 
-                    builder in
+                let size = L.build_mul size_t s "tmp" builder in
                 let size_real = L.build_add size (L.const_int i32_t 1) "tmp" builder in
                 
                 let arr = L.build_array_malloc t size_real "tmp" builder in
