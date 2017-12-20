@@ -19,18 +19,19 @@ and obj_t       = L.pointer_type    (L.i8_type context)
 and void_t      = L.void_type       context
 and void_ptr_t  = L.pointer_type    (L.i8_type context)
 
+(*
 let image_t = L.pointer_type (match L.type_by_name llm "struct.Image" with
     None -> raise (Failure "Image could not be found in the C libraries.")
   | Some x -> x)
 
-(*
 let pixel_t = L.pointer_type (match L.type_by_name llm "struct.Pixel" with
     None -> raise (Failure "Pixel could not be found in the C libraries.")
   | Some x -> x)
 
 let color_t = L.pointer_type (match L.type_by_name llm "struct.Color" with
     None -> raise (Failure "Color could not be found in the C libraries.")
-  | Some x -> x)*)
+  | Some x -> x)
+*)
 
 let rec ltype_of_typ = function
     | S.VoidType -> void_t
@@ -75,6 +76,7 @@ let getDefaultValue = function
     Type casting
  *)
 let int_to_float llbuilder v = L.build_sitofp v f_t "tmp" llbuilder
+let float_to_int llbuilder v = L.build_fptosi v i32_t "tmp" llbuilder
 
 let void_to_int_t = L.function_type i32_t [| L.pointer_type i8_t |]
 let void_to_int_f = L.declare_function "VoidtoInt" void_to_int_t the_module
