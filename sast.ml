@@ -297,8 +297,6 @@ let rec convertFunctionList map = function
             locals = getFunctionLocals b;
             parent = if n = "main" then "main" else getName map (StringMap.find n map) (StringMap.find n map);
         } :: (convertFunctionList map tl)
-    | A.Object o :: tl ->
-        convertFunctionList map tl
     | _ :: tl -> convertFunctionList map tl
 
 let rec buildFunction map result = function

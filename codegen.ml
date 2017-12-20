@@ -334,7 +334,29 @@ let translate program =
                              | _ -> raise (Failure "[Error] Assign Type inconsist.")),
                          typ)
                 (* | S.ArraCreate(e) -> *)
-                 
+                | S.ArrayAccess(e, i) ->
+                    let (arr, _) = expr builder e in
+                    let (index, _) = expr builder i in
+                    let ind = L.build_add index (L.const_int i32_t 1) "array_index" builder in
+                    let _val = L.build_gep arr [| ind |] "array_access" builder in
+                        (L.build_load _val "array_access_val" builder, S.IntType)
+                    
+(*
+
+                (* Access a list *)
+and seq_access_gen llbuilder lst_sexpr index is_assign =
+	let lst = sexpr_gen llbuilder lst_sexpr in
+	let sindex = sexpr_gen llbuilder index in
+	let sindex = L.build_add sindex (L.const_int i32_t 1) "list_index"
+		llbuilder in
+	let _val = L.build_gep lst [| sindex |] "list_access" llbuilder in
+	if is_assign then
+		_val
+	else
+		L.build_load _val "list_access_val" llbuilder
+
+                *) 
+
                 (* | S.CallObject (o, f, e) -> *)
                 | S.Call ("print", el) ->
                     let print_expr e =
