@@ -247,7 +247,7 @@ let check program =
             if StringMap.mem f.name m
             then duplicateFuncError f.name
             else StringMap.add f.name true m) program));
-    let built_in_funcs =
+    let builtInFuncs =
         let funcs = [ ("print", {
             returnType = VoidType;
             name = "print";
@@ -267,6 +267,6 @@ let check program =
         let add_func funcs m =
             List.fold_left (fun m (n, func) -> StringMap.add n func m) m funcs in
             add_func funcs StringMap.empty in
-        let func_map = List.fold_left (fun m f -> StringMap.add f.name f m) built_in_funcs program in
+        let func_map = List.fold_left (fun m f -> StringMap.add f.name f m) builtInFuncs program in
         let checkFunction_wrapper func m = func m in 
             List.iter (checkFunction_wrapper checkFunction func_map) program

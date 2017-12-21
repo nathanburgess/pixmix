@@ -13,8 +13,8 @@
 /* Literals */
 %token <int> INT_LITERAL
 %token <float> NUM_LITERAL
-%token <string> STRING_LITERAL
 %token <bool> BOOL_LITERAL
+%token <string> STRING_LITERAL
 
 /* Order */
 %right ASSIGN
