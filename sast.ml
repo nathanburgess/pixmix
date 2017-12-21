@@ -270,14 +270,6 @@ let rec getFunctionBodyS map = function
             | _ as z -> (convertStatement map x) :: (getFunctionBodyS map tl)
         in
         findExpr x
-
-
-    (*
-        (match x with
-            | _ -> printf "; ArrayCreate %s\n" (A.string_of_statement x);
-                (convertStatement map x) :: (getFunctionBodyS map tl)
-        )
-        (convertStatement map x) :: (getFunctionBodyS map tl)*)
     
 let rec getFunctionsA = function
     | [] -> []
@@ -330,9 +322,6 @@ let rec buildFunction map result = function
         let result = result @ [ addedFunc ] in buildFunction map result latterlist
     | _ -> ([], map)
 
-(*
- * Convert all objects to functions instead
- *)
 let rec convertObjects = function
     | [] -> []
     | A.Object o :: tl -> 

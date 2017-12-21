@@ -109,10 +109,6 @@ let returnTypeMisMatchError typ1 typ2 =
     let msg = sprintf "wrong function return type: %s, expect %s" typ1 typ2
     in raise (SemanticError msg)
     
-
-(*
-    Check if something is of type Array
-*)
 let rec isArrayType t = match t with | ArrayType _ -> true | _ -> false
 and getArrayNesting t = match t with | ArrayType inner -> 1 + (getArrayNesting inner) | _ -> 1
 

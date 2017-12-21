@@ -126,7 +126,7 @@ expr:
 
 arrCreate:
     
-    | ASSIGN LSQUARE expr RSQUARE               { $3 } /* Add other arrCreate with exprlist */
+    | ASSIGN LSQUARE expr RSQUARE               { $3 }
 
 arrAccess:
     | LSQUARE expr RSQUARE                      { $2 }
