@@ -57,6 +57,7 @@ and expr =
     | ObjectAccess          of string * string
     | ArrayCreate           of varType * string * expr
     | ArrayAccess           of expr * expr
+    | ArrayAssign           of expr * expr * expr
 
 and stmt =
     | Expr                  of expr
@@ -137,8 +138,9 @@ and string_of_expr = function
     | Unop(op, e) -> string_of_unop e op
     | Id s -> s
     | Assign(s, e) -> s ^ " = " ^ string_of_expr e
-    | ArrayCreate(t, n, e) -> "Array " ^ string_of_varType t ^ " " ^ n ^ " = " ^ " [" ^ string_of_expr e ^ "]"
-    | ArrayAccess(arrCreate, index) -> string_of_expr arrCreate ^ "[" ^ string_of_expr index ^ "]"   
+    | ArrayCreate(t, n, e) -> "Array " ^ string_of_varType t ^ " " ^ n ^ " = " ^ "[" ^ string_of_expr e ^ "]"
+    | ArrayAccess(arrCreate, index) -> string_of_expr arrCreate ^ "[" ^ string_of_expr index ^ "]" 
+    | ArrayAssign(a,b,c) -> string_of_expr a ^ " [" ^ string_of_expr b ^ "] = " ^ string_of_expr c
     | Call(f, e) -> f ^ "(" ^ String.concat ", " (List.map string_of_expr e) ^ ")"
     | CallObject(o, f, e) -> o ^ "." ^ f ^ "(" ^ String.concat ", " (List.map string_of_expr e) ^ ")"
     | ObjectAccess(o, v) -> o ^ "." ^ v

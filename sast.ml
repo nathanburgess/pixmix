@@ -1,5 +1,6 @@
 module A = Ast
 module StringMap = Map.Make(String)
+open Printf
 
 type binop =
     | Add         
@@ -58,6 +59,7 @@ and expr =
     | Assign                of string * expr
     | ArrayCreate           of varType * string * expr
     | ArrayAccess           of expr * expr
+    | ArrayAssign           of expr * expr * expr
     | Call                  of string * expr list
     | CallObject            of string * string * expr list
     | ObjectAccess          of string * string
@@ -125,7 +127,7 @@ and string_of_varType = function
     | StringType -> "string"
     | BoolType -> "bool" 
     | NullType -> "null"
-    | ArrayType(t) -> "array [" ^ string_of_varType t ^ "]"
+    | ArrayType(t) -> "Array [" ^ string_of_varType t ^ "]"
 
 and string_of_formal (Formal(t,s)) = string_of_varType t ^ " " ^ s ^ ";\n"
 
@@ -142,8 +144,8 @@ and string_of_expr = function
     | Id s -> s
     | Assign(s, e) -> s ^ " = " ^ string_of_expr e
     | ArrayCreate(t, n, e) -> "Array " ^ string_of_varType t ^ " " ^ n ^ " = " ^ " [" ^ string_of_expr e ^ "]" 
-    | ArrayAccess(arrCreate, index) -> string_of_expr arrCreate 
-        ^ "[" ^ string_of_expr index ^ "]"   
+    | ArrayAccess(arrCreate, index) -> string_of_expr arrCreate ^ "[" ^ string_of_expr index ^ "]"   
+    | ArrayAssign(a,b,c) -> string_of_expr a ^ " [" ^ string_of_expr b ^ "] = " ^ string_of_expr c
     | Call(f, e) -> f ^ "(" ^ String.concat ", " (List.map string_of_expr e) ^ ")"
     | CallObject(o, f, e) -> o ^ "." ^ f ^ "(" ^ String.concat ", " (List.map string_of_expr e) ^ ")"
     | ObjectAccess(o, v) -> o ^ "." ^ v
@@ -215,6 +217,7 @@ let rec convertExpr map = function
     | A.Assign (a, b)           -> Assign (a, (convertExpr map b))
     | A.ArrayCreate(a, b, c)    -> ArrayCreate((convertVarType a), (getName map b b), (convertExpr map c))
     | A.ArrayAccess(a, b)       -> ArrayAccess((convertExpr map a), (convertExpr map b))
+    | A.ArrayAssign(a, b, c)    -> ArrayAssign ((convertExpr map a), (convertExpr map b), (convertExpr map c))
     | A.Call (a, b)             -> Call ((getName map a a), (convertExprs map b))
     | A.CallObject (a, b, c)    -> CallObject ((getName map a a), (getName map b b), (convertExprs map c))
     | A.ObjectAccess(a, b)      -> ObjectAccess ((getName map a a), (getName map b b))
@@ -250,13 +253,45 @@ let rec convertStatement map = function
 let rec getFunctionLocals = function
     | [] -> []
     | A.Variable (A.Local (t, n, _)) :: tl -> (Formal ((convertVarType t), n)) :: (getFunctionLocals tl)
-    | _ :: tl -> getFunctionLocals tl
+    | ((_ as x)):: tl -> 
+        let findExpr = function
+            | A.Expr e -> 
+                let findArrExprs = function 
+                    | A.ArrayCreate (t, n, e) -> 
+                        (Formal (ArrayType(convertVarType t), n)) :: (getFunctionLocals tl)
+                    | _ -> getFunctionLocals tl
+                in
+                findArrExprs e
+            | _ as z ->  getFunctionLocals tl
+        in
+        findExpr x
 
 let rec getFunctionBodyS map = function
     | [] -> []
-    | A.Variable (A.Local (_, name, v)) :: tl when v <> A.Noexpr -> (Expr (Assign (name, (convertExpr map v)))) :: (getFunctionBodyS map tl)
+    | A.Variable (A.Local (_, name, v)) :: tl when v <> A.Noexpr -> 
+        (Expr (Assign (name, (convertExpr map v)))) :: (getFunctionBodyS map tl)
     | A.Variable (A.Local (_, _, v)) :: tl when v = A.Noexpr -> getFunctionBodyS map tl
-    | ((_ as x)) :: tl -> (convertStatement map x) :: (getFunctionBodyS map tl)
+    | ((_ as x)) :: tl -> 
+        let findExpr = function
+            | A.Expr e -> 
+                let findArrExprs = function 
+                    | A.ArrayCreate (t, n, e) -> 
+                        (Expr (Assign (n, (convertExpr map e)))) :: (getFunctionBodyS map tl)
+                    | _ -> (convertStatement map x) :: (getFunctionBodyS map tl)
+                in
+                let exprs = findArrExprs e in        
+                (convertStatement map x) :: (getFunctionBodyS map tl)
+            | _ as z -> (convertStatement map x) :: (getFunctionBodyS map tl)
+        in
+        findExpr x
+
+
+    (*
+        (match x with
+            | _ -> printf "; ArrayCreate %s\n" (A.string_of_statement x);
+                (convertStatement map x) :: (getFunctionBodyS map tl)
+        )
+        (convertStatement map x) :: (getFunctionBodyS map tl)*)
     
 let rec getFunctionsA = function
     | [] -> []

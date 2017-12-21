@@ -114,6 +114,10 @@ let print_bool_t = L.function_type i32_t [| i1_t |]
 let print_bool_f = L.declare_function "printBool" print_bool_t the_module
 let print_bool e llbuilder = L.build_call print_bool_f [| e |] "print_bool" llbuilder
 
+let print_array_t = L.function_type i32_t [| L.pointer_type i8_t |]
+let print_array_f = L.declare_function "printArray" print_array_t the_module
+let print_array llbuilder el = L.build_call print_array_f (Array.of_list el) "print_array" llbuilder
+
 let codegen_string_lit s llbuilder = L.build_global_stringptr s "str_tmp" llbuilder
 
 let context_funcs_vars = Hashtbl.create 50
@@ -274,12 +278,31 @@ let translate program =
                     in (ignore (L.build_store e' var builder); e')
                 | _ -> raise (Failure "[Error] Assign Type inconsist.")
             ), typ)
-        | S.ArrayAccess(e, i) ->
-            let (arr, _) = expr builder e in
-            let (index, _) = expr builder i in
+        | S.ArrayAccess(name, e) ->
+            let (arr, _) = expr builder name in
+            let (index, _) = expr builder e in
+            let index = L.const_int i32_t 1 in
             let ind = L.build_add index (L.const_int i32_t 1) "array_index" builder in
             let _val = L.build_gep arr [| ind |] "array_access" builder in
                 (L.build_load _val "array_access_val" builder, S.IntType)
+
+        | S.ArrayAssign(name, idx, e) ->
+            let (arr, _) = expr builder name in
+            let (index, _) = expr builder idx in            
+            let index = L.const_int i32_t 1 in
+            let ind = L.build_add index (L.const_int i32_t 1) "array_index" builder in
+            let gep = L.build_gep arr [| ind |] "array_access" builder in
+
+            let (e', _) = expr builder e in
+            let (var, typ) = lookup (S.string_of_expr name) in
+            (L.build_store e' var builder, typ)
+
+            (*| S.S_ArrayAccess(e, index, typ) -> 
+             let vmemory = generate_array_access false e index llbuilder in
+             let value = codegen_sexpr llbuilder false rhs in
+             ignore (L.build_store value vmemory llbuilder);
+             value*)
+
         | S.ArrayCreate(typ, _, e) -> 
             let t = ltype_of_typ typ in
             let (e', _) = expr builder e in
@@ -291,7 +314,7 @@ let translate program =
             
             let arr = L.build_array_malloc t size_real "tmp" builder in
             let arr = L.build_pointercast arr (L.pointer_type t) "tmp" builder in
-            let arr_len_ptr = L.build_pointercast arr (L.pointer_type i32_t) "6tmp" builder in
+            let arr_len_ptr = L.build_pointercast arr (L.pointer_type i32_t) "tmp" builder in
                 ignore(L.build_store size_real arr_len_ptr builder);
             (arr, typ) 
         | S.Call ("print", el) -> let print_expr e = 
@@ -301,6 +324,13 @@ let translate program =
                 | S.BoolType -> ignore (print_bool eval builder)
                 | S.NumType -> ignore (codegen_print builder [ codegen_string_lit "%f\n" builder; eval ])
                 | S.StringType -> ignore (codegen_print builder [ codegen_string_lit "%s\n" builder; eval ])
+                | S.ArrayType(t) -> (match t with
+                    | S.IntType -> ignore (codegen_print builder [ codegen_string_lit "%d\n" builder; eval ])
+                    | S.NullType -> ignore (codegen_print builder [ codegen_string_lit "null\n" builder ])
+                    | S.BoolType -> ignore (print_bool eval builder)
+                    | S.NumType -> ignore (codegen_print builder [ codegen_string_lit "%f\n" builder; eval ])
+                    | S.StringType -> ignore (codegen_print builder [ codegen_string_lit "%s\n" builder; eval ])
+                    )
                 | _ -> raise (Failure "[Error] Unsupported type for print."))
             in (List.iter print_expr el; ((L.const_int i32_t 0), S.VoidType))
         | S.Call ("printf", el) ->
