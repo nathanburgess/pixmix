@@ -297,12 +297,6 @@ let translate program =
             let (var, typ) = lookup (S.stringOfExpr name) in
             (L.build_store e' var builder, typ)
 
-            (*| S.S_ArrayAccess(e, index, typ) -> 
-             let vmemory = generate_array_access false e index llbuilder in
-             let value = codegen_sexpr llbuilder false rhs in
-             ignore (L.build_store value vmemory llbuilder);
-             value*)
-
         | S.ArrayCreate(typ, _, e) -> 
             let t = getLTypeOfType typ in
             let (e', _) = getExpr builder e in
