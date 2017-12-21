@@ -154,7 +154,7 @@ let checkFunction func_map func =
                             else typeOfIdentifier (StringMap.find func.parent func_map) s 
             in
 
-            let check_assign lvaluet rvaluet ex = match lvaluet with
+            let checkAssign lvaluet rvaluet ex = match lvaluet with
                 | NumType when rvaluet = NumType -> lvaluet
                 | StringType when rvaluet = NullType -> lvaluet
                 | _ -> if lvaluet == rvaluet
@@ -183,7 +183,7 @@ let checkFunction func_map func =
                     | Not when t = BoolType -> BoolType
                     | _ -> illegalUnaryOperationError (stringOfContext t) (stringOfUop op) (stringOfExpr ex))
                 | Id s -> typeOfIdentifier func s
-                | (Assign (var, e) as ex) -> let lt = typeOfIdentifier func var and rt = expr e in check_assign lt rt ex
+                | (Assign (var, e) as ex) -> let lt = typeOfIdentifier func var and rt = expr e in checkAssign lt rt ex
                 | ArrayCreate(_, _, expr1) -> let e_type = expr expr1 in
                     if e_type != IntType
                     then (raise(Failure("Array dimensions must be type int")))
