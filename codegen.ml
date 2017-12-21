@@ -229,7 +229,7 @@ let translate program =
             | S.Add | S.Sub | S.Mult | S.Div | S.Mod -> t
             | _ -> S.BoolType)) 
     in
-    let rec expr builder = function
+    let rec getExpr builder = function
         | S.IntLit i -> ((L.const_int i32_t i), S.IntType)
         | S.NumLit f -> ((L.const_float f_t f), S.NumType)
         | S.BoolLit b -> ((L.const_int i1_t (if b then 1 else 0)), S.BoolType)
@@ -238,8 +238,8 @@ let translate program =
         | S.Null -> (const_null, S.NullType)
         | S.Id s -> let (var, typ) = lookup s in ((L.build_load var s builder), typ)
         | S.Binop (e1, op, e2) ->
-            let (e1', t1) = expr builder e1
-            and (e2', t2) = expr builder e2
+            let (e1', t1) = getExpr builder e1
+            and (e2', t2) = getExpr builder e2
             in (match (t1, t2) with
                 | (_, S.NullType) -> (match op with
                     | S.Equal -> ((L.build_is_null e1' "isNull" builder), S.BoolType)
@@ -256,14 +256,14 @@ let translate program =
                     binop e1' op (intToFloat builder e2') S.NumType builder
                 | _ -> raise (Failure "[Error] Unsuported Binop Type."))
         | S.Unop (op, e) ->
-            let (e', typ) = expr builder e
+            let (e', typ) = getExpr builder e
             in (((match op with
                 | S.Neg ->
                     if typ = S.IntType then L.build_neg else L.build_fneg
                 | S.Not -> L.build_not) e' "tmp" builder
             ), typ)
         | S.Assign (s, e) ->
-            let (e', etyp) = expr builder e in
+            let (e', etyp) = getExpr builder e in
             let (var, typ) = lookup s
             in ((match (etyp, typ) with
                 | (t1, t2) when t1 = t2 -> (ignore (L.build_store e' var builder); e')
@@ -275,14 +275,14 @@ let translate program =
                 | _ -> raise (Failure "[Error] Assign Type inconsist.")
             ), typ)
         | S.ArrayAccess(e, i) ->
-            let (arr, _) = expr builder e in
-            let (index, _) = expr builder i in
+            let (arr, _) = getExpr builder e in
+            let (index, _) = getExpr builder i in
             let ind = L.build_add index (L.const_int i32_t 1) "array_index" builder in
             let _val = L.build_gep arr [| ind |] "array_access" builder in
                 (L.build_load _val "array_access_val" builder, S.IntType)
         | S.ArrayCreate(typ, _, e) -> 
             let t = getLTypeOfType typ in
-            let (e', _) = expr builder e in
+            let (e', _) = getExpr builder e in
             let size = floatToInt builder e' in
 
             let size_t = L.build_intcast (L.size_of t) i32_t "tmp" builder in
@@ -295,7 +295,7 @@ let translate program =
                 ignore(L.build_store size_real arr_len_ptr builder);
             (arr, typ) 
         | S.Call ("print", el) -> let print_expr e = 
-            let (eval, etyp) = expr builder e in (match etyp with
+            let (eval, etyp) = getExpr builder e in (match etyp with
                 | S.IntType -> ignore (codegen_print builder [ codegen_string_lit "%d\n" builder; eval ])
                 | S.NullType -> ignore (codegen_print builder [ codegen_string_lit "null\n" builder ])
                 | S.BoolType -> ignore (print_bool eval builder)
@@ -304,27 +304,27 @@ let translate program =
                 | _ -> raise (Failure "[Error] Unsupported type for print."))
             in (List.iter print_expr el; ((L.const_int i32_t 0), S.VoidType))
         | S.Call ("printf", el) ->
-            ((codegen_print builder (List.map (fun e -> let (eval, _) = expr builder e in eval) el)), S.VoidType)
+            ((codegen_print builder (List.map (fun e -> let (eval, _) = getExpr builder e in eval) el)), S.VoidType)
         | S.Call (f, act) ->
             let (fdef, fdecl) = StringMap.find f functionDecls in
-            let actuals = List.rev (List.map (fun e -> let (eval, _) = expr builder e in eval) (List.rev act)) in
+            let actuals = List.rev (List.map (fun e -> let (eval, _) = getExpr builder e in eval) (List.rev act)) in
             let result = (match fdecl.S.returnType with
                 | S.VoidType -> ""
                 | _ -> f ^ "_result")
             in
             ((L.build_call fdef (Array.of_list actuals) result builder), (fdecl.S.returnType))
-        | S.CallObject (o, f, act) ->
+        | S.CallObject (_, f, act) ->
             let (fdef, fdecl) = StringMap.find f functionDecls in
-            let actuals = List.rev (List.map (fun e -> let (eval, _) = expr builder e in eval) (List.rev act)) in
+            let actuals = List.rev (List.map (fun e -> let (eval, _) = getExpr builder e in eval) (List.rev act)) in
             let result = (match fdecl.S.returnType with
                 | S.VoidType -> ""
                 | _ -> f ^ "_result")
             in
             ((L.build_call fdef (Array.of_list actuals) result builder), (fdecl.S.returnType)) 
-        | S.ObjectAccess(o, s) ->
+        (*| S.ObjectAccess(o, s) ->
             (*let (var, typ) = lookup (o^"."^s) in*)
             (const_null, S.NullType)
-            (*((L.build_load var s builder), typ)*)
+            (*((L.build_load var s builder), typ)*)*)
         in
 
     let add_terminal builder f = match L.block_terminator (L.insertion_block builder) with
@@ -332,8 +332,8 @@ let translate program =
         | None -> ignore (f builder) in
 
     let rec stmt builder = function
-        | S.Expr e -> (ignore (expr builder e); builder)
-        | S.Return e -> (ignore (let (ev, et) = expr builder e in
+        | S.Expr e -> (ignore (getExpr builder e); builder)
+        | S.Return e -> (ignore (let (ev, et) = getExpr builder e in
             match ((fdecl.S.returnType), et) with
                 | (S.VoidType, _) -> L.build_ret_void builder
                 | (t1, t2) when t1 = t2 -> L.build_ret ev builder
@@ -344,7 +344,7 @@ let translate program =
                 | _ -> raise (Failure "[Error] Return type doesn't match."));
             builder)
         | S.If (predicate, then_stmt, else_stmt) ->
-            let (bool_val, _) = expr builder predicate in
+            let (bool_val, _) = getExpr builder predicate in
             let merge_bb = L.append_block context "merge" func in
             let then_bb = L.append_block context "then" func in 
                 (add_terminal
@@ -361,7 +361,7 @@ let translate program =
                     let body_bb = L.append_block context "while_body" func in
                         (add_terminal (List.fold_left stmt (L.builder_at_end context body_bb) body) (L.build_br pred_bb);
                             let pred_builder = L.builder_at_end context pred_bb in
-                            let (bool_val, _) = expr pred_builder predicate in
+                            let (bool_val, _) = getExpr pred_builder predicate in
                             let merge_bb = L.append_block context "merge" func in
                                 (ignore (L.build_cond_br bool_val body_bb merge_bb pred_builder); L.builder_at_end context merge_bb)))
         | S.For (e1, e2, e3, body) -> List.fold_left stmt builder
