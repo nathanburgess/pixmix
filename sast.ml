@@ -276,7 +276,7 @@ let rec getFunctionBodyS map = function
             | A.Expr e -> 
                 let findArrExprs = function 
                     | A.ArrayCreate (t, n, e) -> 
-                        (Expr (Assign (n, (convertExpr map e)))) :: (getFunctionBodyS map tl)
+                        (Expr(Assign(n, convertExpr map e))) :: (getFunctionBodyS map tl)
                     | _ -> (convertStatement map x) :: (getFunctionBodyS map tl)
                 in
                 let exprs = findArrExprs e in        
@@ -284,14 +284,6 @@ let rec getFunctionBodyS map = function
             | _ as z -> (convertStatement map x) :: (getFunctionBodyS map tl)
         in
         findExpr x
-
-
-    (*
-        (match x with
-            | _ -> printf "; ArrayCreate %s\n" (A.string_of_statement x);
-                (convertStatement map x) :: (getFunctionBodyS map tl)
-        )
-        (convertStatement map x) :: (getFunctionBodyS map tl)*)
     
 let rec getFunctionsA = function
     | [] -> []
