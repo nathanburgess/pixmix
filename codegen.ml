@@ -33,17 +33,17 @@ let color_t = L.pointer_type (match L.type_by_name llm "struct.Color" with
   | Some x -> x)
 *)
 
-let rec ltype_of_typ = function
+let rec getLTypeOfType = function
     | S.VoidType -> void_t
     | S.IntType -> i32_t
     | S.NumType -> f_t
     | S.BoolType -> i1_t
     | S.StringType -> str_t
-    | S.ArrayType(typ) -> L.pointer_type (ltype_of_typ typ)
+    | S.ArrayType(typ) -> L.pointer_type (getLTypeOfType typ)
     | S.ObjectType -> obj_t
-    | _ as t -> raise (Failure ("[Error] Could not find type \"" ^ S.string_of_varType t ^ "\"."))
+    | _ as t -> raise (Failure ("[Error] Could not find type \"" ^ S.stringOfVarType t ^ "\"."))
 
-and lconst_of_typ = function
+and getLConstOfType = function
     | S.IntType -> L.const_int i32_t 0
     | S.NumType -> L.const_int i32_t 1
     | S.BoolType -> L.const_int i32_t 2
@@ -51,7 +51,7 @@ and lconst_of_typ = function
     | S.ImageType -> L.const_int i32_t 4
     | S.ArrayType(typ) -> L.const_int i32_t 5
     | S.ObjectType -> L.const_int i32_t 6
-    | _ as t -> raise (Failure ("[Error] Could not find type \"" ^ S.string_of_varType t ^ "\"."))
+    | _ as t -> raise (Failure ("[Error] Could not find type \"" ^ S.stringOfVarType t ^ "\"."))
 
 let int_zero = L.const_int i32_t 0
 and num_zero = L.const_float f_t 0.
@@ -65,19 +65,19 @@ let getNullForType = function
     | S.StringType -> str_null
     | S.NumType -> num_zero
     | S.ObjectType -> object_null
-    | _ as x -> raise (Failure ("[Error] Could not get null type for " ^ S.string_of_varType x ^ "."))
+    | _ as x -> raise (Failure ("[Error] Could not get null type for " ^ S.stringOfVarType x ^ "."))
 
 let getDefaultValue = function
-    | (S.IntType as t) -> L.const_int (ltype_of_typ t) 0
-    | (S.BoolType as t) -> L.const_int (ltype_of_typ t) 0
-    | (S.NumType as t) -> L.const_float (ltype_of_typ t) 0.
-    | t -> L.const_null (ltype_of_typ t)
+    | (S.IntType as t) -> L.const_int (getLTypeOfType t) 0
+    | (S.BoolType as t) -> L.const_int (getLTypeOfType t) 0
+    | (S.NumType as t) -> L.const_float (getLTypeOfType t) 0.
+    | t -> L.const_null (getLTypeOfType t)
 
 (*
     Type casting
  *)
-let int_to_float llbuilder v = L.build_sitofp v f_t "tmp" llbuilder
-let float_to_int llbuilder v = L.build_fptosi v i32_t "tmp" llbuilder
+let intToFloat llbuilder v = L.build_sitofp v f_t "tmp" llbuilder
+let floatToInt llbuilder v = L.build_fptosi v i32_t "tmp" llbuilder
 
 let void_to_int_t = L.function_type i32_t [| L.pointer_type i8_t |]
 let void_to_int_f = L.declare_function "VoidtoInt" void_to_int_t the_module
@@ -128,9 +128,9 @@ let translate program =
         let funDecl m fdecl =
             let name = fdecl.S.name
             and formal_types =
-                Array.of_list (List.map (function | S.Formal (t, _) -> ltype_of_typ t) fdecl.S.args) in
+                Array.of_list (List.map (function | S.Formal (t, _) -> getLTypeOfType t) fdecl.S.args) in
             let ftype =
-                L.var_arg_function_type (ltype_of_typ fdecl.S.returnType) formal_types
+                L.var_arg_function_type (getLTypeOfType fdecl.S.returnType) formal_types
             in
             StringMap.add name ((L.define_function name ftype the_module), fdecl) m
         in 
@@ -251,9 +251,9 @@ let translate program =
                     | _ -> raise (Failure "[Error] Unsupported Null Type Operation."))
                 | (t1, t2) when t1 = t2 -> binop e1' op e2' t1 builder
                 | (S.IntType, S.NumType) ->
-                    binop (int_to_float builder e1') op e2' S.NumType builder
+                    binop (intToFloat builder e1') op e2' S.NumType builder
                 | (S.NumType, S.IntType) ->
-                    binop e1' op (int_to_float builder e2') S.NumType builder
+                    binop e1' op (intToFloat builder e2') S.NumType builder
                 | _ -> raise (Failure "[Error] Unsuported Binop Type."))
         | S.Unop (op, e) ->
             let (e', typ) = expr builder e
@@ -270,7 +270,7 @@ let translate program =
                 | (S.NullType, _) -> (ignore (L.build_store (getNullForType typ) var builder);
                     getNullForType typ)
                 | (S.IntType, S.NumType) -> 
-                    let e' = int_to_float builder e'
+                    let e' = intToFloat builder e'
                     in (ignore (L.build_store e' var builder); e')
                 | _ -> raise (Failure "[Error] Assign Type inconsist.")
             ), typ)
@@ -281,9 +281,9 @@ let translate program =
             let _val = L.build_gep arr [| ind |] "array_access" builder in
                 (L.build_load _val "array_access_val" builder, S.IntType)
         | S.ArrayCreate(typ, _, e) -> 
-            let t = ltype_of_typ typ in
+            let t = getLTypeOfType typ in
             let (e', _) = expr builder e in
-            let size = float_to_int builder e' in
+            let size = floatToInt builder e' in
 
             let size_t = L.build_intcast (L.size_of t) i32_t "tmp" builder in
             let size = L.build_mul size_t size "tmp" builder in
@@ -338,7 +338,7 @@ let translate program =
                 | (S.VoidType, _) -> L.build_ret_void builder
                 | (t1, t2) when t1 = t2 -> L.build_ret ev builder
                 | (S.NumType, S.IntType) ->
-                    L.build_ret (int_to_float builder ev) builder
+                    L.build_ret (intToFloat builder ev) builder
                 | (t1, S.NullType) ->
                     L.build_ret (getDefaultValue t1) builder
                 | _ -> raise (Failure "[Error] Return type doesn't match."));
@@ -372,10 +372,10 @@ let translate program =
     let builder = List.fold_left stmt builder fdecl.S.body in
     add_terminal builder (match fdecl.S.returnType with
         | S.VoidType -> L.build_ret_void
-        | (S.IntType as t) -> L.build_ret (L.const_int (ltype_of_typ t) 0)
-        | (S.BoolType as t) -> L.build_ret (L.const_int (ltype_of_typ t) 0)
-        | (S.NumType as t) -> L.build_ret (L.const_float (ltype_of_typ t) 0.)
-        | t -> L.build_ret (L.const_null (ltype_of_typ t)))
+        | (S.IntType as t) -> L.build_ret (L.const_int (getLTypeOfType t) 0)
+        | (S.BoolType as t) -> L.build_ret (L.const_int (getLTypeOfType t) 0)
+        | (S.NumType as t) -> L.build_ret (L.const_float (getLTypeOfType t) 0.)
+        | t -> L.build_ret (L.const_null (getLTypeOfType t)))
     in 
     List.iter buildFunctionBody (List.rev program); 
 
