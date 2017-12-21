@@ -1,3 +1,8 @@
+(*
+    Authors:
+    Nathan Burgess
+ *)
+
 {
   open Parser
   let unescape s = Scanf.sscanf ("\"" ^ s ^ "\"") "%S%!" (fun x -> x)

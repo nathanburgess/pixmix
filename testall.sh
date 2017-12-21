@@ -1,5 +1,8 @@
 #!/bin/bash
 
+# Authors:
+# Nathan Burgess
+
 clrClear='\033[0m'
 clrBlue='\033[1;34m'
 clrPurple='\033[1;35m'

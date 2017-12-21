@@ -1,3 +1,7 @@
+/*
+    Authors:
+    Nathan Burgess
+ */
 
 %{ open Ast %}
 

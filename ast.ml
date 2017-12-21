@@ -1,3 +1,8 @@
+(*
+    Authors:
+    Nathan Burgess
+ *)
+
 type binop =
     | Add         
     | Sub         
@@ -16,9 +21,6 @@ type binop =
 and unop =
     | Neg   
     | Not   
-    | Incr  
-    | Decr  
-    | BitNeg
 
 and varType =
     | NullType
@@ -27,7 +29,6 @@ and varType =
     | NumType
     | StringType
     | BoolType
-    | ObjectType
     | ArrayType of varType
 
 and formal = Formal        of varType * string
@@ -94,9 +95,6 @@ let rec stringOfBinop = function
 and stringOfUnop e = function
     | Neg           -> "-" ^ stringOfExpr e
     | Not           -> "!" ^ stringOfExpr e
-    | Incr          -> "++" ^ stringOfExpr e
-    | Decr          -> "--" ^ stringOfExpr e
-    | BitNeg        -> "~" ^ stringOfExpr e
 
 and stringOfVarType = function  
     | NullType      -> "null" 
@@ -105,7 +103,6 @@ and stringOfVarType = function
     | NumType       -> "num"
     | StringType    -> "string"
     | BoolType      -> "bool" 
-    | ObjectType    -> "Object"
     | ArrayType(t)  -> "[" ^ stringOfVarType t ^ "]"
 
 and stringOfLocal = function 
@@ -117,6 +114,7 @@ and string_of_formal = function
 and stringOfExpr = function
     | Null -> "null"
     | Noexpr -> "undefined"
+    | IntLit i -> string_of_int i
     | NumLit i -> string_of_float i
     | StringLit s -> "\"" ^ String.escaped s ^ "\""
     | BoolLit b -> if b then "true" else "false"

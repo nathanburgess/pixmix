@@ -1,49 +1,12 @@
-open Sast
+(*
+    Authors:
+    Nathan Burgess
+ *)
 
-open Printf
+open Sast
+open Printf 
 
 module StringMap = Map.Make(String)
-
-let stringOfContext =
-    function
-        | IntType -> "int"
-        | NumType -> "num"
-        | StringType -> "string"
-        | BoolType -> "bool"
-        | NullType -> "null"
-
-let stringOfOp =
-    function
-        | Add -> "+"
-        | Sub -> "-"
-        | Mult -> "*"
-        | Div -> "/"
-        | Mod -> "%"
-        | Equal -> "=="
-        | Neq -> "!="
-        | Leq -> "<="
-        | LThan -> "<"
-        | GThan -> ">"
-        | Geq -> ">="
-        | And -> "and"
-        | Or -> "or"
-
-let stringOfUop = function | Neg -> "-" | Not -> "not"
-
-let rec stringOfExpr =
-    function
-        | Null -> "null"
-        | Noexpr -> ""
-        | IntLit l -> string_of_int l
-        | NumLit l -> string_of_float l
-        | StringLit l -> l
-        | BoolLit b -> if b then "true" else "false"
-        | Binop (e1, o, e2) -> (stringOfExpr e1) ^
-            (" " ^ ((stringOfOp o) ^ (" " ^ (stringOfExpr e2))))
-        | Unop (o, e) -> (stringOfUop o) ^ (" " ^ (stringOfExpr e))
-        | Id s -> s
-        | Assign (v, e) -> v ^ (" = " ^ (stringOfExpr e))
-        | Call (n, _) -> "function call " ^ n
 
 exception SemanticError of string
 
@@ -119,7 +82,7 @@ let checkReturnType func typ =
             | NumType when rvaluet = NumType -> ()
             | StringType when rvaluet = NullType -> ()
             | _ -> if lvaluet == rvaluet then ()
-                else returnTypeMisMatchError (stringOfContext rvaluet) (stringOfContext lvaluet)
+                else returnTypeMisMatchError (stringOfVarType rvaluet) (stringOfVarType lvaluet)
 
 let getFunctionObject name func_map =
     try StringMap.find name func_map
@@ -155,7 +118,7 @@ let checkFunction func_map func =
                 | StringType when rvaluet = NullType -> lvaluet
                 | _ -> if lvaluet == rvaluet
                     then lvaluet
-                    else illegalAssignmentError (stringOfContext lvaluet) (stringOfContext rvaluet) (stringOfExpr ex) in
+                    else illegalAssignmentError (stringOfVarType lvaluet) (stringOfVarType rvaluet) (stringOfExpr ex) in
 
             let rec expr = function
                 | IntLit _      -> IntType
@@ -172,28 +135,31 @@ let checkFunction func_map func =
                     | LThan | Leq | GThan | Geq  when ((t1 = IntType) || (t1 = NumType)) && ((t2 = IntType) || (t2 = NumType)) -> BoolType
                     | And | Or when (t1 = BoolType) && (t2 = BoolType) -> BoolType
                     | Mod when (t1 = IntType) && (t2 = IntType) -> IntType
-                    | _ -> illegalBinaryOperationError (stringOfContext t1) (stringOfContext t2) (stringOfOp op) (stringOfExpr e))
+                    | _ -> illegalBinaryOperationError (stringOfVarType t1) (stringOfVarType t2) (stringOfBinop op) (stringOfExpr e))
                 | (Unop (op, e) as ex) -> let t = expr e in (match op with
                     | Neg when t = IntType -> IntType
                     | Neg when t = NumType -> NumType
                     | Not when t = BoolType -> BoolType
-                    | _ -> illegalUnaryOperationError (stringOfContext t) (stringOfUop op) (stringOfExpr ex))
+                    | _ -> illegalUnaryOperationError (stringOfVarType t) (stringOfUnop op) (stringOfExpr ex))
                 | Id s -> typeOfIdentifier func s
                 | (Assign (var, e) as ex) -> let lt = typeOfIdentifier func var and rt = expr e in checkAssign lt rt ex
+                | ObjectAccess(_, _) -> NullType
+                | CallObject(_, _, _) -> NullType
+                | ArrayAssign(_, _, _) -> NullType
                 | ArrayCreate(_, _, expr1) -> let e_type = expr expr1 in
                     if e_type != IntType
                     then (raise(Failure("Array dimensions must be type int")))
                     else IntType
                 | (ArrayAccess(expr1, expr2) as ex) -> let e_type = expr expr1 and e_num = expr expr2 in
                     if (e_num != IntType) 
-                        then illegalArrayAccessError (stringOfContext e_type) (stringOfContext e_num) (stringOfExpr ex)
+                        then illegalArrayAccessError (stringOfVarType e_type) (stringOfVarType e_num) (stringOfExpr ex)
                     else
                         (match e_type with (* add object to this when ready *)
                             | IntType
                             | NumType
                             | StringType
                             | BoolType
-                            | _ -> illegalArrayAccessError (stringOfContext e_type) (stringOfContext e_num) (stringOfExpr ex))
+                            | _ -> illegalArrayAccessError (stringOfVarType e_type) (stringOfVarType e_num) (stringOfExpr ex))
                 | Noexpr -> VoidType
                 | Call (n, args) -> let func_obj = getFunctionObject n func_map in
                     let checkFunctionCall func args =
@@ -207,7 +173,7 @@ let checkFunction func_map func =
                             List.iter2 (function | Formal (t, _) -> (fun r -> let r_typ = expr r in
                                 if t = r_typ 
                                 then ()
-                                else incompatibleFuncArgTypeError (stringOfContext r_typ) (stringOfContext t)))
+                                else incompatibleFuncArgTypeError (stringOfVarType r_typ) (stringOfVarType t)))
                             l_arg r_arg in
                                 if List.mem func.name [ "printb"; "print"; "printf"; "string"; "float"; "int"; "bool" ] 
                                 then ()

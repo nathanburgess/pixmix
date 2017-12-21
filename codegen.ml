@@ -1,3 +1,8 @@
+(*
+    Authors:
+    Nathan Burgess
+ *)
+
 module L = Llvm
 module S = Sast
 
@@ -19,20 +24,6 @@ and void_ptr_t  = L.pointer_type    (L.i8_type context)
 and str_t       = L.pointer_type    (L.i8_type context)
 and obj_t       = L.pointer_type    (L.i8_type context)
 
-(*
-let image_t = L.pointer_type (match L.type_by_name llm "struct.Image" with
-    None -> raise (Failure "Image could not be found in the C libraries.")
-  | Some x -> x)
-
-let pixel_t = L.pointer_type (match L.type_by_name llm "struct.Pixel" with
-    None -> raise (Failure "Pixel could not be found in the C libraries.")
-  | Some x -> x)
-
-let color_t = L.pointer_type (match L.type_by_name llm "struct.Color" with
-    None -> raise (Failure "Color could not be found in the C libraries.")
-  | Some x -> x)
-*)
-
 let rec getLTypeOfType = function
     | S.VoidType -> void_t
     | S.IntType -> i32_t
@@ -48,9 +39,8 @@ and getLConstOfType = function
     | S.NumType -> L.const_int i32_t 1
     | S.BoolType -> L.const_int i32_t 2
     | S.StringType -> L.const_int i32_t 3
-    | S.ImageType -> L.const_int i32_t 4
-    | S.ArrayType(typ) -> L.const_int i32_t 5
-    | S.ObjectType -> L.const_int i32_t 6
+    | S.ArrayType(_) -> L.const_int i32_t 4
+    | S.ObjectType -> L.const_int i32_t 5
     | _ as t -> raise (Failure ("[Error] Could not find type \"" ^ S.stringOfVarType t ^ "\"."))
 
 let int_zero = L.const_int i32_t 0
@@ -223,7 +213,6 @@ let translate program =
             | S.Geq -> L.build_icmp L.Icmp.Sge e1 e2 "sgetmp" llbuilder
             | S.And -> L.build_and e1 e2 "andtmp" llbuilder
             | S.Or -> L.build_or e1 e2 "ortmp" llbuilder
-            | _ -> raise (Failure "[Error] Invalid binary operation.") 
         in
         let types t = match t with
             | S.NumType -> floatBinops op e1 e2
@@ -262,8 +251,7 @@ let translate program =
         | S.Unop (op, e) ->
             let (e', typ) = getExpr builder e
             in (((match op with
-                | S.Neg ->
-                    if typ = S.IntType then L.build_neg else L.build_fneg
+                | S.Neg -> if typ = S.IntType then L.build_neg else L.build_fneg
                 | S.Not -> L.build_not) e' "tmp" builder
             ), typ)
         | S.Assign (s, e) ->
@@ -278,21 +266,14 @@ let translate program =
                     in (ignore (L.build_store e' var builder); e')
                 | _ -> raise (Failure "[Error] Assign Type inconsist.")
             ), typ)
-        | S.ArrayAccess(name, e) ->
+        | S.ArrayAccess(name, _) ->
             let (arr, _) = getExpr builder name in
-            let (index, _) = getExpr builder e in
             let index = L.const_int i32_t 1 in
             let ind = L.build_add index (L.const_int i32_t 1) "array_index" builder in
             let _val = L.build_gep arr [| ind |] "array_access" builder in
                 (L.build_load _val "array_access_val" builder, S.IntType)
 
-        | S.ArrayAssign(name, idx, e) ->
-            let (arr, _) = getExpr builder name in
-            let (index, _) = getExpr builder idx in            
-            let index = L.const_int i32_t 1 in
-            let ind = L.build_add index (L.const_int i32_t 1) "array_index" builder in
-            let gep = L.build_gep arr [| ind |] "array_access" builder in
-
+        | S.ArrayAssign(name, _, e) ->
             let (e', _) = getExpr builder e in
             let (var, typ) = lookup (S.stringOfExpr name) in
             (L.build_store e' var builder, typ)
@@ -324,7 +305,7 @@ let translate program =
                     | S.BoolType -> ignore (print_bool eval builder)
                     | S.NumType -> ignore (codegen_print builder [ codegen_string_lit "%f\n" builder; eval ])
                     | S.StringType -> ignore (codegen_print builder [ codegen_string_lit "%s\n" builder; eval ])
-                    )
+                    | _ -> raise (Failure "[Error] Unsupported type for print."))
                 | _ -> raise (Failure "[Error] Unsupported type for print."))
             in (List.iter print_expr el; ((L.const_int i32_t 0), S.VoidType))
         | S.Call ("printf", el) ->
@@ -345,10 +326,8 @@ let translate program =
                 | _ -> f ^ "_result")
             in
             ((L.build_call fdef (Array.of_list actuals) result builder), (fdecl.S.returnType)) 
-        (*| S.ObjectAccess(o, s) ->
-            (*let (var, typ) = lookup (o^"."^s) in*)
+        | S.ObjectAccess(_, _) ->
             (const_null, S.NullType)
-            (*((L.build_load var s builder), typ)*)*)
         in
 
     let add_terminal builder f = match L.block_terminator (L.insertion_block builder) with
@@ -390,7 +369,7 @@ let translate program =
                                 (ignore (L.build_cond_br bool_val body_bb merge_bb pred_builder); L.builder_at_end context merge_bb)))
         | S.For (e1, e2, e3, body) -> List.fold_left stmt builder
             [ S.Expr e1; S.While (e2, (body @ [ S.Expr e3 ])) ] 
-        | S.Object o -> builder
+        | S.Object _ -> builder
     in
 
     let builder = List.fold_left stmt builder fdecl.S.body in

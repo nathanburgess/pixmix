@@ -1,3 +1,8 @@
+(*
+    Authors:
+    Nathan Burgess
+ *)
+
 module StringMap = Map.Make(String)
 
 type action = Ast | Sast | LLVM_IR | Compile
@@ -19,7 +24,7 @@ let _ =
     let lexbuf = Lexing.from_channel !channel in
     let ast = Parser.program Scanner.token lexbuf in
     let sast = Sast.convert ast in
-        Semant.check [];
+        Semant.check sast;
 
     match !action with
         | Ast     -> print_string (Ast.stringOfProgram ast)

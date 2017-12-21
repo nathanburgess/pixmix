@@ -1,5 +1,7 @@
-# Object Rect a;
+Object r = {
+    num t() {
+        print("hello");
+    }
+};
 
-Array num a = [5];
-
-print(a[2]);
+r.t();

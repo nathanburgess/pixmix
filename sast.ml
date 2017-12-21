@@ -1,6 +1,10 @@
+(*
+    Authors:
+    Nathan Burgess
+ *)
+
 module A = Ast
 module StringMap = Map.Make(String)
-open Printf
 
 type binop =
     | Add         
@@ -20,9 +24,6 @@ type binop =
 and unop =
     | Neg   
     | Not   
-    | Incr  
-    | Decr  
-    | BitNeg
 
 and varType =
     | NullType
@@ -31,7 +32,6 @@ and varType =
     | NumType
     | StringType
     | BoolType
-    | ImageType
     | ObjectType
     | ArrayType             of varType
 
@@ -82,9 +82,7 @@ and funcDecl = {
 
 and program = funcDecl list
 
-
 (* SAST Printing Functions *)
-
 let rec stringOfBinop = function
     | Add           -> "+"
     | Sub           -> "-"
@@ -103,9 +101,6 @@ let rec stringOfBinop = function
 and stringOfUnop = function
     | Neg           -> "-"
     | Not           -> "!"
-    | Incr          -> "++"
-    | Decr          -> "--"
-    | BitNeg        -> "~"
 
 and stringOfVarType = function   
     | NumType -> "num"
@@ -223,7 +218,7 @@ let buildFormals = function
 
 let rec getFunctionBodyA = function
     | [] -> []
-    | A.Function x :: tl -> getFunctionBodyA tl
+    | A.Function _ :: tl -> getFunctionBodyA tl
     | ((_ as x)) :: tl -> x :: (getFunctionBodyA tl)
     
 let rec convertStatement map = function
@@ -243,12 +238,12 @@ let rec getFunctionLocals = function
         let findExpr = function
             | A.Expr e -> 
                 let findArrExprs = function 
-                    | A.ArrayCreate (t, n, e) -> 
+                    | A.ArrayCreate (t, n, _) -> 
                         (Formal (ArrayType(convertVarType t), n)) :: (getFunctionLocals tl)
                     | _ -> getFunctionLocals tl
                 in
                 findArrExprs e
-            | _ as z ->  getFunctionLocals tl
+            | _ ->  getFunctionLocals tl
         in
         findExpr x
 
@@ -261,13 +256,13 @@ let rec getFunctionBodyS map = function
         let findExpr = function
             | A.Expr e -> 
                 let findArrExprs = function 
-                    | A.ArrayCreate (t, n, e) -> 
+                    | A.ArrayCreate (_, n, e) -> 
                         (Expr(Assign(n, convertExpr map e))) :: (getFunctionBodyS map tl)
                     | _ -> (convertStatement map x) :: (getFunctionBodyS map tl)
                 in
-                let exprs = findArrExprs e in        
+                let _ = findArrExprs e in        
                 (convertStatement map x) :: (getFunctionBodyS map tl)
-            | _ as z -> (convertStatement map x) :: (getFunctionBodyS map tl)
+            | _ -> (convertStatement map x) :: (getFunctionBodyS map tl)
         in
         findExpr x
     
@@ -289,7 +284,7 @@ let buildFunctionBody map = function
     | _ -> ([], map)
 
 let buildMethodBody map parent = function
-    | A.Function { A.name = n; A.body = b; _ } -> 
+    | A.Function { A.name = _; A.body = b; _ } -> 
         let curr = getFunctionsA b in
         let map = mapper parent map curr in (curr, map)
     | _ -> ([], map)
@@ -344,7 +339,6 @@ let createMain stmts = A.Function
 
 let convert stmts =
     let main = createMain stmts 
-    and funcMap = StringMap.empty 
-    and resultMap = [] in
+    and funcMap = StringMap.empty in
         let finalList = buildFunction funcMap [] [ main ] in
             convertFunctionList (snd finalList) (fst finalList)
