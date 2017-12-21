@@ -143,7 +143,7 @@ let translate program =
         let builder = L.builder_at_end context (L.entry_block func) in
 
         let _ =
-        let add_to_context locals = (ignore (Hashtbl.add context_funcs_vars fdecl.S.name locals); locals) in
+        let addToContext locals = (ignore (Hashtbl.add context_funcs_vars fdecl.S.name locals); locals) in
         let addFormal m = function
             | S.Formal (t, vName) -> (fun p ->
                 let vName' = getVariableName fdecl.S.name vName in
@@ -163,7 +163,7 @@ let translate program =
                 let formals = List.fold_left2 addFormal StringMap.empty fdecl.S.args
                     (Array.to_list (L.params func))
         in 
-        add_to_context (List.fold_left addLocal formals fdecl.S.locals)
+        addToContext (List.fold_left addLocal formals fdecl.S.locals)
     in
 
     let lookup vName =
