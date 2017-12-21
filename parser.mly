@@ -13,8 +13,8 @@
 /* Literals */
 %token <int> INT_LITERAL
 %token <float> NUM_LITERAL
-%token <string> STRING_LITERAL
 %token <bool> BOOL_LITERAL
+%token <string> STRING_LITERAL
 
 /* Order */
 %right ASSIGN
@@ -126,7 +126,7 @@ expr:
 
 arrCreate:
     
-    | ASSIGN LSQUARE expr RSQUARE               { $3 } /* Add other arrCreate with exprlist */
+    | ASSIGN LSQUARE expr RSQUARE               { $3 }
 
 arrAccess:
     | LSQUARE expr RSQUARE                      { $2 }

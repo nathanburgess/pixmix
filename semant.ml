@@ -2,22 +2,9 @@ open Sast
 
 open Printf
 
-(*
-
-some things the sast should take care of:
- - type mismatch
- - undeclared variable
- - reserved identifier misuse
- - multiple declaration of variable
- - accessing an out of scope variable
- - actual and formal parameter mismatch
-
-*)
-
-
 module StringMap = Map.Make(String)
 
-let string_of_type =
+let stringOfContext =
     function
         | IntType -> "int"
         | NumType -> "num"
@@ -25,7 +12,7 @@ let string_of_type =
         | BoolType -> "bool"
         | NullType -> "null"
 
-let string_of_op =
+let stringOfOp =
     function
         | Add -> "+"
         | Sub -> "-"
@@ -41,9 +28,9 @@ let string_of_op =
         | And -> "and"
         | Or -> "or"
 
-let string_of_uop = function | Neg -> "-" | Not -> "not"
+let stringOfUop = function | Neg -> "-" | Not -> "not"
 
-let rec string_of_expr =
+let rec stringOfExpr =
     function
         | Null -> "null"
         | Noexpr -> ""
@@ -51,81 +38,77 @@ let rec string_of_expr =
         | NumLit l -> string_of_float l
         | StringLit l -> l
         | BoolLit b -> if b then "true" else "false"
-        | Binop (e1, o, e2) -> (string_of_expr e1) ^
-            (" " ^ ((string_of_op o) ^ (" " ^ (string_of_expr e2))))
-        | Unop (o, e) -> (string_of_uop o) ^ (" " ^ (string_of_expr e))
+        | Binop (e1, o, e2) -> (stringOfExpr e1) ^
+            (" " ^ ((stringOfOp o) ^ (" " ^ (stringOfExpr e2))))
+        | Unop (o, e) -> (stringOfUop o) ^ (" " ^ (stringOfExpr e))
         | Id s -> s
-        | Assign (v, e) -> v ^ (" = " ^ (string_of_expr e))
+        | Assign (v, e) -> v ^ (" = " ^ (stringOfExpr e))
         | Call (n, _) -> "function call " ^ n
 
 exception SemanticError of string
 
 (* error message functions *)
-let undeclared_function_error name =
+let undeclaredFunctionError name =
     let msg = sprintf "undeclared function %s" name
     in raise (SemanticError msg)
 
-let duplicate_formal_decl_error func name =
+let duplicateFormalDeclError func name =
     let msg = sprintf "duplicate formal %s in %s" name func.name
     in raise (SemanticError msg)
 
-let duplicate_local_decl_error func name =
+let duplicateLocalDeclError func name =
     let msg = sprintf "duplicate local %s in %s" name func.name
     in raise (SemanticError msg)
 
-let undeclared_identifier_error name =
+let undeclaredIdentifierError name =
     let msg = sprintf "undeclared identifier %s" name
     in raise (SemanticError msg)
 
-let illegal_assignment_error lvaluet rvaluet ex =
+let illegalAssignmentError lvaluet rvaluet ex =
     let msg = sprintf "illegal assignment %s = %s in %s" lvaluet rvaluet ex
     in raise (SemanticError msg)
 
-let illegal_binary_operation_error typ1 typ2 op ex =
+let illegalBinaryOperationError typ1 typ2 op ex =
     let msg = sprintf "illegal binary operator %s %s %s in %s" typ1 op typ2 ex
     in raise (SemanticError msg)
 
-let illegal_array_access_error typ1 typ2 ex =
+let illegalArrayAccessError typ1 typ2 ex =
     let msg = sprintf "illegal array access %s %s in %s" typ1 typ2 ex
     in raise (SemanticError msg)
 
-let illegal_unary_operation_error typ op ex =
+let illegalUnaryOperationError typ op ex =
     let msg = sprintf "illegal unary operator %s %s in %s" op typ ex
     in raise (SemanticError msg)
 
-let unmatched_func_arg_len_error name =
+let unmatchedFuncArgLenError name =
     let msg = sprintf "args length not match in function call: %s" name
     in raise (SemanticError msg)
 
-let incompatible_func_arg_type_error typ1 typ2 =
+let incompatibleFuncArgTypeError typ1 typ2 =
     let msg =
         sprintf "incompatible argument type %s, but %s is expected" typ1 typ2
     in raise (SemanticError msg)
 
-let invalid_expr_after_return_error _ =
+let invalidExprAfterReturnError _ =
     let msg = sprintf "nothing may follow a return"
     in raise (SemanticError msg)
 
-let redefine_print_func_error _ =
+let redifinePrintFuncError _ =
     let msg = sprintf "function print may not be defined"
     in raise (SemanticError msg)
 
-let duplicate_func_error name =
+let duplicateFuncError name =
     let msg = sprintf "duplicate function declaration: %s" name
     in raise (SemanticError msg)
 
-let unsupport_operation_error typ name =
+let unsupportedOperationError typ name =
     let msg = sprintf "unsupport operation on type %s: %s" typ name
     in raise (SemanticError msg)
 
-let wrong_func_return_type_error typ1 typ2 =
+let returnTypeMisMatchError typ1 typ2 =
     let msg = sprintf "wrong function return type: %s, expect %s" typ1 typ2
     in raise (SemanticError msg)
     
-
-(*
-    Check if something is of type Array
-*)
 let rec isArrayType t = match t with | ArrayType _ -> true | _ -> false
 and getArrayNesting t = match t with | ArrayType inner -> 1 + (getArrayNesting inner) | _ -> 1
 
@@ -136,11 +119,11 @@ let checkReturnType func typ =
             | NumType when rvaluet = NumType -> ()
             | StringType when rvaluet = NullType -> ()
             | _ -> if lvaluet == rvaluet then ()
-                else wrong_func_return_type_error (string_of_type rvaluet) (string_of_type lvaluet)
+                else returnTypeMisMatchError (stringOfContext rvaluet) (stringOfContext lvaluet)
 
 let getFunctionObject name func_map =
     try StringMap.find name func_map
-    with | Not_found -> undeclared_function_error name
+    with | Not_found -> undeclaredFunctionError name
 
 let reportDuplicateVar exceptf list =
     let rec helper =
@@ -150,29 +133,29 @@ let reportDuplicateVar exceptf list =
             | [] -> ()
     in helper (List.sort compare list)
 
-let check_function func_map func =
+let checkFunction func_map func =
     let args = List.map (function | Formal (_, n) -> n) func.args in
-        (reportDuplicateVar (duplicate_formal_decl_error func) args;  
+        (reportDuplicateVar (duplicateFormalDeclError func) args;  
 
         let locals = List.map (function | Formal (_, n) -> n) func.locals in
-             (reportDuplicateVar (duplicate_local_decl_error func) locals;
+             (reportDuplicateVar (duplicateLocalDeclError func) locals;
 
-            let rec type_of_identifier func s =
+            let rec typeOfIdentifier func s =
                 let symbols = List.fold_left (fun m -> function | Formal (t, n) -> StringMap.add n t m)
                     StringMap.empty (func.args @ func.locals) in
                     try StringMap.find s symbols with
                         | Not_found ->
                             if func.name = "main" 
-                            then undeclared_identifier_error s
-                            else type_of_identifier (StringMap.find func.parent func_map) s 
+                            then undeclaredIdentifierError s
+                            else typeOfIdentifier (StringMap.find func.parent func_map) s 
             in
 
-            let check_assign lvaluet rvaluet ex = match lvaluet with
+            let checkAssign lvaluet rvaluet ex = match lvaluet with
                 | NumType when rvaluet = NumType -> lvaluet
                 | StringType when rvaluet = NullType -> lvaluet
                 | _ -> if lvaluet == rvaluet
                     then lvaluet
-                    else illegal_assignment_error (string_of_type lvaluet) (string_of_type rvaluet) (string_of_expr ex) in
+                    else illegalAssignmentError (stringOfContext lvaluet) (stringOfContext rvaluet) (stringOfExpr ex) in
 
             let rec expr = function
                 | IntLit _      -> IntType
@@ -189,42 +172,42 @@ let check_function func_map func =
                     | LThan | Leq | GThan | Geq  when ((t1 = IntType) || (t1 = NumType)) && ((t2 = IntType) || (t2 = NumType)) -> BoolType
                     | And | Or when (t1 = BoolType) && (t2 = BoolType) -> BoolType
                     | Mod when (t1 = IntType) && (t2 = IntType) -> IntType
-                    | _ -> illegal_binary_operation_error (string_of_type t1) (string_of_type t2) (string_of_op op) (string_of_expr e))
+                    | _ -> illegalBinaryOperationError (stringOfContext t1) (stringOfContext t2) (stringOfOp op) (stringOfExpr e))
                 | (Unop (op, e) as ex) -> let t = expr e in (match op with
                     | Neg when t = IntType -> IntType
                     | Neg when t = NumType -> NumType
                     | Not when t = BoolType -> BoolType
-                    | _ -> illegal_unary_operation_error (string_of_type t) (string_of_uop op) (string_of_expr ex))
-                | Id s -> type_of_identifier func s
-                | (Assign (var, e) as ex) -> let lt = type_of_identifier func var and rt = expr e in check_assign lt rt ex
+                    | _ -> illegalUnaryOperationError (stringOfContext t) (stringOfUop op) (stringOfExpr ex))
+                | Id s -> typeOfIdentifier func s
+                | (Assign (var, e) as ex) -> let lt = typeOfIdentifier func var and rt = expr e in checkAssign lt rt ex
                 | ArrayCreate(_, _, expr1) -> let e_type = expr expr1 in
                     if e_type != IntType
                     then (raise(Failure("Array dimensions must be type int")))
                     else IntType
                 | (ArrayAccess(expr1, expr2) as ex) -> let e_type = expr expr1 and e_num = expr expr2 in
                     if (e_num != IntType) 
-                        then illegal_array_access_error (string_of_type e_type) (string_of_type e_num) (string_of_expr ex)
+                        then illegalArrayAccessError (stringOfContext e_type) (stringOfContext e_num) (stringOfExpr ex)
                     else
                         (match e_type with (* add object to this when ready *)
                             | IntType
                             | NumType
                             | StringType
                             | BoolType
-                            | _ -> illegal_array_access_error (string_of_type e_type) (string_of_type e_num) (string_of_expr ex))
+                            | _ -> illegalArrayAccessError (stringOfContext e_type) (stringOfContext e_num) (stringOfExpr ex))
                 | Noexpr -> VoidType
                 | Call (n, args) -> let func_obj = getFunctionObject n func_map in
                     let checkFunctionCall func args =
                         let check_args_length l_arg r_arg =
                             if (List.length l_arg) = (List.length r_arg)
                             then ()
-                            else unmatched_func_arg_len_error func.name in
+                            else unmatchedFuncArgLenError func.name in
                         (if List.mem func.name [ "printb"; "print"; "printf"; "string"; "float"; "int"; "bool" ] then ()
                         else check_args_length func.args args;
                         let check_args_type l_arg r_arg =
                             List.iter2 (function | Formal (t, _) -> (fun r -> let r_typ = expr r in
                                 if t = r_typ 
                                 then ()
-                                else incompatible_func_arg_type_error (string_of_type r_typ) (string_of_type t)))
+                                else incompatibleFuncArgTypeError (stringOfContext r_typ) (stringOfContext t)))
                             l_arg r_arg in
                                 if List.mem func.name [ "printb"; "print"; "printf"; "string"; "float"; "int"; "bool" ] 
                                 then ()
@@ -249,7 +232,7 @@ let check_function func_map func =
                   | Object o -> (ignore o.objName; ignore (stmt_list o.objStmts))
 
               and stmt_list = function
-                  | Return _ :: ss when ss <> [] -> invalid_expr_after_return_error ss
+                  | Return _ :: ss when ss <> [] -> invalidExprAfterReturnError ss
                   | s :: ss -> (stmt s; stmt_list ss)
                   | [] -> ()
               in stmt_list func.body))
@@ -258,9 +241,9 @@ let check program =
     let m = StringMap.empty in
         (ignore (List.map (fun f -> 
             if StringMap.mem f.name m
-            then duplicate_func_error f.name
+            then duplicateFuncError f.name
             else StringMap.add f.name true m) program));
-    let built_in_funcs =
+    let builtInFuncs =
         let funcs = [ ("print", {
             returnType = VoidType;
             name = "print";
@@ -280,6 +263,6 @@ let check program =
         let add_func funcs m =
             List.fold_left (fun m (n, func) -> StringMap.add n func m) m funcs in
             add_func funcs StringMap.empty in
-        let func_map = List.fold_left (fun m f -> StringMap.add f.name f m) built_in_funcs program in
-        let check_function_wrapper func m = func m in 
-            List.iter (check_function_wrapper check_function func_map) program
+        let func_map = List.fold_left (fun m f -> StringMap.add f.name f m) builtInFuncs program in
+        let checkFunction_wrapper func m = func m in 
+            List.iter (checkFunction_wrapper checkFunction func_map) program

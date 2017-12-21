@@ -194,7 +194,7 @@ let translate program =
         t  : the type that the operation should return
      *)
     let binop e1 op e2 t llbuilder =
-        (* Generate llvalues from e1 and e2 *)
+
         let floatBinops op e1 e2 = match op with
             | S.Add -> L.build_fadd e1 e2 "flt_addtmp" llbuilder
             | S.Sub -> L.build_fsub e1 e2 "flt_subtmp" llbuilder

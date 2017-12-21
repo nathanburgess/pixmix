@@ -16,13 +16,6 @@ type binop =
     | And         
     | Or          
     | Mod         
-    | BitAnd      
-    | BitOr       
-    | BitXor      
-    | BitLeft     
-    | BitLeftAssn 
-    | BitRight    
-    | BitRightAssn
 
 and unop =
     | Neg   
@@ -106,13 +99,6 @@ let rec stringOfBinop = function
     | And           -> "&&"
     | Or            -> "||"
     | Mod           -> "%"
-    | BitAnd        -> "&"
-    | BitOr         -> "|"
-    | BitXor        -> "^"
-    | BitLeft       -> "<<"
-    | BitLeftAssn   -> "<<="
-    | BitRight      -> ">>"
-    | BitRightAssn  -> ">>="
 
 and stringOfUnop = function
     | Neg           -> "-"
@@ -336,9 +322,6 @@ let rec buildFunction map result = function
         let result = result @ [ addedFunc ] in buildFunction map result latterlist
     | _ -> ([], map)
 
-(*
- * Convert all objects to functions instead
- *)
 let rec convertObjects = function
     | [] -> []
     | A.Object o :: tl -> 
