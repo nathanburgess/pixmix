@@ -3,7 +3,7 @@ Object Math = {
 		return a + b;
 	}
 
-	string mod(num a, num b) {
+	num mod(num a, num b) {
 		return a % b;
 	}
 
@@ -13,7 +13,7 @@ Object Math = {
 			a = a * base;
 			b = b - 1;
 		}
-		return 0;
+		return a;
 	}
 };
 

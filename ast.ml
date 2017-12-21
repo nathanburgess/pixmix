@@ -83,7 +83,7 @@ and funcDecl = {
 
 and program = stmt list
 
-let rec string_of_binop = function
+let rec stringOfBinop = function
     | Add           -> "+"
     | Sub           -> "-"
     | Mult          -> "*"
@@ -105,14 +105,14 @@ let rec string_of_binop = function
     | BitRight      -> ">>"
     | BitRightAssn  -> ">>="
 
-and string_of_unop e = function
-    | Neg           -> "-" ^ string_of_expr e
-    | Not           -> "!" ^ string_of_expr e
-    | Incr          -> "++" ^ string_of_expr e
-    | Decr          -> "--" ^ string_of_expr e
-    | BitNeg        -> "~" ^ string_of_expr e
+and stringOfUnop e = function
+    | Neg           -> "-" ^ stringOfExpr e
+    | Not           -> "!" ^ stringOfExpr e
+    | Incr          -> "++" ^ stringOfExpr e
+    | Decr          -> "--" ^ stringOfExpr e
+    | BitNeg        -> "~" ^ stringOfExpr e
 
-and string_of_varType = function  
+and stringOfVarType = function  
     | NullType      -> "null" 
     | VoidType      -> "void" 
     | IntType       -> "int"
@@ -120,52 +120,52 @@ and string_of_varType = function
     | StringType    -> "string"
     | BoolType      -> "bool" 
     | ObjectType    -> "Object"
-    | ArrayType(t)  -> "[" ^ string_of_varType t ^ "]"
+    | ArrayType(t)  -> "[" ^ stringOfVarType t ^ "]"
 
-and string_of_local = function 
-    | Local(t, s, e) -> string_of_varType t ^ " " ^ s ^ " = " ^ string_of_expr e ^ ";\n"
+and stringOfLocal = function 
+    | Local(t, s, e) -> stringOfVarType t ^ " " ^ s ^ " = " ^ stringOfExpr e ^ ";\n"
 
 and string_of_formal = function 
-    | Formal(t, s) -> string_of_varType t ^ " " ^ s
+    | Formal(t, s) -> stringOfVarType t ^ " " ^ s
 
-and string_of_expr = function
+and stringOfExpr = function
     | Null -> "null"
     | Noexpr -> "undefined"
     | NumLit i -> string_of_float i
     | StringLit s -> "\"" ^ String.escaped s ^ "\""
     | BoolLit b -> if b then "true" else "false"
-    | Binop(e1, op, e2) -> string_of_expr e1 ^ " " ^ string_of_binop op ^ " " ^ string_of_expr e2
-    | Unop(op, e) -> string_of_unop e op
+    | Binop(e1, op, e2) -> stringOfExpr e1 ^ " " ^ stringOfBinop op ^ " " ^ stringOfExpr e2
+    | Unop(op, e) -> stringOfUnop e op
     | Id s -> s
-    | Assign(s, e) -> s ^ " = " ^ string_of_expr e
-    | ArrayCreate(t, n, e) -> "Array " ^ string_of_varType t ^ " " ^ n ^ " = " ^ "[" ^ string_of_expr e ^ "]"
-    | ArrayAccess(arrCreate, index) -> string_of_expr arrCreate ^ "[" ^ string_of_expr index ^ "]" 
-    | ArrayAssign(a,b,c) -> string_of_expr a ^ " [" ^ string_of_expr b ^ "] = " ^ string_of_expr c
-    | Call(f, e) -> f ^ "(" ^ String.concat ", " (List.map string_of_expr e) ^ ")"
-    | CallObject(o, f, e) -> o ^ "." ^ f ^ "(" ^ String.concat ", " (List.map string_of_expr e) ^ ")"
+    | Assign(s, e) -> s ^ " = " ^ stringOfExpr e
+    | ArrayCreate(t, n, e) -> "Array " ^ stringOfVarType t ^ " " ^ n ^ " = " ^ " [" ^ stringOfExpr e ^ "]"
+    | ArrayAccess(arrCreate, index) -> stringOfExpr arrCreate ^ "[" ^ stringOfExpr index ^ "]"   
+    | ArrayAssign(a,b,c) -> stringOfExpr a ^ " [" ^ stringOfExpr b ^ "] = " ^ stringOfExpr c
+    | Call(f, e) -> f ^ "(" ^ String.concat ", " (List.map stringOfExpr e) ^ ")"
+    | CallObject(o, f, e) -> o ^ "." ^ f ^ "(" ^ String.concat ", " (List.map stringOfExpr e) ^ ")"
     | ObjectAccess(o, v) -> o ^ "." ^ v
 
-and string_of_object o =
+and stringOfObject o =
     "Object " ^ o.objName ^ " = {\n"
-        ^ String.concat "" (List.map string_of_statement o.objStmts) ^ "};\n"
+        ^ String.concat "" (List.map stringOfStatement o.objStmts) ^ "};\n"
 
-and string_of_function f =
-    string_of_varType f.returnType ^ " " ^ f.name ^ "(" ^
+and stringOfFunction f =
+    stringOfVarType f.returnType ^ " " ^ f.name ^ "(" ^
     String.concat ", " (List.map string_of_formal f.args) ^ ")\n{\n" ^
-    String.concat "" (List.map string_of_statement f.body) ^ "}\n"
+    String.concat "" (List.map stringOfStatement f.body) ^ "}\n"
 
-and string_of_statement = function
-    | Expr(expr) -> string_of_expr expr ^ ";\n";
-    | Return(expr) -> "return " ^ string_of_expr expr ^ ";\n"
-    | For(e1, e2, e3, s) -> "for (" ^ string_of_expr e1  ^ " ; " ^ string_of_expr e2 ^ " ; " ^ string_of_expr e3  ^ ") "
-        ^ String.concat "" (List.map string_of_statement s)
-    | If(e, s1, s2) ->  "if (" ^ string_of_expr e ^ ")\n" 
-        ^ String.concat "" (List.map string_of_statement s1) 
-        ^ "else\n" ^ String.concat "" (List.map string_of_statement s2)
-    | While(e, s) -> "while (" ^ string_of_expr e ^ ") " ^ String.concat "" (List.map string_of_statement s)
-    | Variable(v) -> string_of_local v 
-    | Function(f) -> string_of_function f
-    | Object o -> string_of_object o
+and stringOfStatement = function
+    | Expr(expr) -> stringOfExpr expr ^ ";\n";
+    | Return(expr) -> "return " ^ stringOfExpr expr ^ ";\n"
+    | For(e1, e2, e3, s) -> "for (" ^ stringOfExpr e1  ^ " ; " ^ stringOfExpr e2 ^ " ; " ^ stringOfExpr e3  ^ ") "
+        ^ String.concat "" (List.map stringOfStatement s)
+    | If(e, s1, s2) ->  "if (" ^ stringOfExpr e ^ ")\n" 
+        ^ String.concat "" (List.map stringOfStatement s1) 
+        ^ "else\n" ^ String.concat "" (List.map stringOfStatement s2)
+    | While(e, s) -> "while (" ^ stringOfExpr e ^ ") " ^ String.concat "" (List.map stringOfStatement s)
+    | Variable(v) -> stringOfLocal v 
+    | Function(f) -> stringOfFunction f
+    | Object o -> stringOfObject o
 
-and string_of_program stmnts = 
-    String.concat "" (List.map string_of_statement stmnts) ^ "\n"
+and stringOfProgram stmnts = 
+    String.concat "" (List.map stringOfStatement stmnts) ^ "\n"
