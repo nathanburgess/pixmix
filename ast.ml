@@ -12,13 +12,6 @@ type binop =
     | And         
     | Or          
     | Mod         
-    | BitAnd      
-    | BitOr       
-    | BitXor      
-    | BitLeft     
-    | BitLeftAssn 
-    | BitRight    
-    | BitRightAssn
 
 and unop =
     | Neg   
@@ -96,13 +89,6 @@ let rec stringOfBinop = function
     | And           -> "&&"
     | Or            -> "||"
     | Mod           -> "%"
-    | BitAnd        -> "&"
-    | BitOr         -> "|"
-    | BitXor        -> "^"
-    | BitLeft       -> "<<"
-    | BitLeftAssn   -> "<<="
-    | BitRight      -> ">>"
-    | BitRightAssn  -> ">>="
 
 and stringOfUnop e = function
     | Neg           -> "-" ^ stringOfExpr e
