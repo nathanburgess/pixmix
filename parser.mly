@@ -76,10 +76,6 @@ varType:
     | NUM                                       { NumType }
     | STRING                                    { StringType }
     | BOOL                                      { BoolType }
-    | arrayType                                 { $1 }
-
-arrayType:
-    | LSQUARE varType RSQUARE                   { ArrayType($2) }
 
 formalexprList:
     | /* nothing */                             { [] }
@@ -124,6 +120,7 @@ expr:
     | ID LPAREN exprList RPAREN                 { Call($1, List.rev $3) }
     | ID DOT ID LPAREN exprList RPAREN          { CallObject($1, $3, List.rev $5) }
     | ID DOT ID                                 { ObjectAccess($1, $3) }
+    | expr LSQUARE expr RSQUARE ASSIGN expr     { ArrayAssign($1, $3, $6) }
     | ARRAY varType ID arrCreate                { ArrayCreate($2, $3, $4) }
     | expr arrAccess                            { ArrayAccess($1, $2) }
 
